@@ -1,0 +1,10 @@
+{
+    "name": "markov",
+    "description": "MonkaS",
+    "options": [{
+        "type": "USER",
+        "name": "user",
+        "required": false,
+        "description": "Use data from a specific user"
+    }]
+}

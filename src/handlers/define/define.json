@@ -1,0 +1,10 @@
+{
+    "name": "define",
+    "description": "Define a word yo",
+    "options": [{
+        "type": "STRING",
+        "name": "query",
+        "required": false,
+        "description": "What does this mean?"
+    }]
+}

@@ -1,0 +1,27 @@
+{
+    "name": "floorbot",
+    "version": "1.0.0",
+    "description": "The collection and consolidation of the different floorbot features",
+    "main": "src/app.js",
+    "scripts": {
+        "test": "nodemon --ignore \"*.json\" src/app.js",
+        "start": "node src/app.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/floorbot/floorbot.git"
+    },
+    "author": "Arcadeena",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/floorbot/floorbot/issues"
+    },
+    "homepage": "https://github.com/floorbot/floorbot#readme",
+    "dependencies": {
+        "floorbot-anilist": "github:floorbot/floorbot#floorbot-anilist",
+        "floorbot-booru": "github:floorbot/floorbot#floorbot-booru",
+        "floorbot-magick": "github:floorbot/floorbot#floorbot-magick",
+        "floorbot-weather": "github:floorbot/floorbot#floorbot-weather",
+        "markov-strings": "^3.0.1"
+    }
+}
