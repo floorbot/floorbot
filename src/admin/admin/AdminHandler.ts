@@ -27,13 +27,12 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
         const member = <GuildMember>interaction.member;
         if (!this.isAdmin(member)) return new MissingAdminEmbed(interaction, customData.fn).toReplyOptions(true);
 
-        const guild = interaction.guild!;
         await interaction.deferUpdate();
         switch (data.sub) {
             case 'commands': {
                 const handler = <CommandHandler>this.client.handlers.get(data.handler);
-                if (data.action === 'add') await handler.enable(interaction, guild);
-                if (data.action === 'del') await handler.disable(interaction, guild);
+                if (data.action === 'add') await handler.enable(interaction);
+                if (data.action === 'del') await handler.disable(interaction);
                 if (!interaction.replied) {
                     const response = await this.fetchCommandResponse(interaction, data.group, data.handler);
                     return interaction.editReply(response);

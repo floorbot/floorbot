@@ -1,4 +1,4 @@
-import { ApplicationCommandData, CommandInteraction, ApplicationCommand, Guild, Message, ButtonInteraction, Channel, MessageActionRow, User, InteractionReplyOptions, GuildChannel, GuildMember } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, ApplicationCommand, Message, ButtonInteraction, Channel, MessageActionRow, User, InteractionReplyOptions, GuildChannel, GuildMember } from 'discord.js';
 import { CommandClient, BaseHandler, CommandHandler, HandlerContext, BaseHandlerOptions, ButtonHandler } from 'discord.js-commands';
 import { MarkovCommandData } from './MarkovCommandData';
 import Markov from 'markov-strings';
@@ -29,6 +29,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         this.commandData = MarkovCommandData;
         this.isGlobal = false;
         this.client.on('messageCreate', (message) => this.onMessageCreate(message));
+        this.client.on('messageUpdate', (_oldMessage, newMessage) => this.onMessageCreate(<Message>newMessage));
     }
 
     public async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
@@ -72,7 +73,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
             case 'purge-confirm': {
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, false);
-                await super.disable(interaction, interaction.guild!);
+                await super.disable(interaction);
                 await this.database.purge(interaction.guild!);
                 return await message.edit({
                     ...(message.content && { content: message.content }),
@@ -182,9 +183,8 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         })
     }
 
-    public async disable(context: HandlerContext, guild?: Guild): Promise<ApplicationCommand | null> {
+    public async disable(context: HandlerContext): Promise<ApplicationCommand | null> {
         const hasData = await this.database.hasData(context.guild!);
-        console.log(hasData)
         if (hasData && context instanceof ButtonInteraction) {
             const message = <Message>context.message;
             this.toggleMessageComponents(message, true);
@@ -199,7 +199,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
             return null;
         }
         await this.database.purge(context.guild!);
-        return super.disable(context, guild);
+        return super.disable(context);
     }
 
     public async setup(): Promise<any> {
