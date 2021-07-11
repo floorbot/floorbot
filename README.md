@@ -36,9 +36,10 @@ The collection and consolidation of the different floorbot features
 ### [floorbot-weather](https://github.com/floorbot/floorbot/tree/floorbot-weather)
 
 ```console
-/weather current (city_name) (country_code)
-/weather forecast (city_name) (country_code)
-/weather link (city_name) (country_code) (user)
+/weather temps
+/weather current (city_name) (state_code) (country_code)
+/weather forecast (city_name) (state_code) (country_code)
+/weather link (city_name) (state_code) (country_code) (user)
 /weather unlink (user)
 ```
 

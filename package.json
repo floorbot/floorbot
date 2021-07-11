@@ -4,7 +4,7 @@
     "description": "The collection and consolidation of the different floorbot features",
     "main": "src/app.js",
     "scripts": {
-        "test": "nodemon --ignore \"*.json\" src/app.js",
+        "test": "ts-node-dev --respawn --ignore /*.json/ src/app.ts",
         "start": "node src/app.js"
     },
     "repository": {
@@ -17,11 +17,19 @@
         "url": "https://github.com/floorbot/floorbot/issues"
     },
     "homepage": "https://github.com/floorbot/floorbot#readme",
+    "devDependencies": {
+        "ts-node-dev": "^1.1.6"
+    },
     "dependencies": {
-        "floorbot-anilist": "github:floorbot/floorbot#floorbot-anilist",
-        "floorbot-booru": "github:floorbot/floorbot#floorbot-booru",
-        "floorbot-magick": "github:floorbot/floorbot#floorbot-magick",
-        "floorbot-weather": "github:floorbot/floorbot#floorbot-weather",
-        "markov-strings": "^3.0.1"
+        "@types/nconf": "^0.10.0",
+        "@types/node-fetch": "^2.5.10",
+        "@types/xml2js": "^0.4.8",
+        "bottleneck": "^2.19.5",
+        "dhms.js": "github:floorbot/dhms.js",
+        "discord.js-commands": "github:floorbot-js/discord.js-commands",
+        "mariadb": "^2.5.4",
+        "markov-strings": "^3.0.1",
+        "nconf": "^0.11.3",
+        "xml2js": "^0.4.23"
     }
 }
