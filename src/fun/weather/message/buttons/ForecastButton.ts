@@ -1,5 +1,5 @@
 import { WeatherButton, WeatherButtonFunction } from '../WeatherButton';
-import { LocationData } from '../../api/OpenWeatherApi';
+import { LocationData } from '../../api/OpenWeatherAPI';
 import { User, Constants } from 'discord.js';
 const { MessageButtonStyles } = Constants;
 

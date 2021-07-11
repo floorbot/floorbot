@@ -2,10 +2,10 @@
     "name": "floorbot",
     "version": "1.0.0",
     "description": "The collection and consolidation of the different floorbot features",
-    "main": "src/app.js",
+    "main": "src/app.ts",
     "scripts": {
         "test": "ts-node-dev --respawn --ignore /*.json/ src/app.ts",
-        "start": "node src/app.js"
+        "start": "node src/app.ts"
     },
     "repository": {
         "type": "git",

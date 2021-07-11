@@ -2,7 +2,7 @@ import { BooruHandler, BooruHandlerReply } from '../../BooruHandler';
 import { CommandClient, HandlerContext } from 'discord.js-commands';
 import { Rule34CommandData } from './Rule34CommandData';
 import { Message, MessageActionRow } from 'discord.js';
-import { Rule34API } from './Rule34API';
+import { Rule34API, Rule34APIAutocomplete } from './Rule34API';
 
 import { SuggestionEmbed } from '../../message/embeds/SuggestionEmbed';
 import { ImageEmbed } from '../../message/embeds/ImageEmbed';
@@ -35,7 +35,7 @@ export class Rule34Handler extends BooruHandler {
         if (!post) {
             const url404 = await Rule34API.get404();
             const autocomplete = await Rule34API.autocomplete(tags);
-            const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.total } });
+            const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total } });
             return {
                 embeds: [new SuggestionEmbed(templateEmbed, { suggestions, tags, url404 })],
                 components: suggestions.length ? [new MessageActionRow().addComponents(new SuggestionSelectMenu(this, tags, suggestions, user))] : []

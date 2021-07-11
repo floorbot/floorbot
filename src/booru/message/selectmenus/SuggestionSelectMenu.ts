@@ -1,6 +1,6 @@
 import { BooruSelectMenu } from '../BooruSelectMenu';
 import { BooruHandler } from '../../BooruHandler';
-import { User } from 'discord.js';
+import { User, Util } from 'discord.js';
 
 export type Suggestion = { name: any, count: any };
 
@@ -17,9 +17,9 @@ export class SuggestionSelectMenu extends BooruSelectMenu {
         });
         this.addOptions(suggestions.map(suggestion => {
             return {
-                label: suggestion.name,
+                label: Util.splitMessage(suggestion.name, { char: '', append: '...', maxLength: 25 })[0],
                 value: suggestion.name,
-                description: `${suggestion.count} posts`
+                description: `${suggestion.count} posts for ${suggestion.name}`
             }
         }))
     }

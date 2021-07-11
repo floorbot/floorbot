@@ -45,6 +45,11 @@ client.login(nconf.get('DISCORD_TOKEN'));
 // client.on('ready', async () => {
 //     const commands = await client.application!.commands.fetch();
 //     commands.forEach(command => {
-//         if (command.name === 'markov') command.delete();
+//         // console.log(command.name);
+//
+//         // command.delete();
+//         // if (command.name === 'utils') command.delete().then(console.log);
+//         // if (command.name === 'pregchan') command.delete().then(console.log);
+//         // if (command.name === 'admin') command.delete().then(console.log);
 //     })
 // })

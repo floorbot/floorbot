@@ -27,7 +27,7 @@ import { ForecastButton } from './message/buttons/ForecastButton';
 import { CurrentButton } from './message/buttons/CurrentButton';
 import { ViewMapButton } from './message/buttons/ViewMapButton';
 
-import { CurrentData, ForecastData, GeocodeData, AirPollutionData } from './api/OpenWeatherApi';
+import { CurrentData, ForecastData, GeocodeData, AirPollutionData } from './api/OpenWeatherAPI';
 
 export { WeatherSubCommandNames };
 
