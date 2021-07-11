@@ -45,19 +45,19 @@ export class UtilsHandler extends BaseHandler implements CommandHandler {
                 const embed = this.getEmbedTemplate(interaction)
                     .setTitle(`${guild.name} Stats!`)
                     .setDescription(
+                        `Created: **<t:${guild.createdTimestamp}:f>**\n` +
                         `Verified: **${guild.verified}**\n` +
+                        `Partnered: **${guild.partnered}**\n` +
+                        `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**\n` +
+                        `Description: **${guild.description}**\n` +
                         `Channels: **${guild.channels.cache.array().length}**\n` +
                         `Members: **${guild.memberCount}**\n` +
                         `Roles: **${guild.roles.cache.array().length}**\n` +
                         `Emojis: **${guild.emojis.cache.array().filter(emoji => !emoji.animated).length}**\n` +
                         `Gif Emojis: **${guild.emojis.cache.array().filter(emoji => emoji.animated).length}**\n` +
-                        // `Stickers: **${guild.stickers}**\n` +
-                        // `NSFWLevel: **${}**\n` +
-                        // `Partnered: **${}**\n` +
-                        // `Description: **${}**\n` +
-                        // `Premium Tier: **${}**\n` +
-                        `Bans: **${bans ? bans.array().length : '*administrator permission*'}**\n` +
-                        `Created: **${Util.formatDate(guild.createdAt)}**`
+                        `Stickers: **TODO**\n` +
+                        `NSFW Level: **${Util.capitalizeString(guild.nsfwLevel)}**\n` +
+                        `Bans: **${bans ? bans.array().length : '*administrator permission*'}**\n`
                     )
                 if (guild.icon) embed.setThumbnail(guild.iconURL({ dynamic: true })!);
                 if (guild.splash) embed.setImage(`${guild.splashURL({ size: 4096 })}`);

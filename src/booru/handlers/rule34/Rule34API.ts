@@ -18,7 +18,7 @@ export class Rule34API {
     }
 
     public static async count(tags: string = String()): Promise<number> {
-        const params = new Map<string, string | number>([['tags', tags], ['limit', 1]])
+        const params = new Map<string, string | number>([['tags', tags], ['limit', 1]]);
         const xml = await Rule34API.request('index', params).then(res => res.text());
         const json = await xml2js.parseStringPromise(xml);
         return parseInt(json.posts['$'].count);
@@ -41,7 +41,7 @@ export class Rule34API {
     }
 
     public static async autocomplete(tag: string = String()): Promise<Array<Rule34APIAutocomplete>> {
-        const params = new Map<string, string | number>([['q', tag]])
+        const params = new Map<string, string | number>([['q', tag]]);
         const json = await Rule34API.request('autocomplete', params).then(res => res.json());
         json.forEach((tag: any) => tag.total = parseInt(/(\d+)\)$/.exec(tag.label)![1]));
         return json;
