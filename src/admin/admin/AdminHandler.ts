@@ -1,4 +1,4 @@
-import { ButtonInteraction, ApplicationCommandData, GuildMember, CommandInteraction, Permissions, SelectMenuInteraction, MessageOptions, Collection, MessageActionRow } from 'discord.js';
+import { ButtonInteraction, ApplicationCommandData, GuildMember, CommandInteraction, SelectMenuInteraction, MessageOptions, Collection, MessageActionRow } from 'discord.js';
 import { CommandClient, BaseHandler, CommandHandler, ButtonHandler, HandlerContext, SelectMenuHandler } from 'discord.js-commands';
 import { AdminCommandData } from './AdminCommandData';
 
@@ -59,8 +59,7 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
     public async onCommand(interaction: CommandInteraction): Promise<any> {
         await interaction.defer();
 
-        const { member } = interaction;
-        if (member && (!(<Permissions>member.permissions).has('ADMINISTRATOR') || !member)) {
+        if (!this.isAdmin(<GuildMember>interaction.member)) {
             const embed = this.getEmbedTemplate(interaction)
                 .setDescription(`Sorry! you must be an admin to use \`/admin\` commands!`)
             return interaction.followUp({ embeds: [embed], ephemeral: true });
