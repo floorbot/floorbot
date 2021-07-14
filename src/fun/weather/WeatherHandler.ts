@@ -91,7 +91,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         switch (subCommand.name) {
             case WeatherSubCommandName.LOCATION:
             case WeatherSubCommandName.USER: {
-                return interaction.followUp(await this.fetchAirQualityResponse(interaction, location ?? member))
+                return interaction.followUp(await this.fetchCurrentResponse(interaction, location ?? member))
             }
             case WeatherSubCommandName.SERVER_TEMPS: { return interaction.followUp(await this.fetchServerTempsResponse(interaction, { page: 1 })) }
             case WeatherSubCommandName.LINK: { return interaction.followUp(await this.fetchLinkResponse(interaction, location!, member)) }
@@ -108,10 +108,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
                 const message = <Message>interaction.message;
                 ServerTempsEmbed.orderEmbedData((message.embeds[0]), order);
                 const selectMenu = <ServerTempsOrderSelectMenu>message.components[0].components[0];
-                selectMenu.options.forEach(option => {
-                    option.default = option.value === order;
-                    console.log(order, option)
-                })
+                selectMenu.options.forEach(option => option.default = option.value === order)
                 return await message.edit({
                     ...(message.content && { content: message.content }),
                     components: message.components,
@@ -172,8 +169,8 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         if (OpenWeatherAPI.isError(airPollution)) return WeatherEmbed.getAPIErrorEmbed(context, airPollution).toReplyOptions();
         const embed = new AirPollutionEmbed(context, geocoding[0], airPollution);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
+            new WeatherButton(DisplayType.CURRENT, geocoding[0]),
             new WeatherButton(DisplayType.FORECAST, geocoding[0]),
-            new WeatherButton(DisplayType.AIR_QUALITY, geocoding[0]),
             new ViewMapButton(geocoding[0])
         ]);
         return { embeds: [embed], components: [actionRow] }
