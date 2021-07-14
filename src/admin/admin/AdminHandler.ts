@@ -25,7 +25,7 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
     public async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
         const data = <AdminButtonCustomData>customData;
         const member = <GuildMember>interaction.member;
-        if (!this.isAdmin(member)) return new MissingAdminEmbed(interaction, customData.fn).toReplyOptions(true);
+        if (!this.isAdmin(member)) return interaction.reply(new MissingAdminEmbed(interaction, customData.fn).toReplyOptions(true));
 
         await interaction.deferUpdate();
         switch (data.sub) {
@@ -44,7 +44,7 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
     public async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
         customData = <AdminSelectMenuCustomData>customData;
         const member = <GuildMember>interaction.member;
-        if (!this.isAdmin(member)) return new MissingAdminEmbed(interaction, customData.fn).toReplyOptions(true);
+        if (!this.isAdmin(member)) return interaction.reply(new MissingAdminEmbed(interaction, customData.fn).toReplyOptions(true));
         await interaction.deferUpdate();
         switch (customData.sub) {
             case 'commands': {
