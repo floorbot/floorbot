@@ -3,7 +3,7 @@ import { OneCallData } from './interfaces/OneCallData';
 import { GeocodeData } from './interfaces/GeocodeData';
 import fetch from 'node-fetch';
 
-import CacheMap from './CacheMap';
+import CacheMap from 'cache-map.js';
 
 export { AirPollutionData, GeocodeData, OneCallData };
 
@@ -47,7 +47,7 @@ export class OpenWeatherAPI {
         if (resCached) return resCached;
 
         // *Rate Limit* Checking
-        const isSet = this.reqCache.set(paramString, params);
+        const isSet = this.reqCache.set(paramString, paramString);
         if (!isSet) return { cod: 429, message: `We have hit the documented API limit...` }
 
         // API Request
