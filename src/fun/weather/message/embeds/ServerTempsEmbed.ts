@@ -6,7 +6,8 @@ import { WeatherEmbed } from './WeatherEmbed';
 
 export enum ServerTempsEmbedOrder {
     HUMIDITY = 'humidity',
-    HOTTEST = 'hottest'
+    HOTTEST = 'hottest',
+    TIMEZONE = 'timezone'
 }
 
 export class ServerTempsEmbed extends WeatherEmbed {
@@ -45,16 +46,23 @@ export class ServerTempsEmbed extends WeatherEmbed {
             }
             case ServerTempsEmbedOrder.HOTTEST: {
                 lines.sort((l1, l2) => {
-                    const l1t = Number(l1[1].match(/(\d+)°C/) ?.[1] || -1000);
-                    const l2t = Number(l2[1].match(/(\d+)°C/) ?.[1] || -1000);
+                    const l1t = Number(l1[1].match(/(\d+)°F/) ?.[1] || -1000);
+                    const l2t = Number(l2[1].match(/(\d+)°F/) ?.[1] || -1000);
+                    return l2t - l1t;
+                });
+                break;
+            }
+            case ServerTempsEmbedOrder.TIMEZONE: {
+                lines.sort((l1, l2) => {
+                    const l1t = Number(l1[0].match(/\:(\d+)\:/) ?.[1] || -1000);
+                    const l2t = Number(l2[0].match(/\:(\d+)\:/) ?.[1] || -1000);
                     return l2t - l1t;
                 });
                 break;
             }
         }
-        const newEmbed = new MessageEmbed(embed);
-        newEmbed.fields[0].value = lines.map(line => line[0]).join('\n');
-        newEmbed.fields[1].value = lines.map(line => line[1]).join('\n');
-        return newEmbed;
+        embed.fields[0].value = lines.map(line => line[0]).join('\n');
+        embed.fields[1].value = lines.map(line => line[1]).join('\n');
+        return embed;
     }
 }

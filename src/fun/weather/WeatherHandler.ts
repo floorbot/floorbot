@@ -1,5 +1,5 @@
-import { ButtonInteraction, GuildMember, CommandInteraction, ApplicationCommandData, TextChannel, Message, CommandInteractionOption, Guild, GuildChannel } from 'discord.js';
-import { BaseHandler, CommandHandler, ButtonHandler, CommandClient, ComponentCustomData, HandlerContext, BaseHandlerOptions } from 'discord.js-commands';
+import { ButtonInteraction, GuildMember, CommandInteraction, ApplicationCommandData, TextChannel, Message, CommandInteractionOption, Guild, GuildChannel, SelectMenuInteraction } from 'discord.js';
+import { BaseHandler, CommandHandler, ButtonHandler, CommandClient, ComponentCustomData, HandlerContext, BaseHandlerOptions, SelectMenuHandler } from 'discord.js-commands';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData'
 import { InteractionReplyOptions, MessageActionRow } from 'discord.js';
 import { OpenWeatherAPI, LocationData } from './api/OpenWeatherAPI';
@@ -17,6 +17,8 @@ import { WeatherEmbed } from './message/embeds/WeatherEmbed';
 import { WeatherButton, DisplayType } from './message/buttons/WeatherButton';
 import { ViewMapButton } from './message/buttons/ViewMapButton';
 
+// Custom Select Menus
+import { ServerTempsOrderSelectMenu } from './message/selectmenus/ServerTempsOrderSelectMenu';
 
 export interface WeatherButtonCustomData extends ComponentCustomData {
     readonly fn: string,
@@ -25,7 +27,7 @@ export interface WeatherButtonCustomData extends ComponentCustomData {
     readonly sc?: string,
     readonly cc?: string,
     readonly wl?: string,
-    readonly sort?: ServerTempsEmbedOrder
+    readonly order?: ServerTempsEmbedOrder
 }
 
 import * as nconf from 'nconf';
@@ -35,7 +37,7 @@ export interface WeatherHandlerOptions extends BaseHandlerOptions {
     pool: Pool
 }
 
-export class WeatherHandler extends BaseHandler implements CommandHandler, ButtonHandler {
+export class WeatherHandler extends BaseHandler implements CommandHandler, ButtonHandler, SelectMenuHandler {
 
     public readonly commandData: ApplicationCommandData;
     public readonly database: WeatherDatabase;
@@ -70,7 +72,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
             case DisplayType.CURRENT: { return message.edit(await this.fetchCurrentResponse(interaction, location)) }
             case DisplayType.FORECAST: { return message.edit(await this.fetchForecastResponse(interaction, location)) }
             case DisplayType.AIR_QUALITY: { return message.edit(await this.fetchAirQualityResponse(interaction, location)) }
-            case DisplayType.SERVER_TEMPS: { return message.edit(await this.fetchServerTempsResponse(interaction, data.page!)) }
+            case DisplayType.SERVER_TEMPS: { return message.edit(await this.fetchServerTempsResponse(interaction, { page: data.page! })) }
             default: { throw interaction }
         }
     }
@@ -91,10 +93,32 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
             case WeatherSubCommandName.USER: {
                 return interaction.followUp(await this.fetchAirQualityResponse(interaction, location ?? member))
             }
-            case WeatherSubCommandName.SERVER_TEMPS: { return interaction.followUp(await this.fetchServerTempsResponse(interaction, 1)) }
+            case WeatherSubCommandName.SERVER_TEMPS: { return interaction.followUp(await this.fetchServerTempsResponse(interaction, { page: 1 })) }
             case WeatherSubCommandName.LINK: { return interaction.followUp(await this.fetchLinkResponse(interaction, location!, member)) }
             case WeatherSubCommandName.UNLINK: { return interaction.followUp(await this.fetchUnlinkResponse(interaction, member)) }
             default: { throw interaction }
+        }
+    }
+
+    public async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
+        await interaction.deferUpdate();
+        switch (customData.sub) {
+            case WeatherSubCommandName.SERVER_TEMPS: {
+                const order = <ServerTempsEmbedOrder>interaction.values[0];
+                const message = <Message>interaction.message;
+                ServerTempsEmbed.orderEmbedData((message.embeds[0]), order);
+                const selectMenu = <ServerTempsOrderSelectMenu>message.components[0].components[0];
+                selectMenu.options.forEach(option => {
+                    option.default = option.value === order;
+                    console.log(order, option)
+                })
+                return await message.edit({
+                    ...(message.content && { content: message.content }),
+                    components: message.components,
+                    embeds: message.embeds,
+                });
+            }
+            default: throw interaction;
         }
     }
 
@@ -155,16 +179,10 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         return { embeds: [embed], components: [actionRow] }
     }
 
-    private async fetchServerTempsResponse(context: HandlerContext, page: number, perPage: number = 20): Promise<InteractionReplyOptions> {
-        // if (viewData.sort) {
-        //     const message = <Message>(<ButtonInteraction>context).message;
-        //     console.log(customData.sort)
-        //     const embed = TempsEmbed.orderEmbedData(<MessageEmbed>(message.embeds[0]), customData.sort);
-        //     const actionRow = message.components[0];
-        //     actionRow.components[0] = new TempsSortButton(customData.sort === TempsEmbedOrder.HOTTEST ? TempsEmbedOrder.HUMIDITY : TempsEmbedOrder.HOTTEST);
-        //     return { embeds: [embed], components: [actionRow] }
-        // }
-
+    private async fetchServerTempsResponse(context: HandlerContext, viewData: { page: number, perPage?: number, order?: ServerTempsEmbedOrder.HOTTEST }): Promise<InteractionReplyOptions> {
+        const page = viewData.page;
+        const perPage = viewData.perPage ?? 20;
+        const order = viewData.order ?? ServerTempsEmbedOrder.HOTTEST;
         const { channel, guild } = <{ channel: GuildChannel, guild: Guild }>context;
         const links = (await this.database.fetchAllLinks(guild)).reduce((array, link) => {
             const member = (<TextChannel>channel).members.get(<any>link.user_id.toString());
@@ -173,15 +191,15 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         }, new Array());
         if (!links.length) return WeatherEmbed.getNoLinkedMembersEmbed(context, channel).toReplyOptions();
         const sliced = links.slice((page - 1) * perPage, page * perPage);
-        if (!sliced.length && page !== 1) return this.fetchServerTempsResponse(context, 1);
+        if (!sliced.length && page !== 1) return this.fetchServerTempsResponse(context, { page: 1 });
         for (const slice of sliced) slice.push(await this.api.oneCall(slice[0]));
-        const embed = new ServerTempsEmbed(context, sliced);
-        // actionRow.addComponents(new TempsSortButton(TempsEmbedOrder.HUMIDITY));
+        const embed = ServerTempsEmbed.orderEmbedData(new ServerTempsEmbed(context, sliced), order);
+        const orderActionRow = new MessageActionRow().addComponents([new ServerTempsOrderSelectMenu(order)]);
         const pageActionRow = new MessageActionRow();
         if ((page - 1 > 0) && (links.length / perPage) >= page - 1) pageActionRow.addComponents(new WeatherButton(DisplayType.SERVER_TEMPS, page - 1));
         if ((page + 1 > 0) && (links.length / perPage) >= page + 1) pageActionRow.addComponents(new WeatherButton(DisplayType.SERVER_TEMPS, page + 1));
-        return { embeds: [embed], components: pageActionRow.components.length ? [pageActionRow] : [] };
-
+        const components = pageActionRow.components.length ? [orderActionRow, pageActionRow] : [orderActionRow];
+        return { embeds: [embed], components: components };
     }
 
     private async fetchLinkResponse(context: HandlerContext, location: LocationData, targetMember: GuildMember) {

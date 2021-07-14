@@ -26,8 +26,6 @@ const client = new CommandClient({
         [UtilsHandler, {}],
         [AdminHandler, {}],
 
-        // [DefineHandler, {}],
-        // [ArchiveHandler, {}],
         [WeatherHandler, { pool: pool }],
         [MarkovHandler, { pool: pool }],
         [DefineHandler, {}],
@@ -41,15 +39,3 @@ const client = new CommandClient({
 });
 
 client.login(nconf.get('DISCORD_TOKEN'));
-
-// client.on('ready', async () => {
-//     const commands = await client.application!.commands.fetch();
-//     commands.forEach(command => {
-//         // console.log(command.name);
-//
-//         // command.delete();
-//         // if (command.name === 'utils') command.delete().then(console.log);
-//         // if (command.name === 'pregchan') command.delete().then(console.log);
-//         // if (command.name === 'admin') command.delete().then(console.log);
-//     })
-// })
