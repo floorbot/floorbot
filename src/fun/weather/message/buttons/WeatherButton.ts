@@ -67,7 +67,7 @@ export class WeatherButton extends MessageButton {
             ...(data.geo && {
                 name: geoParts[0],
                 ...(geoParts[1] && { state: geoParts[1] }),
-                ...(geoParts[2] && { city: geoParts[2] }),
+                ...(geoParts[2] && { country: geoParts[2] }),
                 lat: parseFloat(geoParts[3]),
                 lon: parseFloat(geoParts[4]),
             })

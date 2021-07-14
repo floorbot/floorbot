@@ -59,5 +59,12 @@ export interface OneCallData {
         readonly pop: number,
         readonly rain: number,
         readonly uvi: number
+    }>,
+    readonly alerts: Array<{
+        readonly sender_name: string,
+        readonly event: string
+        readonly start: number
+        readonly end: number
+        readonly description: string
     }>
 }

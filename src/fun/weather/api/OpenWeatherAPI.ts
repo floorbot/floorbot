@@ -71,7 +71,7 @@ export class OpenWeatherAPI {
     }
 
     public async oneCall(latlon: LatLonData): Promise<OneCallData | WeatherAPIError> {
-        const params = new Map([['lat', latlon.lat.toString()], ['lon', latlon.lon.toString()], ['exclude', 'minutely,hourly,alerts'], ['units', 'metric']]);
+        const params = new Map([['lat', latlon.lat.toString()], ['lon', latlon.lon.toString()], ['exclude', 'minutely,hourly'], ['units', 'metric']]);
         return this.request('data/2.5/onecall', params);
     }
 
