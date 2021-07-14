@@ -45,11 +45,11 @@ export class UtilsHandler extends BaseHandler implements CommandHandler {
                 const embed = this.getEmbedTemplate(interaction)
                     .setTitle(`${guild.name} Stats!`)
                     .setDescription(
-                        `Created: **<t:${guild.createdTimestamp}:f>**\n` +
+                        `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**\n` +
                         `Verified: **${guild.verified}**\n` +
                         `Partnered: **${guild.partnered}**\n` +
                         `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**\n` +
-                        `Description: **${guild.description}**\n` +
+                        `Description: **${guild.description || '*none*'}**\n` +
                         `Channels: **${guild.channels.cache.array().length}**\n` +
                         `Members: **${guild.memberCount}**\n` +
                         `Roles: **${guild.roles.cache.array().length}**\n` +

@@ -28,7 +28,7 @@ const client = new CommandClient({
 
         // [DefineHandler, {}],
         // [ArchiveHandler, {}],
-        [WeatherHandler, {}],
+        [WeatherHandler, { pool: pool }],
         [MarkovHandler, { pool: pool }],
         [DefineHandler, {}],
 

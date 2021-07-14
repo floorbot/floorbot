@@ -1,4 +1,5 @@
-import { Client, MessageEmbed, GuildMember, Message, InteractionReplyOptions } from 'discord.js';
+import { Client, MessageEmbed, GuildMember, InteractionReplyOptions, GuildChannel } from 'discord.js';
+import { LocationData, OpenWeatherAPI, WeatherAPIError } from '../../api/OpenWeatherAPI';
 import { HandlerContext } from 'discord.js-commands';
 
 export class WeatherEmbed extends MessageEmbed {
@@ -6,10 +7,8 @@ export class WeatherEmbed extends MessageEmbed {
     constructor(context: HandlerContext) {
         super();
         const { member } = (<{ member: GuildMember }>context);
-        const displayName = member.displayName;
-        const user = context instanceof Message ? context.author : context.user;
         this.setFooter('Powered by OpenWeatherMap', 'https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png');
-        this.setAuthor(displayName, user.displayAvatarURL());
+        // this.setAuthor(member.displayName, member.user.displayAvatarURL());
         this.setColor(member.displayColor || 14840969);
     }
 
@@ -24,7 +23,48 @@ export class WeatherEmbed extends MessageEmbed {
         return new Date(time + ((timezone - (Math.abs(offset) * 60)) * 1000));
     }
 
-    public static async getWeatherEmoji(client: Client, icon: string | null): Promise<string> {
+    public static getUnknownLocationEmbed(context: HandlerContext, location: LocationData): WeatherEmbed {
+        return new WeatherEmbed(context)
+            .setDescription(`Sorry! I could not find \`${OpenWeatherAPI.getLocationString(location, true)}\`\n*Please check the spelling or try another nearby location*`);
+    }
+
+    public static getMissingAdminEmbed(context: HandlerContext): WeatherEmbed {
+        return new WeatherEmbed(context)
+            .setDescription(`Sorry! you must be an admin to force link or unlink locations from other people!`);
+    }
+
+    public static getMissingParamsEmbed(context: HandlerContext, member: GuildMember): WeatherEmbed {
+        return new WeatherEmbed(context)
+            .setDescription(`Sorry! I do not have a saved location for ${member}. Please use \`/weather link\` to set one!`);
+    }
+
+    public static getAPIErrorEmbed(context: HandlerContext, error: WeatherAPIError): WeatherEmbed {
+        return new WeatherEmbed(context).setDescription([
+            `Sorry I seem to have an API issue:`,
+            `*${error.message}*`
+        ].join('\n'));
+    }
+
+    public static getNoLinkedMembersEmbed(context: HandlerContext, channel: GuildChannel): WeatherEmbed {
+        return new WeatherEmbed(context).setDescription([
+            `There are no members with saved locations in ${channel}`,
+            'Please use \`/weather link\` to start the weather leaderboard!'
+        ].join('\n'));
+    }
+
+    public static getLinkedEmbed(context: HandlerContext, location: LocationData, member: GuildMember): WeatherEmbed {
+        return new WeatherEmbed(context)
+            .setDescription(`Succesfully linked location \`${OpenWeatherAPI.getLocationString(location, true)}\` to ${member} 🥳`);
+    }
+
+    public static getUnlinkedEmbed(context: HandlerContext, member: GuildMember): WeatherEmbed {
+        return new WeatherEmbed(context)
+            .setDescription(`Succesfully unlinked any saved location from ${member} 🤠`);
+    }
+
+
+
+    public static getWeatherEmoji(client: Client, icon: string | null): string {
         const cache = client.emojis.cache;
         switch (icon) {
             case '01d': { return (cache.find(emoji => emoji.name == 'weather_01d') || '☀️').toString() }
@@ -49,7 +89,7 @@ export class WeatherEmbed extends MessageEmbed {
         }
     }
 
-    public getQualityEmoji(client: Client, index: number): string {
+    public static getQualityEmoji(client: Client, index: number): string {
         const cache = client.emojis.cache;
         switch (index) {
             case 1: { return (cache.find(emoji => emoji.name == 'weather_air_1') || '⚪').toString() }

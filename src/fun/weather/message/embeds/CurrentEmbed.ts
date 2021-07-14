@@ -1,36 +1,35 @@
-import { OpenWeatherAPI, CurrentData } from '../../api/OpenWeatherAPI';
+import { OpenWeatherAPI, OneCallData, GeocodeData } from '../../api/OpenWeatherAPI';
+import { WeatherLinkSchema } from '../../WeatherDatabase';
 import { HandlerContext } from 'discord.js-commands';
-import { WeatherEmbed } from '../WeatherEmbed';
+import { WeatherEmbed } from './WeatherEmbed';
 import { Util } from 'discord.js';
 
 export class CurrentEmbed extends WeatherEmbed {
 
-    constructor(context: HandlerContext, current: CurrentData) {
+    constructor(context: HandlerContext, geocode: GeocodeData | WeatherLinkSchema, onecall: OneCallData) {
         super(context);
 
-        const dateString: string = Util.formatDate(this.getLocalDate(current.timezone), { showTime: true, showDate: false });
-        const locationString: string = OpenWeatherAPI.getLocationString({
-            city_name: current.name,
-            state_code: current.sys.state,
-            country_code: current.sys.country
-        });
+        const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
+        const localDate = this.getLocalDate(onecall.timezone_offset);
 
-        this.setURL(OpenWeatherAPI.getGoogleMapsLink(current.coord));
-        this.setTitle(`Weather for ${locationString} (${dateString})`);
-        this.setThumbnail(`http://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png`);
+        this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
+        this.setTitle(`Weather for ${locationString} (<t:${Math.floor(localDate.getTime() / 1000)}:t>)`);
+        this.setThumbnail(`http://openweathermap.org/img/wn/${onecall.current.weather[0].icon}@2x.png`);
         this.addField(`**Temperature**`, (
-            `Current: **${current.main.temp.toFixed(1)}°C** (**${Util.toFahrenheit(current.main.temp)}°F**)\n` +
-            `Min: **${current.main.temp_min.toFixed(1)}°C** (**${Util.toFahrenheit(current.main.temp_min)}°F**)\n` +
-            `Max: **${current.main.temp_max.toFixed(1)}°C** (**${Util.toFahrenheit(current.main.temp_max)}°F**)\n` +
-            `Humidity: **${current.main.humidity}%**\n` +
-            `Pressure: **${Util.formatCommas(current.main.pressure)}hPa**`
+            `Current: **${onecall.current.temp.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.current.temp)}°F**)\n` +
+            `Min: **${onecall.daily[0].temp.min.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.daily[0].temp.min)}°F**)\n` +
+            `Max: **${onecall.daily[0].temp.max.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.daily[0].temp.max)}°F**)\n` +
+            `Dew Point: **${onecall.current.dew_point.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.current.dew_point)}°F**)\n` +
+            `Humidity: **${onecall.current.humidity}%**\n` +
+            `Pressure: **${Util.formatCommas(onecall.current.pressure)}hPa**`
         ), true);
         this.addField(`**Weather**`, (
-            `**${Util.capitalizeString(current.weather[0].description)}**\n` +
-            `Clouds: **${current.clouds.all}%**\n` +
-            `Wind Speed: **${current.wind.speed}km/h**\n` +
-            `Wind Deg: **${current.wind.deg}°**\n` +
-            `Visibility: **${Util.formatCommas(current.visibility)}m**\n`
+            `**${Util.capitalizeString(onecall.current.weather[0].description)}**\n` +
+            `Clouds: **${onecall.current.clouds}%**\n` +
+            `Wind Speed: **${onecall.current.wind_speed}km/h**\n` +
+            `Wind Deg: **${onecall.current.wind_deg}°**\n` +
+            `Visibility: **${Util.formatCommas(onecall.current.visibility)}m**\n` +
+            `UV Index: **${onecall.current.uvi}**`
         ), true);
     }
 }

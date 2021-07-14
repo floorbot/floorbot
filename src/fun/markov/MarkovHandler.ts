@@ -152,7 +152,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
 
     public async fetchResponse(context: HandlerContext, user: User | null): Promise<InteractionReplyOptions> {
         const rows = await this.database.fetchStrings(<GuildChannel>context.channel, user ? user : undefined)
-        const markov = new Markov({ stateSize: rows.length < 100 ? 1 : 2 });
+        const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
         markov.addData(rows.map(row => row.content));
 
         return new Promise((resolve, reject) => {
@@ -210,7 +210,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         if (message.guild && await this.isEnabled(message.guild)) {
             await this.database.setStrings(message);
             const row = await this.database.fetchChannel(<GuildChannel>message.channel);
-            if (message.author !== this.client.user && row.enabled) {
+            if (row.enabled) {
                 const random = Math.floor(Math.random() * row.frequency)
                 if (!random) {
                     const response = await this.fetchResponse(message, null);

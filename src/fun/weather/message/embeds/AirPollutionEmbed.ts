@@ -1,13 +1,17 @@
 import { OpenWeatherAPI, GeocodeData, AirPollutionData } from '../../api/OpenWeatherAPI';
+import { WeatherLinkSchema } from '../../WeatherDatabase';
 import { HandlerContext } from 'discord.js-commands';
-import { WeatherEmbed } from '../WeatherEmbed';
+import { WeatherEmbed } from './WeatherEmbed';
 
 export class AirPollutionEmbed extends WeatherEmbed {
 
-    constructor(context: HandlerContext, geocode: GeocodeData, airPollution: AirPollutionData) {
+    constructor(context: HandlerContext, geocode: GeocodeData | WeatherLinkSchema, airPollution: AirPollutionData) {
         super(context);
 
-        this.setTitle(`Air Quality for ${OpenWeatherAPI.getLocationString({ city_name: geocode.name, state_code: geocode.state, country_code: geocode.country })} (${this.getAQIString(airPollution.list[0].main.aqi)})`);
+        const locationString = OpenWeatherAPI.getLocationString(geocode, true);
+        const aqiString = this.getAQIString(airPollution.list[0].main.aqi);
+
+        this.setTitle(`Air Quality for ${locationString} (${aqiString})`);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         this.addField('Name', (
             `(CO) Carbon monoxide\n` +
@@ -18,16 +22,17 @@ export class AirPollutionEmbed extends WeatherEmbed {
             `(PM₂.₅) Fine particles matter\n` +
             `(PM₁₀) Coarse particulate matter\n` +
             `(NH₃) Ammonia\n`
-        ), true)
+        ), true);
+        const components = airPollution.list[0].components;
         this.addField('Quantity', (
-            `${this.getQualityEmoji(context.client, this.getCO(airPollution.list[0].components.co))} ${airPollution.list[0].components.co} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getNO(airPollution.list[0].components.no))} ${airPollution.list[0].components.no} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getNO2(airPollution.list[0].components.no2))} ${airPollution.list[0].components.no2} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getO3(airPollution.list[0].components.o3))} ${airPollution.list[0].components.o3} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getSO2(airPollution.list[0].components.so2))} ${airPollution.list[0].components.so2} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getPM2_5(airPollution.list[0].components.pm2_5))} ${airPollution.list[0].components.pm2_5} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getPM10(airPollution.list[0].components.pm10))} ${airPollution.list[0].components.pm10} μg/m³\n` +
-            `${this.getQualityEmoji(context.client, this.getNH3(airPollution.list[0].components.nh3))} ${airPollution.list[0].components.nh3} μg/m³\n`
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getCO(components.co))} ${components.co} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getNO(components.no))} ${components.no} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getNO2(components.no2))} ${components.no2} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getO3(components.o3))} ${components.o3} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getSO2(components.so2))} ${components.so2} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
+            `${WeatherEmbed.getQualityEmoji(context.client, this.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
         ), true)
     }
 

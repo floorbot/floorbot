@@ -25,7 +25,6 @@
         "@types/node-fetch": "^2.5.10",
         "@types/xml2js": "^0.4.8",
         "bottleneck": "^2.19.5",
-        "dhms.js": "github:floorbot/dhms.js",
         "discord.js-commands": "github:floorbot-js/discord.js-commands",
         "mariadb": "^2.5.4",
         "markov-strings": "^3.0.1",
