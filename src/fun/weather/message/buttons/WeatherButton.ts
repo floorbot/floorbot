@@ -5,10 +5,11 @@ import { MessageButton, Constants } from 'discord.js';
 const { MessageButtonStyles } = Constants;
 
 export enum DisplayType {
+    WARNING = 'warning',
     CURRENT = 'current',
     FORECAST = 'forecast',
     AIR_QUALITY = 'air_quality',
-    SERVER_TEMPS = 'server_temps'
+    SERVER_TEMPS = 'server_temps',
 }
 
 export interface WeatherButtonCustomData extends ComponentCustomData {
@@ -32,6 +33,10 @@ export class WeatherButton extends MessageButton {
     constructor(display: DisplayType, scope: GeocodeData | WeatherLinkSchema | number) {
         super();
         switch (display) {
+            case DisplayType.WARNING:
+                this.setStyle(MessageButtonStyles.DANGER);
+                this.setLabel('⚠️ Weather Alert');
+                break;
             case DisplayType.CURRENT:
                 this.setStyle(MessageButtonStyles.SUCCESS);
                 this.setLabel('Current');

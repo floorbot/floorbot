@@ -70,6 +70,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         } : null;
 
         switch (data.display) {
+            case DisplayType.WARNING: { return message.edit(await this.fetchWarningResponse(interaction, location)) }
             case DisplayType.CURRENT: { return message.edit(await this.fetchCurrentResponse(interaction, location)) }
             case DisplayType.FORECAST: { return message.edit(await this.fetchForecastResponse(interaction, location)) }
             case DisplayType.AIR_QUALITY: { return message.edit(await this.fetchAirQualityResponse(interaction, location)) }
@@ -120,6 +121,26 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         }
     }
 
+    private async fetchWarningResponse(context: HandlerContext, scope: GuildMember | LocationData | null): Promise<InteractionReplyOptions> {
+        const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
+        const location = scope instanceof GuildMember ? null : scope;
+        const link = await this.database.fetchLink(member);
+        if (!location && !link) return WeatherEmbed.getMissingParamsEmbed(context, member).toReplyOptions();
+        const geocoding = location ? await this.api.geocoding(location) : [link!];
+        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbed.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return WeatherEmbed.getUnknownLocationEmbed(context, location!).toReplyOptions();
+        const onecall = await this.api.oneCall(geocoding[0]);
+        if (OpenWeatherAPI.isError(onecall)) return WeatherEmbed.getAPIErrorEmbed(context, onecall).toReplyOptions();
+        const embed = new AlertEmbed(context, geocoding[0], onecall);
+        const actionRow: MessageActionRow = new MessageActionRow().addComponents([
+            new WeatherButton(DisplayType.CURRENT, geocoding[0]),
+            new WeatherButton(DisplayType.FORECAST, geocoding[0]),
+            new WeatherButton(DisplayType.AIR_QUALITY, geocoding[0]),
+            new ViewMapButton(geocoding[0])
+        ]);
+        return { embeds: [embed], components: [actionRow] }
+    }
+
     private async fetchCurrentResponse(context: HandlerContext, scope: GuildMember | LocationData | null): Promise<InteractionReplyOptions> {
         const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
         const location = scope instanceof GuildMember ? null : scope;
@@ -130,14 +151,14 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         if (!geocoding.length) return WeatherEmbed.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const onecall = await this.api.oneCall(geocoding[0]);
         if (OpenWeatherAPI.isError(onecall)) return WeatherEmbed.getAPIErrorEmbed(context, onecall).toReplyOptions();
-        const alertEmbed = onecall.alerts && onecall.alerts.length ? new AlertEmbed(context, onecall.alerts[0]) : null;
         const embed = new CurrentEmbed(context, geocoding[0], onecall);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             new WeatherButton(DisplayType.FORECAST, geocoding[0]),
             new WeatherButton(DisplayType.AIR_QUALITY, geocoding[0]),
+            ...(onecall.alerts && onecall.alerts.length ? [new WeatherButton(DisplayType.WARNING, geocoding[0])] : []),
             new ViewMapButton(geocoding[0])
         ]);
-        return { embeds: [embed, ...(alertEmbed ? [alertEmbed] : [])], components: [actionRow] }
+        return { embeds: [embed], components: [actionRow] }
     }
 
     private async fetchForecastResponse(context: HandlerContext, scope: GuildMember | LocationData | null): Promise<InteractionReplyOptions> {
@@ -150,14 +171,14 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         if (!geocoding.length) return WeatherEmbed.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const onecall = await this.api.oneCall(geocoding[0]);
         if (OpenWeatherAPI.isError(onecall)) return WeatherEmbed.getAPIErrorEmbed(context, onecall).toReplyOptions();
-        const alertEmbed = onecall.alerts && onecall.alerts.length ? new AlertEmbed(context, onecall.alerts[0]) : null;
         const embed = new ForecastEmbed(context, geocoding[0], onecall);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             new WeatherButton(DisplayType.CURRENT, geocoding[0]),
             new WeatherButton(DisplayType.AIR_QUALITY, geocoding[0]),
+            ...(onecall.alerts && onecall.alerts.length ? [new WeatherButton(DisplayType.WARNING, geocoding[0])] : []),
             new ViewMapButton(geocoding[0])
         ]);
-        return { embeds: [embed, ...(alertEmbed ? [alertEmbed] : [])], components: [actionRow] }
+        return { embeds: [embed], components: [actionRow] }
     }
 
     private async fetchAirQualityResponse(context: HandlerContext, scope: GuildMember | LocationData | null): Promise<InteractionReplyOptions> {
