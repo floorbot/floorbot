@@ -41,7 +41,6 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                     }
                 })
             })
-
         }, 1000 * 60 * 6) // Every 6 minutes (10 times an hour)
     }
 

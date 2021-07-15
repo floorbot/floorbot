@@ -6,9 +6,9 @@ export class LoggerHandler extends BaseHandler {
         super(client, {
             id: 'logger',
             name: 'Logger',
-            group: 'Admin',
+            group: 'Internal',
             nsfw: false
-        })
+        });
 
         client.on('log', this.onLog);
         client.on('error', this.onError);

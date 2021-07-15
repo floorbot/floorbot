@@ -4,7 +4,8 @@ nconf.argv().env().file({ file: './config.json' }).required(['DISCORD_TOKEN']);
 import { BaseHandler, CommandClient } from 'discord.js-commands';
 import { Intents, Collection } from 'discord.js';
 
-import { LoggerHandler, UtilsHandler, AdminHandler } from './index';
+import { LoggerHandler, UpdateHandler } from './index';
+import { UtilsHandler, AdminHandler } from './index';
 import { WeatherHandler, MarkovHandler, DefineHandler } from './index';
 import { SafebooruHandler, DanbooruHandler, PregchanHandler, Rule34Handler, E621Handler } from './index';
 
@@ -23,6 +24,8 @@ const client = new CommandClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
     handlers: new Collection<typeof BaseHandler, any>([
         [LoggerHandler, {}],
+        [UpdateHandler, {}],
+
         [UtilsHandler, {}],
         [AdminHandler, {}],
 

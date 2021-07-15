@@ -1,5 +1,8 @@
+// Internal Handlers
+export { UpdateHandler } from './internal/update/UpdateHandler';
+export { LoggerHandler } from './internal/logger/LoggerHandler';
+
 // Global Handlers
-export { LoggerHandler } from './admin/logger/LoggerHandler';
 export { UtilsHandler } from './admin/utils/UtilsHandlers';
 export { AdminHandler } from './admin/admin/AdminHandler';
 
