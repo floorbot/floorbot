@@ -3,7 +3,8 @@ import { Pool } from 'mariadb';
 import * as fs from 'fs';
 
 export interface MarkovChannelSchema {
-    readonly frequency: number,
+    readonly hour: number,
+    readonly messages: number,
     readonly enabled: boolean,
     readonly guild_id: string,
     readonly channel_id: string
@@ -19,32 +20,47 @@ export interface MarkovStringSchema {
     readonly content: string
 }
 
+export interface MarkovStringTotals {
+    total: number,
+    users: number
+}
+
 export class MarkovDatabase {
 
-    private readonly frequency: number;
+    private readonly messages: number;
+    private readonly hour: number;
     private readonly pool: Pool;
 
-    constructor(pool: Pool, frequency: number) {
-        this.frequency = frequency;
+    constructor(pool: Pool, messages: number, hour: number) {
+        this.messages = messages;
+        this.hour = hour;
         this.pool = pool;
     }
 
     public async fetchChannel(channel: GuildChannel): Promise<MarkovChannelSchema> {
         const query = { guild_id: channel.guild.id, channel_id: channel.id };
         const sql = 'SELECT * FROM markov_channel WHERE guild_id = :guild_id AND channel_id = :channel_id LIMIT 1';
-        const rows = (await this.pool.query({ namedPlaceholders: true, sql: sql }, query));
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : {
-            frequency: this.frequency,
+            messages: this.messages,
+            hour: this.hour,
             enabled: false,
             ...query
         }
     }
 
-    public async setChannel(channel: GuildChannel, options: { enabled?: boolean, frequency?: number }): Promise<MarkovChannelSchema> {
+    public async fetchAllChannels(guild: Guild): Promise<Array<MarkovChannelSchema>> {
+        const query = { guild_id: guild.id };
+        const sql = 'SELECT * FROM markov_channel WHERE guild_id = :guild_id';
+        return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+    }
+
+    public async setChannel(channel: GuildChannel, options: { enabled?: boolean, messages?: number, hour?: number }): Promise<MarkovChannelSchema> {
         const existing = await this.fetchChannel(channel);
-        const sql = 'REPLACE INTO markov_channel VALUES (:frequency, :enabled, :guild_id, :channel_id)';
+        const sql = 'REPLACE INTO markov_channel VALUES (:hour, :messages, :enabled, :guild_id, :channel_id)';
         const data = {
-            frequency: Math.abs(options.frequency ?? existing.frequency),
+            hour: Math.abs(options.hour ?? existing.hour),
+            messages: Math.abs(options.messages ?? existing.messages),
             enabled: options.enabled ?? existing.enabled,
             guild_id: channel.guild.id,
             channel_id: channel.id
@@ -66,14 +82,16 @@ export class MarkovDatabase {
         }
     }
 
-    public async fetchStringsTotal(channel: GuildChannel, user?: User): Promise<number> {
-        const query = { guild_id: channel.guild.id, channel_id: channel.id, user_id: user ? user.id : null };
-        const sql = (user ?
-            'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND user_id = :user_id' :
-            'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false'
-        )
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
-        return rows.length ? rows[0].total : 0;
+    public async fetchStringsTotals(channel: GuildChannel): Promise<MarkovStringTotals> {
+        const query = { guild_id: channel.guild.id, channel_id: channel.id };
+        const sql_total_all = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id'
+        const sql_total_users = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false';
+        const total_all_rows = await this.pool.query({ namedPlaceholders: true, sql: sql_total_all }, query);
+        const total_users_rows = await this.pool.query({ namedPlaceholders: true, sql: sql_total_users }, query);
+        return {
+            total: total_all_rows.length ? total_all_rows[0].total : 0,
+            users: total_users_rows.length ? total_users_rows[0].total : 0
+        }
     }
 
     public async fetchStrings(channel: GuildChannel, user?: User): Promise<Array<MarkovStringSchema>> {
