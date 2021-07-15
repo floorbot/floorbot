@@ -123,7 +123,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         const channel: GuildChannel = subCommand.options && subCommand.options.has('channel') ? <GuildChannel>subCommand.options.get('channel')!.channel : <GuildChannel>interaction.channel;
 
         if (interaction.options.has('settings')) {
-            if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
+            if (!this.isAdmin(member)) return interaction.followUp(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
             const channelData = await this.database.fetchChannel(channel);
             const totals = await this.database.fetchStringsTotals(channel);
             const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
@@ -135,7 +135,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         }
 
         if (interaction.options.has('frequency')) {
-            if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
+            if (!this.isAdmin(member)) return interaction.followUp(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
             const perMessages: number | undefined = subCommand.options && subCommand.options.has('messages') ? <number>subCommand.options.get('messages')!.value : undefined;
             const perHour: number | undefined = subCommand.options && subCommand.options.has('hour') ? <number>subCommand.options.get('hour')!.value : undefined;
             const channelData = await this.database.setChannel(channel, { messages: perMessages, hour: perHour });
