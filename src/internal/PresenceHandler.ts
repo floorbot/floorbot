@@ -11,8 +11,8 @@ export class PresenceHandler extends BaseHandler {
     private static ACTIVITIES: Array<ActivitiesOptions> = [
         { type: "LISTENING", name: "japan asmr" },
         { type: "LISTENING", name: "soft loli breathing" },
-        { type: "LISTENING", name: "to the rain" },
-        { type: "LISTENING", name: "to you" },
+        { type: "LISTENING", name: "the rain" },
+        { type: "LISTENING", name: "you" },
         { type: "WATCHING", name: "anime" },
         { type: "WATCHING", name: "for feet" },
         { type: "WATCHING", name: "hentai" },
