@@ -23,7 +23,8 @@ export class UpdateHandler extends BaseHandler {
                 if (!handler) await command.delete();
                 else if (updates[handler.id] && handler.isCommandHandler()) {
                     if (command.createdTimestamp < updates[handler.id]) {
-                        await command.edit(handler.commandData);
+                        await command.delete();
+                        await guild.commands.create(handler.commandData);
                         totalUpdated++;
                     }
                 }
