@@ -56,13 +56,13 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
     }
 
     public async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
-
         if (!this.isAdmin(<GuildMember>interaction.member)) {
             const embed = this.getEmbedTemplate(interaction)
                 .setDescription(`Sorry! you must be an admin to use \`/admin\` commands!`)
-            return interaction.followUp({ embeds: [embed], ephemeral: true });
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
+
+        await interaction.defer();
         if (interaction.options.has('commands')) {
             const response = await this.fetchCommandResponse(interaction);
             return interaction.followUp(response);

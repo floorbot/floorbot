@@ -45,16 +45,15 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
     }
 
     public async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
-        await interaction.deferUpdate();
-
         const data = <MarkovCustomData>customData;
         const member = <GuildMember>interaction.member;
-        const channel = <GuildChannel>(await this.client.channels.fetch(<any>data.channel))!;
+        if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
 
+        await interaction.deferUpdate();
+        const channel = <GuildChannel>(await this.client.channels.fetch(<any>data.channel))!;
         switch (data.fn) {
             case MarkovButtonFunction.ENABLE:
             case MarkovButtonFunction.DISABLE: {
-                if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
                 const channelData = await this.database.setChannel(channel, { enabled: data.fn === 'enable' });
                 const totals = await this.database.fetchStringsTotals(channel);
                 const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
@@ -65,7 +64,6 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 return (<Message>interaction.message).edit({ embeds: [embed], components: [actionRow] });
             }
             case MarkovButtonFunction.WIPE: {
-                if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, true);
                 return await interaction.editReply({
@@ -78,7 +76,6 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 });
             }
             case MarkovButtonFunction.WIPE_CONFIRMED: {
-                if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
                 await this.database.deleteStrings(channel);
                 const message = <Message>interaction.message;
                 const channelData = await this.database.fetchChannel(channel);
@@ -92,7 +89,6 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 return (<Message>interaction.message).edit({ embeds: [embed], components: [actionRow] });
             }
             case MarkovButtonFunction.PURGE_CONFIRMED: {
-                if (!this.isAdmin(member)) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true));
                 await this.database.purge(interaction.guild!);
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, false);
@@ -116,14 +112,13 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
     };
 
     public async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
-
         const member = <GuildMember>interaction.member;
         const subCommand = interaction.options.first()!;
-        const channel: GuildChannel = subCommand.options && subCommand.options.has('channel') ? <GuildChannel>subCommand.options.get('channel')!.channel : <GuildChannel>interaction.channel;
+        if (!this.isAdmin(member) && !interaction.options.has('generate')) return interaction.reply(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true));
 
+        await interaction.defer();
+        const channel: GuildChannel = subCommand.options && subCommand.options.has('channel') ? <GuildChannel>subCommand.options.get('channel')!.channel : <GuildChannel>interaction.channel;
         if (interaction.options.has('settings')) {
-            if (!this.isAdmin(member)) return interaction.followUp(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
             const channelData = await this.database.fetchChannel(channel);
             const totals = await this.database.fetchStringsTotals(channel);
             const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
@@ -135,7 +130,6 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         }
 
         if (interaction.options.has('frequency')) {
-            if (!this.isAdmin(member)) return interaction.followUp(MarkovEmbed.getMissingAdminEmbed(interaction).toReplyOptions(true))
             const perMessages: number | undefined = subCommand.options && subCommand.options.has('messages') ? <number>subCommand.options.get('messages')!.value : undefined;
             const perHour: number | undefined = subCommand.options && subCommand.options.has('hour') ? <number>subCommand.options.get('hour')!.value : undefined;
             const channelData = await this.database.setChannel(channel, { messages: perMessages, hour: perHour });

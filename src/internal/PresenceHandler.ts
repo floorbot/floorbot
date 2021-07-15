@@ -23,7 +23,7 @@ export class PresenceHandler extends BaseHandler {
         { type: "PLAYING", name: "on the floor" },
         { type: "PLAYING", name: "with the carpet" },
         { type: "PLAYING", name: "with ur mum" },
-        { type: "COMPETING", name: "for your love" }
+        // { type: "COMPETING", name: "for your love" } // "competing in"
     ]
 
     private timeoutID: NodeJS.Timeout | null;
