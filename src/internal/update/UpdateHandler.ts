@@ -20,8 +20,8 @@ export class UpdateHandler extends BaseHandler {
             const commands = await guild.commands.fetch();
             for (const command of commands.array()) {
                 const handler = this.client.handlers.get(command.name);
-                if (!handler) return command.delete();
-                if (updates[handler.id] && handler.isCommandHandler()) {
+                if (!handler) await command.delete();
+                else if (updates[handler.id] && handler.isCommandHandler()) {
                     if (command.createdTimestamp < updates[handler.id]) {
                         await command.edit(handler.commandData);
                         totalUpdated++;
