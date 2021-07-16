@@ -85,9 +85,9 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         const subCommand: CommandInteractionOption = interaction.options.first()!;
         const member: GuildMember = <GuildMember>((subCommand.options && subCommand.options.has('user')) ? subCommand.options.get('user')!.member! : interaction.member);
         const location: LocationData | null = (subCommand.options && subCommand.options.has('city_name')) ? {
-            city_name: subCommand.options.get('city_name')!.value!.toString(),
-            ...(subCommand.options.has('state_code') && { state_code: subCommand.options.get('state_code')!.value!.toString() }),
-            ...(subCommand.options.has('country_code') && { country_code: subCommand.options.get('country_code')!.value!.toString() })
+            city_name: subCommand.options.get('city_name')!.value!.toString().trim(),
+            ...(subCommand.options.has('state_code') && { state_code: subCommand.options.get('state_code')!.value!.toString().trim() }),
+            ...(subCommand.options.has('country_code') && { country_code: subCommand.options.get('country_code')!.value!.toString().trim() })
         } : null;
 
         switch (subCommand.name) {
@@ -230,7 +230,12 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbed.getAPIErrorEmbed(context, geocoding).toReplyOptions();
         if (!geocoding.length) return WeatherEmbed.getUnknownLocationEmbed(context, location).toReplyOptions();
         await this.database.setLink(targetMember, geocoding[0]);
-        const embed = WeatherEmbed.getLinkedEmbed(context, location, targetMember);
+        const geoLocation: LocationData = {
+            city_name: geocoding[0].name,
+            ...(geocoding[0].state && { state_code: geocoding[0].state }),
+            ...(geocoding[0].country && { country_code: geocoding[0].country }),
+        };
+        const embed = WeatherEmbed.getLinkedEmbed(context, geoLocation, targetMember);
         const actionRow = new MessageActionRow().addComponents([
             new WeatherButton(DisplayType.CURRENT, geocoding[0]),
             new WeatherButton(DisplayType.FORECAST, geocoding[0]),
