@@ -16,7 +16,7 @@ export class ControlPanelEmbed extends MarkovEmbed {
             `User Messages: **${totals.users}**`,
             'Responses:',
             `- Replies to \`1\` in \`${channelData.messages}\` messages`,
-            `- Sends \`${channelData.hour}\` messages per hour`
+            `- Sends \`${channelData.minutes}\` messages per hour`
         ].join('\n'));
     }
 }
