@@ -3,7 +3,7 @@ import { Pool } from 'mariadb';
 import * as fs from 'fs';
 
 export interface MarkovChannelSchema {
-    readonly hour: number,
+    readonly minutes: number,
     readonly messages: number,
     readonly enabled: boolean,
     readonly guild_id: string,
@@ -28,12 +28,12 @@ export interface MarkovStringTotals {
 export class MarkovDatabase {
 
     private readonly messages: number;
-    private readonly hour: number;
+    private readonly minutes: number;
     private readonly pool: Pool;
 
-    constructor(pool: Pool, messages: number, hour: number) {
+    constructor(pool: Pool, messages: number, minutes: number) {
         this.messages = messages;
-        this.hour = hour;
+        this.minutes = minutes;
         this.pool = pool;
     }
 
@@ -43,7 +43,7 @@ export class MarkovDatabase {
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : {
             messages: this.messages,
-            hour: this.hour,
+            minutes: this.minutes,
             enabled: false,
             ...query
         }
@@ -55,11 +55,11 @@ export class MarkovDatabase {
         return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
     }
 
-    public async setChannel(channel: GuildChannel, options: { enabled?: boolean, messages?: number, hour?: number }): Promise<MarkovChannelSchema> {
+    public async setChannel(channel: GuildChannel, options: { enabled?: boolean, messages?: number, minutes?: number }): Promise<MarkovChannelSchema> {
         const existing = await this.fetchChannel(channel);
-        const sql = 'REPLACE INTO markov_channel VALUES (:hour, :messages, :enabled, :guild_id, :channel_id)';
+        const sql = 'REPLACE INTO markov_channel VALUES (:minutes, :messages, :enabled, :guild_id, :channel_id)';
         const data = {
-            hour: Math.abs(options.hour ?? existing.hour),
+            minutes: Math.abs(options.minutes ?? existing.minutes),
             messages: Math.abs(options.messages ?? existing.messages),
             enabled: options.enabled ?? existing.enabled,
             guild_id: channel.guild.id,

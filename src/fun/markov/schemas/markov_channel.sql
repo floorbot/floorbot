@@ -1,5 +1,5 @@
 CREATE TABLE markov_channel (
-    hour INT NOT NULL,
+    minutes INT NOT NULL,
     messages INT NOT NULL,
     enabled BOOLEAN NOT NULL,
     guild_id BIGINT NOT NULL,

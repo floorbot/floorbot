@@ -24,10 +24,10 @@ export const MarkovCommandData: ApplicationCommandData = {
             type: ApplicationCommandOptionTypes.INTEGER,
             description: 'How many channel messages per markov message (default 20)'
         }, {
-            name: 'hour',
+            name: 'minutes',
             required: false,
             type: ApplicationCommandOptionTypes.INTEGER,
-            description: 'How many markov messages per hour (default 1)'
+            description: 'How many minutes between random markov messages (default 60)'
         }]
     }, {
         name: 'generate',

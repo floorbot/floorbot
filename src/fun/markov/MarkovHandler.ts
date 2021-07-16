@@ -34,14 +34,14 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                     return row.enabled;
                 }).forEach(async data => {
                     const channel = <TextChannel>(await this.client.channels.fetch(<any>data.channel_id))!;
-                    const random = Math.floor(Math.random() / data.hour * 10)
+                    const random = Math.floor(Math.random() * data.minutes)
                     if (!random) {
                         const response = await this.fetchMarkovResponse(channel, null);
                         if (response) await channel.send(response);
                     }
                 })
             })
-        }, 1000 * 60 * 6) // Every 6 minutes (10 times an hour)
+        }, 1000 * 60) // Every minute
     }
 
     public async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
@@ -131,8 +131,8 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
 
         if (interaction.options.has('frequency')) {
             const perMessages: number | undefined = subCommand.options && subCommand.options.has('messages') ? <number>subCommand.options.get('messages')!.value : undefined;
-            const perHour: number | undefined = subCommand.options && subCommand.options.has('hour') ? <number>subCommand.options.get('hour')!.value : undefined;
-            const channelData = await this.database.setChannel(channel, { messages: perMessages, hour: perHour });
+            const perMinutes: number | undefined = subCommand.options && subCommand.options.has('minutes') ? <number>subCommand.options.get('minutes')!.value : undefined;
+            const channelData = await this.database.setChannel(channel, { messages: perMessages, minutes: perMinutes });
             const totals = await this.database.fetchStringsTotals(channel);
             const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
             const actionRow = new MessageActionRow().addComponents([
