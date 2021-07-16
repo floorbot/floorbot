@@ -10,10 +10,10 @@ export class AlertEmbed extends WeatherEmbed {
         super(context);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
-        const localDate = this.getLocalDate(onecall.timezone_offset);
+        const timeString = this.formatTiemzoneOffset(onecall.timezone_offset)
         if (onecall.alerts && onecall.alerts.length) {
             const alert = onecall.alerts[0];
-            this.setTitle(`${alert.event} Warning for ${locationString} (<t:${Math.floor(localDate.getTime() / 1000)}:t>)`);
+            this.setTitle(`${alert.event} Warning for ${locationString} (${timeString})`);
             this.setDescription(Util.splitMessage([
                 `Source: **${alert.sender_name}**`,
                 `Start Time: **<t:${alert.start}:t>**`,
@@ -26,7 +26,7 @@ export class AlertEmbed extends WeatherEmbed {
                     maxLength: 4096
                 })[0]);
         } else {
-            this.setTitle(`No Weather Warning for ${locationString} (<t:${Math.floor(localDate.getTime() / 1000)}:t>)`);
+            this.setTitle(`No Weather Warning for ${locationString} (${timeString})`);
             this.setDescription(`It looks like there is no active weather warning for \`${locationString}\`! Stay safe!`)
         }
     }

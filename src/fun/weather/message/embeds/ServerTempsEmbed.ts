@@ -1,6 +1,6 @@
+import { OneCallData, WeatherAPIError, OpenWeatherAPI } from '../../api/OpenWeatherAPI';
 import { Util, GuildMember, MessageEmbed } from 'discord.js';
 import { WeatherLinkSchema } from '../../WeatherDatabase';
-import { OneCallData, WeatherAPIError, OpenWeatherAPI } from '../../api/OpenWeatherAPI';
 import { HandlerContext } from 'discord.js-commands';
 import { WeatherEmbed } from './WeatherEmbed';
 
@@ -17,9 +17,10 @@ export class ServerTempsEmbed extends WeatherEmbed {
         this.setAuthor(`Temps for ${context.guild!.name}`, context.guild!.iconURL()!);
         this.addField('Location/Person', (
             data.map(([geo, member, onecall]) => {
-                if (OpenWeatherAPI.isError(onecall)) return `🏳️‍🌈 <t:${Math.floor(Date.now() / 1000)}:t> ${member}`
-                const dateString = `<t:${Math.floor(this.getLocalDate(onecall.timezone_offset).getTime() / 1000)}:t>`;
-                return `${Util.localeToEmoji(geo.country)} ${dateString} ${member}`
+                if (OpenWeatherAPI.isError(onecall)) return `🏳️‍🌈 00:00 AM ${member}`
+                const timeString = this.formatTiemzoneOffset(onecall.timezone_offset);
+                const localeEmoji = Util.localeToEmoji(geo.country);
+                return `${localeEmoji} ${timeString} ${member}`
             }).join('\n')
         ), true);
         this.addField('Temp/Humidity', (

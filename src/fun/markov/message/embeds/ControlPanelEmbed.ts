@@ -14,9 +14,9 @@ export class ControlPanelEmbed extends MarkovEmbed {
             `status: **${channelData.enabled ? 'enabled' : 'disabled'}**`,
             `Total Messages: **${totals.total}**`,
             `User Messages: **${totals.users}**`,
-            'Responses:',
-            `- Replies to \`1\` in \`${channelData.messages}\` messages`,
-            `- Sends \`${channelData.minutes}\` messages per hour`
+            'Post frequency:',
+            `- One in \`${channelData.messages}\` messages (\`${(100 / channelData.messages).toFixed(1)}%\` chance per message)`,
+            `- Once every \`${channelData.minutes}\` minutes (\`${(1 / channelData.messages).toFixed(1)}%\` chance per minute)`
         ].join('\n'));
     }
 }

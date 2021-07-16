@@ -1,4 +1,4 @@
-import { Client, MessageEmbed, GuildMember, InteractionReplyOptions, GuildChannel } from 'discord.js';
+import { Util, Client, MessageEmbed, GuildMember, InteractionReplyOptions, GuildChannel } from 'discord.js';
 import { LocationData, OpenWeatherAPI, WeatherAPIError } from '../../api/OpenWeatherAPI';
 import { HandlerContext } from 'discord.js-commands';
 
@@ -16,11 +16,12 @@ export class WeatherEmbed extends MessageEmbed {
         return { embeds: [this], components: [] };
     }
 
-    public getLocalDate(timezone: number): Date {
+    public formatTiemzoneOffset(offset: number): string {
         const now = new Date();
         const time = now.getTime();
-        const offset = now.getTimezoneOffset();
-        return new Date(time + ((timezone - (Math.abs(offset) * 60)) * 1000));
+        const appOffset = now.getTimezoneOffset();
+        const date = new Date(time + (appOffset * 60 * 1000) + (offset * 1000));
+        return Util.formatDate(date, { showTime: true, showDate: false });
     }
 
     public static getUnknownLocationEmbed(context: HandlerContext, location: LocationData): WeatherEmbed {

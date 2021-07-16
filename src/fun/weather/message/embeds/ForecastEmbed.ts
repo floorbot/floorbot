@@ -23,12 +23,12 @@ export class ForecastEmbed extends WeatherEmbed {
         super(context);
 
         const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
-        const localDate = this.getLocalDate(onecall.timezone_offset);
+        const timeString = this.formatTiemzoneOffset(onecall.timezone_offset)
 
         this.setTitle(`Forecast for ${locationString}`);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         this.setDescription(
-            `Date/Time: **<t:${Math.floor(localDate.getTime() / 1000)}:t>**\n` +
+            `Date/Time: **${timeString}**\n` +
             `Sunrise/Sunset: **<t:${onecall.current.sunrise}:t> - <t:${onecall.current.sunset}:t>**\n` +
             `Lat/Lon: **${geocode.lat}, ${geocode.lon}**\n`
         );
