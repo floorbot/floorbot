@@ -55,8 +55,8 @@ export class ServerTempsEmbed extends WeatherEmbed {
             }
             case ServerTempsEmbedOrder.TIMEZONE: {
                 lines.sort((l1, l2) => {
-                    const l1t = Number(l1[0].match(/\:(\d+)\:/) ?.[1] || -1000);
-                    const l2t = Number(l2[0].match(/\:(\d+)\:/) ?.[1] || -1000);
+                    const l1t = Number(l1[0].match(/\ (\d+)/) ?.[1] || -1000) + Number(l1[0].match(/\:(\d+)/) ?.[1] || -1000) + Number(l1[0].match(/\:(\d+)/)![1] === 'AM' ? 0 : 1000); // hours + minutes + am/pm
+                    const l2t = Number(l2[0].match(/\ (\d+)/) ?.[1] || -1000) + Number(l2[0].match(/\:(\d+)/) ?.[1] || -1000) + Number(l2[0].match(/\:(\d+)/)![1] === 'AM' ? 0 : 1000); // hours + minutes + am/pm
                     return l2t - l1t;
                 });
                 break;
