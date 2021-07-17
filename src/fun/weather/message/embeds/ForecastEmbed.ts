@@ -26,11 +26,16 @@ export class ForecastEmbed extends WeatherEmbed {
         const timeString = this.formatTiemzoneOffset(onecall.timezone_offset)
         const localeEmoji = Util.localeToEmoji(geocode.country);
 
+        console.log(onecall.current)
+
         this.setTitle(`${localeEmoji} Forecast for ${locationString}`);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         this.setDescription(
             `Date/Time: **${timeString}**\n` +
-            `Sunrise/Sunset: **<t:${onecall.current.sunrise}:t> - <t:${onecall.current.sunset}:t>**\n` +
+            (onecall.current.sunrise && onecall.current.sunset ?
+                `Sunrise/Sunset: **<t:${onecall.current.sunrise}:t> - <t:${onecall.current.sunset}:t>**\n` :
+                `Sunrise/Sunset: ***unknown***\n`
+            ) +
             `Lat/Lon: **${geocode.lat}, ${geocode.lon}**\n`
         );
         onecall.daily.slice(0, 6).forEach(day => {
