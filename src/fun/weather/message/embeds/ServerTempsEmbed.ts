@@ -47,8 +47,8 @@ export class ServerTempsEmbed extends WeatherEmbed {
             }
             case ServerTempsEmbedOrder.HOTTEST: {
                 lines.sort((l1, l2) => {
-                    const l1t = Number(l1[1].match(/(\d+)°F/) ?.[1] || -1000);
-                    const l2t = Number(l2[1].match(/(\d+)°F/) ?.[1] || -1000);
+                    const l1t = Number(l1[1].match(/(-?\d+)°F/) ?.[1] || -1000);
+                    const l2t = Number(l2[1].match(/(-?\d+)°F/) ?.[1] || -1000);
                     return l2t - l1t;
                 });
                 break;
