@@ -8,16 +8,19 @@ export class AlertEmbed extends WeatherEmbed {
 
     constructor(context: HandlerContext, geocode: GeocodeData | WeatherLinkSchema, onecall: OneCallData) {
         super(context);
-        this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
+
         const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
-        const timeString = this.formatTiemzoneOffset(onecall.timezone_offset)
+        const timeString = this.formatTiemzoneOffset(onecall.timezone_offset);
+        const localeEmoji = Util.localeToEmoji(geocode.country);
+
+        this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         if (onecall.alerts && onecall.alerts.length) {
             const alert = onecall.alerts[0];
-            this.setTitle(`${alert.event} Warning for ${locationString} (${timeString})`);
+            this.setTitle(`${localeEmoji} ${alert.event} Warning for ${locationString} (${timeString})`);
             this.setDescription(Util.splitMessage([
                 `Source: **${alert.sender_name}**`,
                 `Start Time: **<t:${alert.start}:t>**`,
-                `End Time: **<t:${alert.end}:t>)**`,
+                `End Time: **<t:${alert.end}:t>**`,
                 'Description:',
                 alert.description
             ].join('\n'), {

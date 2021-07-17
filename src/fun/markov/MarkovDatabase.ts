@@ -3,11 +3,14 @@ import { Pool } from 'mariadb';
 import * as fs from 'fs';
 
 export interface MarkovChannelSchema {
+    readonly guild_id: string,
+    readonly channel_id: string,
     readonly minutes: number,
     readonly messages: number,
-    readonly enabled: boolean,
-    readonly guild_id: string,
-    readonly channel_id: string
+    readonly posting: boolean,
+    readonly tracking: boolean,
+    readonly links: boolean,
+    readonly mentions: boolean
 }
 
 export interface MarkovStringSchema {
@@ -42,10 +45,13 @@ export class MarkovDatabase {
         const sql = 'SELECT * FROM markov_channel WHERE guild_id = :guild_id AND channel_id = :channel_id LIMIT 1';
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : {
+            ...query,
             messages: this.messages,
             minutes: this.minutes,
-            enabled: false,
-            ...query
+            posting: false,
+            tracking: false,
+            mentions: false,
+            links: false
         }
     }
 
@@ -55,15 +61,18 @@ export class MarkovDatabase {
         return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
     }
 
-    public async setChannel(channel: GuildChannel, options: { enabled?: boolean, messages?: number, minutes?: number }): Promise<MarkovChannelSchema> {
+    public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean }): Promise<MarkovChannelSchema> {
         const existing = await this.fetchChannel(channel);
-        const sql = 'REPLACE INTO markov_channel VALUES (:minutes, :messages, :enabled, :guild_id, :channel_id)';
+        const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions)';
         const data = {
+            guild_id: channel.guild.id,
+            channel_id: channel.id,
             minutes: Math.abs(options.minutes ?? existing.minutes),
             messages: Math.abs(options.messages ?? existing.messages),
-            enabled: options.enabled ?? existing.enabled,
-            guild_id: channel.guild.id,
-            channel_id: channel.id
+            posting: options.posting ?? existing.posting,
+            tracking: options.tracking ?? existing.tracking,
+            links: options.links ?? existing.links,
+            mentions: options.mentions ?? existing.mentions
         }
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;
@@ -106,7 +115,7 @@ export class MarkovDatabase {
     public async setStrings(message: Message): Promise<void> {
         if (!message.guild || !message.content.length) return;
         const existing = await this.fetchChannel(<GuildChannel>message.channel);
-        if (!existing.enabled) return;
+        if (!existing.tracking) return;
         const sql = 'REPLACE INTO markov_string VALUES (:epoch, :bot, :user_id, :guild_id, :channel_id, :message_id, :content)';
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, {
             epoch: message.createdTimestamp,

@@ -82,7 +82,7 @@ export class OpenWeatherAPI {
 
     public static getLocationString(scope: LocationData | GeocodeData | { name: string, state?: string, country?: string }, space?: boolean): string {
         if ('name' in scope) {
-            const countryCode = (scope.country && scope.country.toUpperCase() === 'AQ') ? null : scope.country;
+            const countryCode = (scope.country && scope.country.toUpperCase() === 'ANTARCTICA') ? 'AQ' : scope.country;
             return [scope.name, scope.state, countryCode].filter(part => part).join(space ? ', ' : ',');
         } else {
             const countryCode = (scope.country_code && scope.country_code.toUpperCase() === 'AQ') ? null : scope.country_code;

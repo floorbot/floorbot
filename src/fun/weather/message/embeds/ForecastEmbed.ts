@@ -24,8 +24,9 @@ export class ForecastEmbed extends WeatherEmbed {
 
         const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
         const timeString = this.formatTiemzoneOffset(onecall.timezone_offset)
+        const localeEmoji = Util.localeToEmoji(geocode.country);
 
-        this.setTitle(`Forecast for ${locationString}`);
+        this.setTitle(`${localeEmoji} Forecast for ${locationString}`);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         this.setDescription(
             `Date/Time: **${timeString}**\n` +

@@ -21,7 +21,7 @@ export class WeatherEmbed extends MessageEmbed {
         const time = now.getTime();
         const appOffset = now.getTimezoneOffset();
         const date = new Date(time + (appOffset * 60 * 1000) + (offset * 1000));
-        return Util.formatDate(date, { showTime: true, showDate: false });
+        return Util.formatDate(date, { showTime: true, showDate: false, fullName: false });
     }
 
     public static getUnknownLocationEmbed(context: HandlerContext, location: LocationData): WeatherEmbed {

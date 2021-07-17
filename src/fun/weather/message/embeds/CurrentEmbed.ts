@@ -9,11 +9,12 @@ export class CurrentEmbed extends WeatherEmbed {
     constructor(context: HandlerContext, geocode: GeocodeData | WeatherLinkSchema, onecall: OneCallData) {
         super(context);
 
-        const timeString: string = OpenWeatherAPI.getLocationString(geocode, true);
+        const locationString: string = OpenWeatherAPI.getLocationString(geocode, true);
         const dateString = this.formatTiemzoneOffset(onecall.timezone_offset)
+        const localeEmoji = Util.localeToEmoji(geocode.country);
 
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
-        this.setTitle(`Weather for ${timeString} (${dateString})`);
+        this.setTitle(`${localeEmoji} Weather for ${locationString} (${dateString})`);
         this.setThumbnail(`http://openweathermap.org/img/wn/${onecall.current.weather[0].icon}@2x.png`);
         this.addField(`**Temperature**`, (
             `Current: **${onecall.current.temp.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.current.temp)}°F**)\n` +

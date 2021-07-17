@@ -2,6 +2,7 @@ import { OpenWeatherAPI, GeocodeData, AirPollutionData } from '../../api/OpenWea
 import { WeatherLinkSchema } from '../../WeatherDatabase';
 import { HandlerContext } from 'discord.js-commands';
 import { WeatherEmbed } from './WeatherEmbed';
+import { Util } from 'discord.js';
 
 export class AirPollutionEmbed extends WeatherEmbed {
 
@@ -10,8 +11,9 @@ export class AirPollutionEmbed extends WeatherEmbed {
 
         const locationString = OpenWeatherAPI.getLocationString(geocode, true);
         const aqiString = this.getAQIString(airPollution.list[0].main.aqi);
+        const localeEmoji = Util.localeToEmoji(geocode.country);
 
-        this.setTitle(`Air Quality for ${locationString} (${aqiString})`);
+        this.setTitle(`${localeEmoji} Air Quality for ${locationString} (${aqiString})`);
         this.setURL(OpenWeatherAPI.getGoogleMapsLink(geocode));
         this.addField('Name', (
             `(CO) Carbon monoxide\n` +

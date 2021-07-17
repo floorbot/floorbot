@@ -235,6 +235,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
             ...(geocoding[0].state && { state_code: geocoding[0].state }),
             ...(geocoding[0].country && { country_code: geocoding[0].country }),
         };
+        console.log(geoLocation)
         const embed = WeatherEmbed.getLinkedEmbed(context, geoLocation, targetMember);
         const actionRow = new MessageActionRow().addComponents([
             new WeatherButton(DisplayType.CURRENT, geocoding[0]),

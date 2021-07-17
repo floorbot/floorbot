@@ -17,7 +17,7 @@ export class ServerTempsEmbed extends WeatherEmbed {
         this.setAuthor(`Temps for ${context.guild!.name}`, context.guild!.iconURL()!);
         this.addField('Location/Person', (
             data.map(([geo, member, onecall]) => {
-                if (OpenWeatherAPI.isError(onecall)) return `🏳️‍🌈 00:00 AM ${member}`
+                if (OpenWeatherAPI.isError(onecall)) return `🏳️‍🌈 00:00am ${member}`
                 const timeString = this.formatTiemzoneOffset(onecall.timezone_offset);
                 const localeEmoji = Util.localeToEmoji(geo.country);
                 return `${localeEmoji} ${timeString} ${member}`

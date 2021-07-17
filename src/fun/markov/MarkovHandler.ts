@@ -1,4 +1,4 @@
-import { ApplicationCommandData, CommandInteraction, ApplicationCommand, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, GuildMember, TextChannel } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, ApplicationCommand, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, GuildMember, TextChannel, InteractionReplyOptions } from 'discord.js';
 import { CommandClient, BaseHandler, CommandHandler, HandlerContext, BaseHandlerOptions, ButtonHandler } from 'discord.js-commands';
 import { MarkovCommandData } from './MarkovCommandData';
 import { MarkovDatabase } from './MarkovDatabase';
@@ -6,7 +6,7 @@ import Markov from 'markov-strings';
 import { Pool } from 'mariadb';
 
 
-import { MarkovButton, MarkovCustomData, MarkovButtonFunction } from './message/MarkovButton';
+import { MarkovButton, MarkovCustomData, MarkovButtonType } from './message/MarkovButton';
 import { ControlPanelEmbed } from './message/embeds/ControlPanelEmbed';
 import { MarkovEmbed } from './message/embeds/MarkovEmbed';
 
@@ -31,7 +31,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
             return this.client.guilds.cache.forEach(async guild => {
                 const rows = await this.database.fetchAllChannels(guild);
                 return rows.filter(row => {
-                    return row.enabled;
+                    return row.posting;
                 }).forEach(async data => {
                     const channel = <TextChannel>(await this.client.channels.fetch(<any>data.channel_id))!;
                     const random = Math.floor(Math.random() * data.minutes)
@@ -51,44 +51,51 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
 
         await interaction.deferUpdate();
         const channel = <GuildChannel>(await this.client.channels.fetch(<any>data.channel))!;
-        switch (data.fn) {
-            case MarkovButtonFunction.ENABLE:
-            case MarkovButtonFunction.DISABLE: {
-                const channelData = await this.database.setChannel(channel, { enabled: data.fn === 'enable' });
-                const totals = await this.database.fetchStringsTotals(channel);
-                const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
-                const actionRow = new MessageActionRow().addComponents([
-                    new MarkovButton(channel, channelData.enabled ? MarkovButtonFunction.DISABLE : MarkovButtonFunction.ENABLE),
-                    new MarkovButton(channel, MarkovButtonFunction.WIPE)
-                ]);
-                return (<Message>interaction.message).edit({ embeds: [embed], components: [actionRow] });
+        switch (data.type) {
+            case MarkovButtonType.POSTING_ENABLE:
+            case MarkovButtonType.POSTING_DISABLE: {
+                await this.database.setChannel(channel, { posting: data.type === MarkovButtonType.POSTING_ENABLE });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
             }
-            case MarkovButtonFunction.WIPE: {
+            case MarkovButtonType.TRACKING_ENABLE:
+            case MarkovButtonType.TRACKING_DISABLE: {
+                await this.database.setChannel(channel, { tracking: data.type === MarkovButtonType.TRACKING_ENABLE });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
+            }
+            case MarkovButtonType.LINKS_ENABLE:
+            case MarkovButtonType.LINKS_DISABLE: {
+                await this.database.setChannel(channel, { links: data.type === MarkovButtonType.LINKS_ENABLE });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
+            }
+            case MarkovButtonType.MENTIONS_ENABLE:
+            case MarkovButtonType.MENTIONS_DISABLE: {
+                await this.database.setChannel(channel, { mentions: data.type === MarkovButtonType.MENTIONS_ENABLE });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
+            }
+            case MarkovButtonType.WIPE: {
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, true);
                 return await interaction.editReply({
                     ...(message.content && { content: message.content }),
                     embeds: [...message.embeds, MarkovEmbed.getWipeConfirmEmbed(interaction, channel)],
                     components: [...message.components, new MessageActionRow().addComponents(
-                        new MarkovButton(message.channel, MarkovButtonFunction.BACKOUT),
-                        new MarkovButton(message.channel, MarkovButtonFunction.WIPE_CONFIRMED)
+                        new MarkovButton(message.channel, MarkovButtonType.BACKOUT),
+                        new MarkovButton(message.channel, MarkovButtonType.WIPE_CONFIRMED)
                     )],
                 });
             }
-            case MarkovButtonFunction.WIPE_CONFIRMED: {
+            case MarkovButtonType.WIPE_CONFIRMED: {
                 await this.database.deleteStrings(channel);
                 const message = <Message>interaction.message;
-                const channelData = await this.database.fetchChannel(channel);
-                const totals = await this.database.fetchStringsTotals(channel);
-                const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
                 this.toggleMessageComponents(message, false);
-                const actionRow = new MessageActionRow().addComponents([
-                    new MarkovButton(channel, channelData.enabled ? MarkovButtonFunction.DISABLE : MarkovButtonFunction.ENABLE),
-                    new MarkovButton(channel, MarkovButtonFunction.WIPE)
-                ]);
-                return (<Message>interaction.message).edit({ embeds: [embed], components: [actionRow] });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
             }
-            case MarkovButtonFunction.PURGE_CONFIRMED: {
+            case MarkovButtonType.PURGE_CONFIRMED: {
                 await this.database.purge(interaction.guild!);
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, false);
@@ -98,7 +105,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                     components: message.components.slice(0, -1),
                 });
             }
-            case MarkovButtonFunction.BACKOUT: {
+            case MarkovButtonType.BACKOUT: {
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, false);
                 return await message.edit({
@@ -119,27 +126,16 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         await interaction.defer();
         const channel: GuildChannel = subCommand.options && subCommand.options.has('channel') ? <GuildChannel>subCommand.options.get('channel')!.channel : <GuildChannel>interaction.channel;
         if (interaction.options.has('settings')) {
-            const channelData = await this.database.fetchChannel(channel);
-            const totals = await this.database.fetchStringsTotals(channel);
-            const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
-            const actionRow = new MessageActionRow().addComponents([
-                new MarkovButton(channel, channelData.enabled ? MarkovButtonFunction.DISABLE : MarkovButtonFunction.ENABLE),
-                new MarkovButton(channel, MarkovButtonFunction.WIPE)
-            ]);
-            return interaction.followUp({ embeds: [embed], components: [actionRow] });
+            const response = await this.fetchControlPanel(interaction, channel);
+            return interaction.followUp(response);
         }
 
         if (interaction.options.has('frequency')) {
             const perMessages: number | undefined = subCommand.options && subCommand.options.has('messages') ? <number>subCommand.options.get('messages')!.value : undefined;
             const perMinutes: number | undefined = subCommand.options && subCommand.options.has('minutes') ? <number>subCommand.options.get('minutes')!.value : undefined;
-            const channelData = await this.database.setChannel(channel, { messages: perMessages, minutes: perMinutes });
-            const totals = await this.database.fetchStringsTotals(channel);
-            const embed = new ControlPanelEmbed(interaction, channel, channelData, totals);
-            const actionRow = new MessageActionRow().addComponents([
-                new MarkovButton(channel, channelData.enabled ? MarkovButtonFunction.DISABLE : MarkovButtonFunction.ENABLE),
-                new MarkovButton(channel, MarkovButtonFunction.WIPE)
-            ]);
-            return interaction.followUp({ embeds: [embed], components: [actionRow] });
+            await this.database.setChannel(channel, { messages: perMessages, minutes: perMinutes });
+            const response = await this.fetchControlPanel(interaction, channel);
+            return interaction.followUp(response);
         }
 
         if (interaction.options.has('generate')) {
@@ -151,8 +147,25 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         throw interaction;
     }
 
+    private async fetchControlPanel(context: HandlerContext, channel: GuildChannel): Promise<InteractionReplyOptions> {
+        const totals = await this.database.fetchStringsTotals(channel);
+        const channelData = await this.database.fetchChannel(channel);
+        const embed = new ControlPanelEmbed(context, channel, channelData, totals);
+        const primaryRow = new MessageActionRow().addComponents([
+            new MarkovButton(channel, channelData.posting ? MarkovButtonType.POSTING_DISABLE : MarkovButtonType.POSTING_ENABLE),
+            new MarkovButton(channel, channelData.tracking ? MarkovButtonType.TRACKING_DISABLE : MarkovButtonType.TRACKING_ENABLE),
+            new MarkovButton(channel, MarkovButtonType.WIPE)
+        ]);
+        const secondaryRow = new MessageActionRow().addComponents([
+            new MarkovButton(channel, channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
+            new MarkovButton(channel, channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE)
+        ]);
+        return { embeds: [embed], components: [primaryRow, secondaryRow] };
+    }
+
     public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<string | null> {
         const rows = await this.database.fetchStrings(channel, user ? user : undefined);
+        const channelData = await this.database.fetchChannel(channel);
         if (!rows.length) return null;
         const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
         markov.addData(rows.map(row => row.content));
@@ -165,7 +178,9 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 prng: Math.random,
                 filter: (result: any) => (
                     result.refs.length > 1 &&
-                    result.string.split(' ').length > minLength
+                    result.string.split(' ').length > minLength &&
+                    (channelData.links || !result.string.test(/(https?:\/\/[a-zA-Z]+)/g)) &&
+                    (channelData.mentions || !result.string.test(/<@!?\d+>/g))
                 )
             });
             return resolve(res);
@@ -193,8 +208,8 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 ...(message.content && { content: message.content }),
                 embeds: [...message.embeds, MarkovEmbed.getPurgeConfirmEmbed(context)],
                 components: [...message.components, new MessageActionRow().addComponents(
-                    new MarkovButton(message.channel, MarkovButtonFunction.BACKOUT),
-                    new MarkovButton(message.channel, MarkovButtonFunction.PURGE_CONFIRMED)
+                    new MarkovButton(message.channel, MarkovButtonType.BACKOUT),
+                    new MarkovButton(message.channel, MarkovButtonType.PURGE_CONFIRMED)
                 )],
             });
             return null;
@@ -209,9 +224,9 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
 
     private async onMessageCreate(message: Message) {
         if (message.guild && await this.isEnabled(message.guild)) {
-            await this.database.setStrings(message);
             const row = await this.database.fetchChannel(<GuildChannel>message.channel);
-            if (row.enabled) {
+            if (row.tracking) await this.database.setStrings(message);
+            if (row.posting) {
                 const random = Math.floor(Math.random() * row.messages)
                 if (!random) {
                     const response = await this.fetchMarkovResponse(<GuildChannel>message.channel, null);
