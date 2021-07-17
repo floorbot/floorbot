@@ -26,7 +26,7 @@ export class ServerTempsEmbed extends WeatherEmbed {
         this.addField('Temp/Humidity', (
             data.map(([_geo, _member, onecall]) => {
                 if (OpenWeatherAPI.isError(onecall)) return `${WeatherEmbed.getWeatherEmoji(context.client, null)} *unknown location*`
-                return `${WeatherEmbed.getWeatherEmoji(context.client, onecall.current.weather[0].icon)} ${onecall.current.temp}°C (${Util.toFahrenheit(onecall.current.temp)}°F) ${onecall.current.humidity}%`
+                return `${WeatherEmbed.getWeatherEmoji(context.client, onecall.current.weather[0].icon)} ${onecall.current.temp.toFixed(2)}°C (${Util.toFahrenheit(onecall.current.temp)}°F) ${onecall.current.humidity}%`
             }).join('\n')
         ), true);
     }
