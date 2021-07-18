@@ -226,7 +226,7 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         if (message.guild && await this.isEnabled(message.guild)) {
             const row = await this.database.fetchChannel(<GuildChannel>message.channel);
             if (row.tracking) await this.database.setStrings(message);
-            if (row.posting) {
+            if (row.posting && !message.editedTimestamp) {
                 const random = Math.floor(Math.random() * row.messages)
                 if (!random) {
                     const response = await this.fetchMarkovResponse(<GuildChannel>message.channel, null);
