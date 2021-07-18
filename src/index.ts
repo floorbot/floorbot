@@ -11,6 +11,7 @@ export { AdminHandler } from './admin/admin/AdminHandler';
 export { WeatherHandler } from './fun/weather/WeatherHandler';
 export { MarkovHandler } from './fun/markov/MarkovHandler';
 export { DefineHandler } from './fun/define/DefineHandler';
+export { MagickHandler } from './fun/magick/MagickHandler';
 
 // Booru Handlers
 export { SafebooruHandler } from './booru/handlers/safebooru/SafebooruHandler';

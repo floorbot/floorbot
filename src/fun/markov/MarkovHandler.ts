@@ -179,8 +179,8 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
                 filter: (result: any) => (
                     result.refs.length > 1 &&
                     result.string.split(' ').length > minLength &&
-                    (channelData.links || !result.string.test(/(https?:\/\/[a-zA-Z]+)/g)) &&
-                    (channelData.mentions || !result.string.test(/<@!?\d+>/g))
+                    (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string)) &&
+                    (channelData.mentions || !/<@!?\d+>/g.test(result.string))
                 )
             });
             return resolve(res);

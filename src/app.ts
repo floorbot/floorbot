@@ -6,7 +6,7 @@ import { Intents, Collection } from 'discord.js';
 
 import { PresenceHandler, LoggerHandler, UpdateHandler } from './index';
 import { UtilsHandler, AdminHandler } from './index';
-import { WeatherHandler, MarkovHandler, DefineHandler } from './index';
+import { WeatherHandler, MarkovHandler, DefineHandler, MagickHandler } from './index';
 import { SafebooruHandler, DanbooruHandler, PregchanHandler, Rule34Handler, E621Handler } from './index';
 
 nconf.required(['DATABASE:HOST', 'DATABASE:NAME', 'DATABASE:USERNAME', 'DATABASE:PASSWORD', 'DATABASE:CONNECTION_LIMIT']);
@@ -33,6 +33,7 @@ const client = new CommandClient({
         [WeatherHandler, { pool: pool }],
         [MarkovHandler, { pool: pool }],
         [DefineHandler, {}],
+        [MagickHandler, {}],
 
         [SafebooruHandler, {}],
         [DanbooruHandler, {}],
