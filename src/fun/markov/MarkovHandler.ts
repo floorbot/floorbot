@@ -1,5 +1,5 @@
 import { ApplicationCommandData, CommandInteraction, ApplicationCommand, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, GuildMember, TextChannel, InteractionReplyOptions } from 'discord.js';
-import { CommandClient, BaseHandler, CommandHandler, HandlerContext, BaseHandlerOptions, ButtonHandler } from 'discord.js-commands';
+import { CommandClient, BaseHandler, CommandHandler, HandlerContext, BaseHandlerOptions, ButtonHandler, SetupResult } from 'discord.js-commands';
 import { MarkovCommandData } from './MarkovCommandData';
 import { MarkovDatabase } from './MarkovDatabase';
 import Markov from 'markov-strings';
@@ -218,8 +218,8 @@ export class MarkovHandler extends BaseHandler implements CommandHandler, Button
         return super.disable(context);
     }
 
-    public async setup(): Promise<any> {
-        return this.database.setup().then(() => true);
+    public async setup(): Promise<SetupResult> {
+        return this.database.setup().then(() => true).then(() => ({ message: 'Setup Database' }));
     }
 
     private async onMessageCreate(message: Message) {

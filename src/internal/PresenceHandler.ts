@@ -1,4 +1,4 @@
-import { BaseHandler, CommandClient } from 'discord.js-commands';
+import { BaseHandler, CommandClient, SetupResult } from 'discord.js-commands';
 import { ActivitiesOptions } from 'discord.js';
 
 export class PresenceHandler extends BaseHandler {
@@ -39,19 +39,21 @@ export class PresenceHandler extends BaseHandler {
         this.timeoutID = null;
     }
 
-    public async initialise(): Promise<any> {
+    public async initialise(): Promise<SetupResult | null> {
         if (!this.timeoutID) {
             this.setPresenceTimeout(0);
-            return true;
+            return { message: 'Started presence update timout' }
         }
+        return null;
     }
 
-    public async finalise(): Promise<any> {
+    public async finalise(): Promise<SetupResult | null> {
         if (this.timeoutID) {
             clearTimeout(this.timeoutID);
             this.timeoutID = null;
-            return true;
+            return { message: 'Ended presence update timout' }
         }
+        return null;
     }
 
     private setPresenceTimeout(delay: number) {

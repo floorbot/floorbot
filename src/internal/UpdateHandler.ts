@@ -1,4 +1,4 @@
-import { BaseHandler, CommandClient } from 'discord.js-commands';
+import { BaseHandler, CommandClient, SetupResult } from 'discord.js-commands';
 import * as nconf from 'nconf';
 
 export class UpdateHandler extends BaseHandler {
@@ -12,7 +12,7 @@ export class UpdateHandler extends BaseHandler {
         });
     }
 
-    public async initialise(): Promise<any> {
+    public async initialise(): Promise<SetupResult> {
         let totalUpdated = 0;
         const updates = nconf.get('UPDATE');
         const guilds = this.client.guilds.cache;
@@ -30,7 +30,6 @@ export class UpdateHandler extends BaseHandler {
                 }
             }
         }
-        this.client.emit('log', `[setup](${this.id}) Posted ${totalUpdated} commands across ${guilds.size} guilds to Discord`);
-        return true;
+        return { message: `Posted ${totalUpdated} commands across ${guilds.size} guilds to Discord` };
     }
 }

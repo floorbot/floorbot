@@ -1,5 +1,5 @@
 import { ButtonInteraction, GuildMember, CommandInteraction, ApplicationCommandData, TextChannel, Message, CommandInteractionOption, Guild, GuildChannel, SelectMenuInteraction } from 'discord.js';
-import { BaseHandler, CommandHandler, ButtonHandler, CommandClient, ComponentCustomData, HandlerContext, BaseHandlerOptions, SelectMenuHandler } from 'discord.js-commands';
+import { BaseHandler, CommandHandler, ButtonHandler, CommandClient, ComponentCustomData, HandlerContext, BaseHandlerOptions, SelectMenuHandler, SetupResult } from 'discord.js-commands';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData'
 import { InteractionReplyOptions, MessageActionRow } from 'discord.js';
 import { OpenWeatherAPI, LocationData } from './api/OpenWeatherAPI';
@@ -253,5 +253,7 @@ export class WeatherHandler extends BaseHandler implements CommandHandler, Butto
         return { embeds: [embed], components: [] }
     }
 
-    public async setup() { return this.database.setup(); }
+    public async setup(): Promise<SetupResult> {
+        return this.database.setup().then(() => ({ message: 'Setup Database' }));
+    }
 }

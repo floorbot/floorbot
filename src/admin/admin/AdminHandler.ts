@@ -1,5 +1,5 @@
 import { ButtonInteraction, ApplicationCommandData, GuildMember, CommandInteraction, SelectMenuInteraction, MessageOptions, Collection, MessageActionRow } from 'discord.js';
-import { CommandClient, BaseHandler, CommandHandler, ButtonHandler, HandlerContext, SelectMenuHandler } from 'discord.js-commands';
+import { CommandClient, BaseHandler, CommandHandler, ButtonHandler, HandlerContext, SelectMenuHandler, SetupResult } from 'discord.js-commands';
 import { AdminCommandData } from './AdminCommandData';
 
 import { AdminButton, AdminButtonCustomData } from './message/AdminButton';
@@ -98,7 +98,7 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
         }, new Collection<string, Array<CommandHandler>>());
     }
 
-    public async initialise(): Promise<any> {
+    public async initialise(): Promise<SetupResult> {
         const application = this.client.application;
         const commands = await application!.commands.fetch();
         return Promise.all(this.client.handlers.filter((handler) => {
@@ -109,8 +109,7 @@ export class AdminHandler extends BaseHandler implements CommandHandler, ButtonH
             if (!found) return this.client.application!.commands.create(handler.commandData);
             // Could check equality and repost when already exists
         })).then(res => {
-            this.client.emit('log', `[setup](${this.id}) Posted ${res.length} global command${res.length ? 's' : ''} to Discord`);
-            return true;
+            return { message: `Posted ${res.length} global command${res.length ? 's' : ''} to Discord` }
         });
     }
 }
