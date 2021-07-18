@@ -18,6 +18,8 @@ export interface MagickAction {
     getArgs(data: ImageData): Array<string>;
 }
 
+export type MagickProgress = { [index: string]: { percent: number, counter: number } };
+
 export const MagickAction: { [index: string]: MagickAction } = {
     ['8BIT']: {
         label: '8-bit',
@@ -28,6 +30,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-scale', '40%',
                 '-colors', '8',
@@ -47,6 +50,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-scale', '40%',
                 '-colors', '8',
@@ -66,6 +70,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-posterize', '10',
                 '-morphology', 'Convolve', '3x3: -2, -1, 0, -1, 1, 1, 0, 1, 2',
@@ -86,6 +91,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-colorspace', 'Gray',
                 '-resize', '128<',
@@ -103,6 +109,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-resize', '256<',
                 '-monitor',
@@ -120,6 +127,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-colorspace', 'RGB',
 
@@ -145,6 +153,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-quality', '1',
                 '-resize', '128<',
@@ -162,6 +171,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-resize', '256<',
                 '-resize', '200%\!',
@@ -180,6 +190,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '-resize', '128<',
                 '-scale', '10%',
@@ -198,6 +209,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
                 '-density', '1280',
                 '-background', 'none',
                 data.url,
+                '-coalesce',
                 '-resize', '2073600@>',
                 '(',
                 '+clone',

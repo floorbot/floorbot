@@ -1,9 +1,12 @@
-import { ApplicationCommandData, CommandInteraction, GuildChannel, Message, MessageActionRow, MessageSelectMenu, MessageAttachment, SelectMenuInteraction, InteractionReplyOptions, MessageEmbed } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, GuildChannel, Message, SelectMenuInteraction, InteractionReplyOptions } from 'discord.js';
 import { CommandClient, BaseHandler, CommandHandler, HandlerContext, SelectMenuHandler, Resolver, ResolverType } from 'discord.js-commands';
-import { MagickImageType, ImageData, MagickAction } from './MagickConstants';
+import { MagickImageType, ImageData, MagickAction, MagickProgress } from './MagickConstants';
 import { MagickCommandData } from './MagickCommandData';
 import CacheMap from 'cache-map.js';
 
+import { MagickSelectMenu, MagickSelectMenuData } from './message/MagickSelectMenu'
+import { MagickAttachment } from './message/MagickAttachment';
+import { MagickEmbed } from './message/MagickEmbed';
 import { ImageMagick } from './tool/ImageMagick';
 
 
@@ -24,18 +27,20 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
     }
 
     public async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
-        if (customData.wl && customData.wl !== interaction.user.id) {
-            return interaction.reply({
-                embeds: [new MessageEmbed().setDescription('Sorry only the author can choose a process')],
-                ephemeral: true
-            })
+        const data = <MagickSelectMenuData>customData;
+        if (data.wl && data.wl !== interaction.user.id) {
+            const embed = MagickEmbed.getWhitelistEmbed(interaction);
+            return interaction.reply({ embeds: [embed], ephemeral: true })
         }
-        await interaction.deferUpdate();
-        const process = MagickAction[interaction.values[0]];
-        const image = MagickHandler.getImageData(interaction.message.embeds[0].image!.url!)!;
-        const response = await this.fetchMagickResponse(interaction, image, process);
+
         const { message } = <{ message: Message }>interaction;
-        await message.removeAttachments();
+        const action = MagickAction[interaction.values[0]];
+        const image = MagickHandler.getImageData(interaction.message.embeds[0].image!.url!)!;
+        const embed = MagickEmbed.getProgressEmbed(interaction, image, action, {});
+        await interaction.update({ embeds: [embed], components: [], files: [] })
+        // await message.removeAttachments();
+
+        const response = await this.fetchMagickResponse(interaction, image, action);
         return message.edit(response);
     }
 
@@ -46,56 +51,43 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
         if (interaction.options.has('image')) {
             const input = <string>interaction.options.get('image')!.value;
             const resolved = await Resolver.resolve(interaction, [ResolverType.USER, ResolverType.EMOJI], input);
-            if (!resolved.user && !resolved.emoji) {
-                const image = MagickHandler.getImageData(input);
-                if (!image) return interaction.followUp({ content: `Sorry but I dont think \`${input}\` is an image` });
-                const response = await this.fetchMagickResponse(interaction, image);
-                return interaction.followUp(response);
-            }
-            const image = MagickHandler.getImageData(resolved.user ?
-                resolved.user.displayAvatarURL({ dynamic: true }) :
-                resolved.emoji!.imageURL
-            )!;
-            const response = await this.fetchMagickResponse(interaction, image);
+            const image = MagickHandler.getImageData(
+                !resolved.user && !resolved.emoji ? input : resolved.user ?
+                    resolved.user.displayAvatarURL({ dynamic: true }) :
+                    resolved.emoji!.imageURL
+            );
+            const response = !image ?
+                MagickEmbed.getInvalidInputEmbed(interaction, input).toReplyOptions() :
+                await this.fetchMagickResponse(interaction, image);
             return interaction.followUp(response);
         }
 
         const image = this.cache.get(channel);
-        if (!image) return interaction.followUp({ content: `Sorry but there are not cached images for ${channel}` });
-        const response = await this.fetchMagickResponse(interaction, image);
+        const response = !image ?
+            MagickEmbed.getMissingCacheEmbed(interaction, channel).toReplyOptions() :
+            await this.fetchMagickResponse(interaction, image);
         return interaction.followUp(response);
     }
 
-    private async fetchMagickResponse(context: HandlerContext, image: ImageData, process?: MagickAction): Promise<InteractionReplyOptions> {
+    private async fetchMagickResponse(context: HandlerContext, image: ImageData, action?: MagickAction): Promise<InteractionReplyOptions> {
 
         // Need to convert SVG files since they dont embed
         if (image.type === MagickImageType.SVG) {
             image = { url: image.url, type: MagickImageType.PNG }
-            if (!process) process = MagickAction.HUGEMOJI;
+            if (!action) action = MagickAction.HUGEMOJI;
         }
 
-        const embed = this.getEmbedTemplate(context)
-            .setImage(image.url)
-            .setURL(image.url)
-            .setTitle('Original Image');
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageSelectMenu()
-                .setPlaceholder('Select a process to apply to the image')
-                .setCustomId(JSON.stringify({ id: 'magick', wl: context.member!.user.id }))
-                .addOptions(Object.entries(MagickAction).map(action => {
-                    return {
-                        label: action[1].label,
-                        value: action[0],
-                        default: action[1] === process,
-                        description: action[1].description
-                    }
-                }))
-        ]);
-        if (!process) return { embeds: [embed], components: [actionRow] };
+        // Command first used and not SVG
+        if (!action) {
+            const embed = MagickEmbed.getImageEmbed(context, image);
+            const actionRow = new MagickSelectMenu(context, action).asActionRow();
+            return { embeds: [embed], components: [actionRow] };
+        }
+
         let updateTime = 0;
-        const stats: { [index: string]: { progress: number, counter: number } } = {};
+        const progress: MagickProgress = {};
         return ImageMagick.execute(
-            process.getArgs(image),
+            action.getArgs(image),
             (reject, string) => {
                 string = string.toLowerCase();
                 const part = string.split(' ')[0];
@@ -109,23 +101,16 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
                     case 'encode':
                     case 'save':
                         if (!(context instanceof SelectMenuInteraction)) break;
-                        if (!stats[part]) stats[part] = { progress: 0, counter: 0 }
-                        const progress = Number(string.match(/(\d+)(?:%)/)![1]);
-                        if (progress === 100) stats[part].counter = stats[part].counter + 1;
-                        stats[part].progress = progress;
+                        if (!progress[part]) progress[part] = { percent: 0, counter: 0 }
+                        const percent = Number(string.match(/(\d+)(?:%)/)![1]);
+                        if (percent === 100) progress[part].counter = progress[part].counter + 1;
+                        progress[part].percent = percent;
                         const now = Date.now();
                         if ((updateTime + 1000) <= now) {
                             updateTime = now;
                             const message = <Message>context.message;
-                            const progressEmbed = new MessageEmbed()
-                                .setTitle(`Please wait for ${process!.label}`)
-                                .setThumbnail(image.url)
-                                .setDescription(Object.entries(stats).map(ent => {
-                                    const progressBar = new Array(11).fill('▬');
-                                    progressBar[Math.floor((<any>ent[1]).progress / 10)] = '🟢';
-                                    return `${progressBar.join('')} [${(<any>ent[1]).progress}%] ${ent[0]}: ${(<any>ent[1]).counter}`
-                                }).join('\n'));
-                            message.edit({ embeds: [progressEmbed], components: [] })
+                            const embed = MagickEmbed.getProgressEmbed(context, image, action!, progress);
+                            message.edit({ embeds: [embed], components: [] })
                         }
                         break;
                     default:
@@ -135,15 +120,13 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
                 }
             }
         ).then((buffer: any) => {
-            const file = new MessageAttachment(buffer, `${process!.label}.${image.type}`);
-            embed.setImage(`attachment://${process!.label}.${image.type}`)
-                .setTitle(`${process!.label} Original`);
-            return { embeds: [embed], components: [actionRow], files: [file] };
+            const actionRow = new MagickSelectMenu(context, action).asActionRow();
+            const attachment = new MagickAttachment(buffer, action!, image);
+            const embed = MagickEmbed.getImageEmbed(context, attachment);
+            return { embeds: [embed], components: [actionRow], files: [attachment] };
         }).catch((_reason) => {
-            const errorEmbed = this.getEmbedTemplate(context)
-                .setThumbnail(image.url)
-                .setDescription(`Sorry it looks like I ran into an issue with \`${process!.label}\``)
-            return { embeds: [errorEmbed], components: [] };
+            const embed = MagickEmbed.getFailedEmbed(context, image, action!)
+            return { embeds: [embed], components: [] };
         });
     }
 
