@@ -1,12 +1,11 @@
 import { MessageEmbed, GuildMember, InteractionReplyOptions, GuildChannel, Util } from 'discord.js';
-import { MagickAction, MagickProgress, ImageData } from '../MagickConstants'
+import { MagickAction, MagickProgress } from '../MagickConstants'
 import { MagickAttachment } from './MagickAttachment';
 import { HandlerContext } from 'discord.js-commands';
+import * as probe from 'probe-image-size';
 
 // @ts-ignore
 import * as DHMS from 'dhms.js';
-
-import * as probe from 'probe-image-size';
 
 export class MagickEmbed extends MessageEmbed {
 
@@ -23,22 +22,21 @@ export class MagickEmbed extends MessageEmbed {
         return super.setFooter(text || 'Powered by ImageMagick', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ImageMagick_logo.svg/1200px-ImageMagick_logo.svg.png');
     }
 
-    public static async getImageEmbed(context: HandlerContext, data: ImageData | MagickAttachment): Promise<MagickEmbed> {
+    public static getImageEmbed(context: HandlerContext, data: probe.ProbeResult | MagickAttachment): MagickEmbed {
         const timeString = DHMS.print(Date.now() - context.createdTimestamp, { limit: 1, fullname: true });
         const embed = new MagickEmbed(context)
         if (data instanceof MagickAttachment) {
+            const { metadata } = data;
             embed.setTitle(`${data.action.label} Original`);
             embed.setImage(`attachment://${data.name}`);
-            embed.setURL(data.image.url);
-            const metadata = probe.sync(<any>data.attachment);
-            const metaString = metadata ? ` ${metadata.width}x${metadata.height} ${Util.formatCommas(Math.round((metadata.length || Buffer.byteLength(<any>data.attachment)) / 1000))}KB` : '';
-            embed.setFooter(`${data.image.type.toUpperCase()}${metaString} in ${timeString}`)
+            embed.setURL(metadata.url);
+            const metaString = ` ${metadata.width}x${metadata.height} ${Util.formatCommas(Math.round((metadata.length || Buffer.byteLength(<any>data.attachment)) / 1000))}KB`;
+            embed.setFooter(`${metadata.type.toUpperCase()}${metaString} in ${timeString}`)
         } else {
             embed.setTitle('Original Image');
             embed.setImage(data.url);
             embed.setURL(data.url);
-            const metadata = await probe(data.url).catch(() => null);
-            const metaString = metadata ? ` ${metadata.width}x${metadata.height} ${Util.formatCommas(Math.round(metadata.length / 1000))}KB` : '';
+            const metaString = ` ${data.width}x${data.height} ${Util.formatCommas(Math.round(data.length / 1000))}KB`;
             embed.setFooter(`${data.type.toUpperCase()}${metaString} in ${timeString}`)
         }
         return embed;
@@ -49,7 +47,7 @@ export class MagickEmbed extends MessageEmbed {
             .setDescription('Sorry! only the original author can make changes to this image');
     }
 
-    public static getProgressEmbed(context: HandlerContext, image: ImageData, action: MagickAction, progress: MagickProgress): MagickEmbed {
+    public static getProgressEmbed(context: HandlerContext, image: probe.ProbeResult, action: MagickAction, progress: MagickProgress): MagickEmbed {
         const embed = new MagickEmbed(context)
             .setTitle(`Please wait for \`${action.label.toLowerCase()}\``)
             .setDescription('*This may take a while especially for gifs*')
@@ -76,7 +74,7 @@ export class MagickEmbed extends MessageEmbed {
             ].join('\n'));
     }
 
-    public static getFailedEmbed(context: HandlerContext, image: ImageData, action: MagickAction): MagickEmbed {
+    public static getFailedEmbed(context: HandlerContext, image: probe.ProbeResult, action: MagickAction): MagickEmbed {
         return new MagickEmbed(context)
             .setThumbnail(image.url)
             .setDescription([

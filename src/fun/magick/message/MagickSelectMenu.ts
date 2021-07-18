@@ -1,6 +1,5 @@
 import { MessageSelectMenu, Message, MessageActionRow } from 'discord.js';
 import { HandlerContext, ComponentCustomData } from 'discord.js-commands';
-
 import { MagickAction } from '../MagickConstants';
 
 export interface MagickSelectMenuData extends ComponentCustomData {

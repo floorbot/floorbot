@@ -1,21 +1,9 @@
-export enum MagickImageType {
-    JPG = 'jpg',
-    JPEG = 'jpeg',
-    GIF = 'gif',
-    PNG = 'png',
-    WEBP = 'webp',
-    SVG = 'svg',
-};
-
-export interface ImageData {
-    url: string,
-    type: MagickImageType
-}
+import * as probe from 'probe-image-size';
 
 export interface MagickAction {
     readonly label: string;
     readonly description: string;
-    getArgs(data: ImageData): Array<string>;
+    getArgs(data: probe.ProbeResult): Array<string>;
 }
 
 export type MagickProgress = { [index: string]: { percent: number, counter: number } };
@@ -24,7 +12,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['8BIT']: {
         label: '8-bit',
         description: 'Use only 8-bit colour',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -44,7 +32,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['CARTOON']: {
         label: 'Cartoon',
         description: 'Give the image a cartoon effect',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -64,7 +52,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['DEEPFRY']: {
         label: 'Deepfry',
         description: 'Deepfry the image and see what happens',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -85,7 +73,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['GREYSCALE']: {
         label: 'Greyscale',
         description: 'Remove all colour from images',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -103,7 +91,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['HUGEMOJI']: {
         label: 'Hugemoji',
         description: 'Make small images bigger',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -120,7 +108,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['HYPER']: {
         label: 'Hyper',
         description: 'Add a red filter and speed increase to images',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-delay', '1x50',
@@ -146,8 +134,8 @@ export const MagickAction: { [index: string]: MagickAction } = {
     },
     ['JPEG']: {
         label: 'JPEG',
-        description: 'Compress the to jpeg quality',
-        getArgs: (data: ImageData): Array<string> => {
+        description: 'Compress the image to jpeg quality',
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -165,7 +153,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['LIQUID']: {
         label: 'Liquidscale',
         description: 'Only trying this effect can describe it',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -184,7 +172,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['PIXELATE']: {
         label: 'Pixelate',
         description: 'Pixelate images and make them hard to see',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',
@@ -203,7 +191,7 @@ export const MagickAction: { [index: string]: MagickAction } = {
     ['SKETCH']: {
         label: 'Sketch',
         description: 'Make images look like they are drawn',
-        getArgs: (data: ImageData): Array<string> => {
+        getArgs: (data: probe.ProbeResult): Array<string> => {
             return [
                 'convert',
                 '-density', '1280',

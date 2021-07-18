@@ -1,6 +1,6 @@
 import { ApplicationCommandData, CommandInteraction, GuildChannel, Message, SelectMenuInteraction, InteractionReplyOptions } from 'discord.js';
 import { CommandClient, BaseHandler, CommandHandler, HandlerContext, SelectMenuHandler, Resolver, ResolverType } from 'discord.js-commands';
-import { MagickImageType, ImageData, MagickAction, MagickProgress } from './MagickConstants';
+import { MagickAction, MagickProgress } from './MagickConstants';
 import { MagickCommandData } from './MagickCommandData';
 import CacheMap from 'cache-map.js';
 
@@ -9,12 +9,14 @@ import { MagickAttachment } from './message/MagickAttachment';
 import { MagickEmbed } from './message/MagickEmbed';
 import { ImageMagick } from './tool/ImageMagick';
 
+import * as probe from 'probe-image-size';
+
 export class MagickHandler extends BaseHandler implements CommandHandler, SelectMenuHandler {
 
     public readonly commandData: ApplicationCommandData;
     public readonly isGlobal: boolean;
 
-    private readonly cache: CacheMap<GuildChannel, { readonly message: Message } & ImageData>;
+    private readonly cache: CacheMap<GuildChannel, { readonly message: Message } & probe.ProbeResult>;
 
     constructor(client: CommandClient) {
         super(client, { id: 'magick', name: 'Magick', group: 'Fun', nsfw: false });
@@ -32,14 +34,15 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
             return interaction.reply({ embeds: [embed], ephemeral: true })
         }
 
+        await interaction.deferUpdate()
         const { message } = <{ message: Message }>interaction;
         const action = MagickAction[interaction.values[0]];
-        const image = MagickHandler.getImageData(interaction.message.embeds[0].image!.url!)!;
-        const embed = MagickEmbed.getProgressEmbed(interaction, image, action, {});
-        await interaction.update({ embeds: [embed], components: [], files: [] })
+        const metadata = (await probe(interaction.message.embeds[0].image!.url!).catch(() => null))!;
+        const embed = MagickEmbed.getProgressEmbed(interaction, metadata, action, {});
+        await message.edit({ embeds: [embed], components: [], files: [] });
         await message.removeAttachments();
 
-        const response = await this.fetchMagickResponse(interaction, image, action);
+        const response = await this.fetchMagickResponse(interaction, metadata, action);
         return message.edit(response);
     }
 
@@ -50,35 +53,35 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
         if (interaction.options.has('image')) {
             const input = <string>interaction.options.get('image')!.value;
             const resolved = await Resolver.resolve(interaction, [ResolverType.USER, ResolverType.EMOJI], input);
-            const image = MagickHandler.getImageData(
+            const metadata = await probe(
                 !resolved.user && !resolved.emoji ? input : resolved.user ?
                     resolved.user.displayAvatarURL({ dynamic: true }) :
                     resolved.emoji!.imageURL
-            );
-            const response = !image ?
+            ).catch(() => null);
+            const response = !metadata ?
                 MagickEmbed.getInvalidInputEmbed(interaction, input).toReplyOptions() :
-                await this.fetchMagickResponse(interaction, image);
+                await this.fetchMagickResponse(interaction, metadata);
             return interaction.followUp(response);
         }
 
-        const image = this.cache.get(channel);
-        const response = !image ?
+        const metadata = this.cache.get(channel);
+        const response = !metadata ?
             MagickEmbed.getMissingCacheEmbed(interaction, channel).toReplyOptions() :
-            await this.fetchMagickResponse(interaction, image);
+            await this.fetchMagickResponse(interaction, metadata);
         return interaction.followUp(response);
     }
 
-    private async fetchMagickResponse(context: HandlerContext, image: ImageData, action?: MagickAction): Promise<InteractionReplyOptions> {
+    private async fetchMagickResponse(context: HandlerContext, metadata: probe.ProbeResult, action?: MagickAction): Promise<InteractionReplyOptions> {
 
         // Need to convert SVG files since they dont embed
-        if (image.type === MagickImageType.SVG) {
-            image = { url: image.url, type: MagickImageType.PNG }
+        if (metadata.type === 'svg') {
+            metadata.type = 'png';
             if (!action) action = MagickAction.HUGEMOJI;
         }
 
         // Command first used and not SVG
         if (!action) {
-            const embed = await MagickEmbed.getImageEmbed(context, image);
+            const embed = MagickEmbed.getImageEmbed(context, metadata);
             const actionRow = new MagickSelectMenu(context, action).asActionRow();
             return { embeds: [embed], components: [actionRow] };
         }
@@ -86,7 +89,7 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
         let updateTime = 0;
         const progress: MagickProgress = {};
         return ImageMagick.execute(
-            action.getArgs(image),
+            action.getArgs(metadata),
             (reject, string) => {
                 string = string.toLowerCase();
                 const part = string.split(' ')[0];
@@ -108,7 +111,7 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
                         if ((updateTime + 1000) <= now) {
                             updateTime = now;
                             const message = <Message>context.message;
-                            const embed = MagickEmbed.getProgressEmbed(context, image, action!, progress);
+                            const embed = MagickEmbed.getProgressEmbed(context, metadata, action!, progress);
                             message.edit({ embeds: [embed], components: [] })
                         }
                         break;
@@ -118,57 +121,41 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
                         return reject(string);
                 }
             }
-        ).then(async (buffer: any) => {
+        ).then((buffer: any) => {
+            const newMetadata = probe.sync(buffer)!;
             const actionRow = new MagickSelectMenu(context, action).asActionRow();
-            const attachment = new MagickAttachment(buffer, action!, image);
-            const embed = await MagickEmbed.getImageEmbed(context, attachment);
+            const attachment = new MagickAttachment(buffer, action!, newMetadata);
+            const embed = MagickEmbed.getImageEmbed(context, attachment);
             return { embeds: [embed], components: [actionRow], files: [attachment] };
         }).catch((_reason) => {
-            const embed = MagickEmbed.getFailedEmbed(context, image, action!)
+            const embed = MagickEmbed.getFailedEmbed(context, metadata, action!)
             return { embeds: [embed], components: [] };
         });
     }
 
-    private onMessage(message: Message) {
+    private async onMessage(message: Message) {
         const channel = message.channel;
         if (channel instanceof GuildChannel) {
             const existing = this.cache.get(channel);
             if (existing && (existing.message.deleted || existing.message.createdTimestamp > message.createdTimestamp)) return;
-            // content
-            const contentImage = MagickHandler.getImageData(message.content);
-            if (contentImage) this.cache.set(channel, { message, ...contentImage });
 
             // embed[].thumbnail & embed[].image
-            message.embeds.forEach(embed => {
+            message.embeds.forEach(async embed => {
                 if (embed.thumbnail && embed.thumbnail.url) {
-                    const thumbnailURL = MagickHandler.getImageData(embed.thumbnail.url);
-                    if (thumbnailURL) this.cache.set(channel, { message, ...thumbnailURL });
+                    const metadata = await probe(embed.thumbnail.url).catch(() => null);
+                    if (metadata) this.cache.set(channel, { message, ...metadata });
                 }
                 if (embed.image && embed.image.url) {
-                    const imageURL = MagickHandler.getImageData(embed.image.url);
-                    if (imageURL) this.cache.set(channel, { message, ...imageURL });
+                    const metadata = await probe(embed.image.url).catch(() => null);
+                    if (metadata) this.cache.set(channel, { message, ...metadata });
                 }
             });
 
             // attachments[].url
-            message.attachments.forEach(attachment => {
-                const attachmentImage = MagickHandler.getImageData(attachment.url);
-                if (attachmentImage) this.cache.set(channel, { message, ...attachmentImage });
+            message.attachments.forEach(async attachment => {
+                const metadata = await probe(attachment.url).catch(() => null);
+                if (metadata) this.cache.set(channel, { message, ...metadata });
             });
         }
-    }
-
-    private static getImageData(text: string): ImageData | null {
-        const typeString = Object.values(MagickImageType).join('|');
-        const urlRegex = new RegExp(`(http(s?):)([^\\s])*\\.(?:${typeString})`, 'g');
-        const urlMatches = text.match(urlRegex);
-        if (!urlMatches) return null;
-        const url = urlMatches.pop()!
-
-        const typeRegex = new RegExp(`(?:\\.)(${typeString})(?:.+)?$`);
-        const typeMatches = url.match(typeRegex)!;
-        const type = <MagickImageType>(typeMatches[1].toLowerCase());
-
-        return { url, type };
     }
 }

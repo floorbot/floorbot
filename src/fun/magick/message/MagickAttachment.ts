@@ -1,15 +1,16 @@
 import { MessageAttachment, BufferResolvable } from 'discord.js';
-import { MagickAction, ImageData } from '../MagickConstants';
+import { MagickAction } from '../MagickConstants';
+import * as probe from 'probe-image-size';
 
 export class MagickAttachment extends MessageAttachment {
 
+    public readonly metadata: probe.ProbeResult;
     public readonly action: MagickAction;
-    public readonly image: ImageData;
 
-    constructor(buffer: BufferResolvable, action: MagickAction, image: ImageData) {
-        super(buffer, `${action!.label}.${image.type}`);
+    constructor(buffer: BufferResolvable, action: MagickAction, metadata: probe.ProbeResult) {
+        super(buffer, `${action!.label}.${metadata.type}`);
 
+        this.metadata = metadata;
         this.action = action;
-        this.image = image;
     }
 }
