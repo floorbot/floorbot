@@ -9,7 +9,6 @@ import { MagickAttachment } from './message/MagickAttachment';
 import { MagickEmbed } from './message/MagickEmbed';
 import { ImageMagick } from './tool/ImageMagick';
 
-
 export class MagickHandler extends BaseHandler implements CommandHandler, SelectMenuHandler {
 
     public readonly commandData: ApplicationCommandData;
@@ -79,7 +78,7 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
 
         // Command first used and not SVG
         if (!action) {
-            const embed = MagickEmbed.getImageEmbed(context, image);
+            const embed = await MagickEmbed.getImageEmbed(context, image);
             const actionRow = new MagickSelectMenu(context, action).asActionRow();
             return { embeds: [embed], components: [actionRow] };
         }
@@ -119,10 +118,10 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
                         return reject(string);
                 }
             }
-        ).then((buffer: any) => {
+        ).then(async (buffer: any) => {
             const actionRow = new MagickSelectMenu(context, action).asActionRow();
             const attachment = new MagickAttachment(buffer, action!, image);
-            const embed = MagickEmbed.getImageEmbed(context, attachment);
+            const embed = await MagickEmbed.getImageEmbed(context, attachment);
             return { embeds: [embed], components: [actionRow], files: [attachment] };
         }).catch((_reason) => {
             const embed = MagickEmbed.getFailedEmbed(context, image, action!)
