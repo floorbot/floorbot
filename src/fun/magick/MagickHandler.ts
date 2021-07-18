@@ -38,7 +38,7 @@ export class MagickHandler extends BaseHandler implements CommandHandler, Select
         const image = MagickHandler.getImageData(interaction.message.embeds[0].image!.url!)!;
         const embed = MagickEmbed.getProgressEmbed(interaction, image, action, {});
         await interaction.update({ embeds: [embed], components: [], files: [] })
-        // await message.removeAttachments();
+        await message.removeAttachments();
 
         const response = await this.fetchMagickResponse(interaction, image, action);
         return message.edit(response);
