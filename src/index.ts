@@ -41,14 +41,18 @@ export * from './guild-commands/booru/e621/E621CommandData';
 export * from './guild-commands/booru/e621/E621Handler';
 export * from './guild-commands/booru/e621/E621API';
 
-// export * from './commands/booru/handlers/pregchan/PregchanCommandData';
-// export * from './commands/booru/handlers/pregchan/PregchanHandler';
-// export * from './commands/booru/handlers/pregchan/PregchanAPI';
-//
-// export * from './commands/booru/handlers/rule34/Rule34CommandData';
-// export * from './commands/booru/handlers/rule34/Rule34Handler';
-// export * from './commands/booru/handlers/rule34/Rule34API';
-//
+export * from './guild-commands/booru/pregchan/factories/PregchanResponseFactory';
+export * from './guild-commands/booru/pregchan/factories/PregchanEmbedFactory';
+export * from './guild-commands/booru/pregchan/PregchanCommandData';
+export * from './guild-commands/booru/pregchan/PregchanHandler';
+export * from './guild-commands/booru/pregchan/PregchanAPI';
+
+export * from './guild-commands/booru/rule34/factories/Rule34ResponseFactory';
+export * from './guild-commands/booru/rule34/factories/Rule34EmbedFactory';
+export * from './guild-commands/booru/rule34/Rule34CommandData';
+export * from './guild-commands/booru/rule34/Rule34Handler';
+export * from './guild-commands/booru/rule34/Rule34API';
+
 export * from './guild-commands/booru/safebooru/factories/SafebooruResponseFactory';
 export * from './guild-commands/booru/safebooru/factories/SafebooruEmbedFactory';
 export * from './guild-commands/booru/safebooru/SafebooruCommandData';
