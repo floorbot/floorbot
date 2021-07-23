@@ -1,46 +1,47 @@
 import * as nconf from 'nconf';
 nconf.argv().env().file({ file: './config.json' }).required(['DISCORD_TOKEN']);
 
-import { BaseHandler, CommandClient } from 'discord.js-commands';
-import { Intents, Collection } from 'discord.js';
+import { CommandClient } from 'discord.js-commands';
+import { Intents } from 'discord.js';
 
-import { PresenceHandler, LoggerHandler, UpdateHandler } from './index';
-import { UtilsHandler, AdminHandler } from './index';
-import { WeatherHandler, MarkovHandler, DefineHandler, MagickHandler } from './index';
-import { SafebooruHandler, DanbooruHandler, PregchanHandler, Rule34Handler, E621Handler } from './index';
+import { LoggerHandler } from '..';
+import { AdminHandler, UtilsHandler } from '..';
+import { DanbooruHandler } from '..';
+// import { DanbooruHandler, E621Handler, PregchanHandler, Rule34Handler, SafebooruHandler } from '..';
+// import { WeatherHandler, MagickHandler, DefineHandler, MarkovHandler } from '..';
+// import { PresenceHandler, LoggerHandler, UpdateHandler } from './index';sd;lfjds;lkjfdslkhjflksdjf
 
 nconf.required(['DATABASE:HOST', 'DATABASE:NAME', 'DATABASE:USERNAME', 'DATABASE:PASSWORD', 'DATABASE:CONNECTION_LIMIT']);
-import * as MariaDB from 'mariadb';
-const pool = MariaDB.createPool({
-    host: nconf.get('DATABASE:HOST'),
-    database: nconf.get('DATABASE:NAME'),
-    user: nconf.get('DATABASE:USERNAME'),
-    password: nconf.get('DATABASE:PASSWORD'),
-    connectionLimit: nconf.get('DATABASE:CONNECTION_LIMIT'),
-    supportBigInt: true
-});
+
+// import { PoolConfig } from 'mariadb';
+// const poolConfig: PoolConfig = {
+//     host: nconf.get('DATABASE:HOST'),
+//     database: nconf.get('DATABASE:NAME'),
+//     user: nconf.get('DATABASE:USERNAME'),
+//     password: nconf.get('DATABASE:PASSWORD'),
+//     connectionLimit: nconf.get('DATABASE:CONNECTION_LIMIT'),
+//     supportBigInt: true
+// };
 
 const client = new CommandClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
-    handlers: new Collection<typeof BaseHandler, any>([
-        [PresenceHandler, {}],
-        [LoggerHandler, {}],
-        [UpdateHandler, {}],
+    handlers: [
+        new LoggerHandler(),
 
-        [UtilsHandler, {}],
-        [AdminHandler, {}],
+        new AdminHandler(),
+        new UtilsHandler(),
 
-        [WeatherHandler, { pool: pool }],
-        [MarkovHandler, { pool: pool }],
-        [DefineHandler, {}],
-        [MagickHandler, {}],
-
-        [SafebooruHandler, {}],
-        [DanbooruHandler, {}],
-        [PregchanHandler, {}],
-        [Rule34Handler, {}],
-        [E621Handler, {}]
-    ])
+        new DanbooruHandler(),
+        // new SafebooruHandler(),
+        // new Rule34Handler(),
+        // new E621Handler(),
+        // new PregchanHandler(),
+        //
+        // new WeatherHandler(poolConfig),
+        // new MagickHandler(),
+        // new DefineHandler(),
+        // new MarkovHandler(poolConfig),
+    ]
 });
 
 client.login(nconf.get('DISCORD_TOKEN'));

@@ -25,7 +25,6 @@
         "@types/node-fetch": "^2.5.10",
         "@types/probe-image-size": "^7.0.1",
         "@types/xml2js": "^0.4.8",
-        "bottleneck": "^2.19.5",
         "cache-map.js": "github:floorbot/cache-map.js",
         "dhms.js": "github:floorbot/dhms.js",
         "discord.js-commands": "github:floorbot-js/discord.js-commands",
