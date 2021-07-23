@@ -1,4 +1,4 @@
-import { BooruHandler, DanbooruCommandData, DanbooruEmbedFactory, DanbooruResponseFactory } from '../../../..';
+import { BooruHandler, DanbooruCommandData, DanbooruEmbedFactory, DanbooruResponseFactory } from '../../..';
 
 export class DanbooruHandler extends BooruHandler {
 

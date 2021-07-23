@@ -1,16 +1,16 @@
-import { DanbooruAPI, BooruResponseFactory, DanbooruHandler, BooruHandlerReply } from '../../../..';
+import { SafebooruAPI, BooruResponseFactory, SafebooruHandler, BooruHandlerReply } from '../../../..';
 import { Message, MessageActionRow } from 'discord.js';
 import { HandlerContext } from 'discord.js-commands';
 
-export class DanbooruResponseFactory extends BooruResponseFactory {
+export class SafebooruResponseFactory extends BooruResponseFactory {
 
-    constructor(handler: DanbooruHandler) {
+    constructor(handler: SafebooruHandler) {
         super(handler);
     }
 
     public async generateResponse(context: HandlerContext, tags: string = String()): Promise<BooruHandlerReply> {
         const user = context instanceof Message ? context.author : context.user;
-        const data = await DanbooruAPI.random(tags);
+        const data = await SafebooruAPI.random(tags);
         if ('success' in data && !data.success) {
             const details = data.message || 'The database timed out running your query.'
             switch (details) {
@@ -23,8 +23,8 @@ export class DanbooruResponseFactory extends BooruResponseFactory {
                 case 'The database timed out running your query.':
                     return this.handler.embedFactory.getTimeoutEmbed(context, tags).toReplyOptions();
                 case 'That record was not found.':
-                    const url404 = await DanbooruAPI.get404();
-                    const autocomplete = await DanbooruAPI.autocomplete(tags);
+                    const url404 = await SafebooruAPI.get404();
+                    const autocomplete = await SafebooruAPI.autocomplete(tags);
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count } });
                     const suggestionData = { suggestions, tags, url404 };
                     return {
@@ -36,7 +36,7 @@ export class DanbooruResponseFactory extends BooruResponseFactory {
         } else if (!('id' in data)) {
             return this.handler.embedFactory.getRestrictedTagEmbed(context, tags).toReplyOptions();
         }
-        const postURL = `https://danbooru.donmai.us/posts/${data.id}`;
+        const postURL = `https://safebooru.donmai.us/posts/${data.id}`;
         return {
             embeds: [this.handler.embedFactory.getImageEmbed(context, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([

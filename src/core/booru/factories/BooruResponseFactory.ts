@@ -1,4 +1,4 @@
-import { CommonResponseFactory, BooruHandler, BooruHandlerReply } from '../../../../..';
+import { CommonResponseFactory, BooruHandler, BooruHandlerReply } from '../../../..';
 import { HandlerContext } from 'discord.js-commands';
 import { InteractionReplyOptions } from 'discord.js';
 

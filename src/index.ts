@@ -22,12 +22,12 @@ export * from './global-commands/utils/UtilsHandler';
 
 /** Booru Commands **/
 
-export * from './guild-commands/booru/abstract/factories/BooruSelectMenuFactory';
-export * from './guild-commands/booru/abstract/factories/BooruResponseFactory';
-export * from './guild-commands/booru/abstract/factories/BooruButtonFactory';
-export * from './guild-commands/booru/abstract/factories/BooruEmbedFactory';
-export * from './guild-commands/booru/abstract/BooruConstants';
-export * from './guild-commands/booru/abstract/BooruHandler';
+export * from './core/booru/factories/BooruSelectMenuFactory';
+export * from './core/booru/factories/BooruResponseFactory';
+export * from './core/booru/factories/BooruButtonFactory';
+export * from './core/booru/factories/BooruEmbedFactory';
+export * from './core/booru/BooruConstants';
+export * from './core/booru/BooruHandler';
 
 export * from './guild-commands/booru/danbooru/factories/DanbooruResponseFactory';
 export * from './guild-commands/booru/danbooru/factories/DanbooruEmbedFactory';
@@ -35,10 +35,12 @@ export * from './guild-commands/booru/danbooru/DanbooruCommandData';
 export * from './guild-commands/booru/danbooru/DanbooruHandler';
 export * from './guild-commands/booru/danbooru/DanbooruAPI';
 
-// export * from './commands/booru/handlers/e621/E621CommandData';
-// export * from './commands/booru/handlers/e621/E621Handler';
-// export * from './commands/booru/handlers/e621/E621API';
-//
+// export * from './guild-commands/booru/factories/E621ResponseFactory';
+// export * from './guild-commands/booru/factories/E621EmbedFactory';
+// export * from './guild-commands/booru/e621/E621CommandData';
+// export * from './guild-commands/booru/e621/E621Handler';
+// export * from './guild-commands/booru/e621/E621API';
+
 // export * from './commands/booru/handlers/pregchan/PregchanCommandData';
 // export * from './commands/booru/handlers/pregchan/PregchanHandler';
 // export * from './commands/booru/handlers/pregchan/PregchanAPI';
@@ -47,10 +49,12 @@ export * from './guild-commands/booru/danbooru/DanbooruAPI';
 // export * from './commands/booru/handlers/rule34/Rule34Handler';
 // export * from './commands/booru/handlers/rule34/Rule34API';
 //
-// export * from './commands/booru/handlers/safebooru/SafebooruCommandData';
-// export * from './commands/booru/handlers/safebooru/SafebooruHandler';
-// export * from './commands/booru/handlers/safebooru/SafebooruAPI';
-//
+export * from './guild-commands/booru/safebooru/factories/SafebooruResponseFactory';
+export * from './guild-commands/booru/safebooru/factories/SafebooruEmbedFactory';
+export * from './guild-commands/booru/safebooru/SafebooruCommandData';
+export * from './guild-commands/booru/safebooru/SafebooruHandler';
+export * from './guild-commands/booru/safebooru/SafebooruAPI';
+
 // /** Fun Commands **/
 //
 // export * from './commands/fun/weather/factories/WeatherSelectMenuFactory';
