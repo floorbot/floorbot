@@ -35,11 +35,11 @@ export * from './guild-commands/booru/danbooru/DanbooruCommandData';
 export * from './guild-commands/booru/danbooru/DanbooruHandler';
 export * from './guild-commands/booru/danbooru/DanbooruAPI';
 
-// export * from './guild-commands/booru/factories/E621ResponseFactory';
-// export * from './guild-commands/booru/factories/E621EmbedFactory';
-// export * from './guild-commands/booru/e621/E621CommandData';
-// export * from './guild-commands/booru/e621/E621Handler';
-// export * from './guild-commands/booru/e621/E621API';
+export * from './guild-commands/booru/e621/factories/E621ResponseFactory';
+export * from './guild-commands/booru/e621/factories/E621EmbedFactory';
+export * from './guild-commands/booru/e621/E621CommandData';
+export * from './guild-commands/booru/e621/E621Handler';
+export * from './guild-commands/booru/e621/E621API';
 
 // export * from './commands/booru/handlers/pregchan/PregchanCommandData';
 // export * from './commands/booru/handlers/pregchan/PregchanHandler';
