@@ -1,4 +1,4 @@
-import { ButtonFactory } from 'discord.js-commands';
+import { ButtonFactory, HandlerButton } from 'discord.js-commands';
 import { DefineHandler, DefineCustomData } from '../../../..';
 import { Constants } from 'discord.js';
 const { MessageButtonStyles } = Constants
@@ -14,8 +14,8 @@ export class DefineButtonFactory extends ButtonFactory<DefineCustomData, DefineH
         super(handler);
     }
 
-    public static getPageButton(handler: DefineHandler, type: DefinePageButtonType, defineData: DefineCustomData): DefineButtonFactory {
-        const button = new DefineButtonFactory(handler).setStyle(MessageButtonStyles.PRIMARY);
+    public getPageButton(type: DefinePageButtonType, defineData: DefineCustomData): HandlerButton<DefineCustomData, DefineHandler> {
+        const button = new HandlerButton(this.handler).setStyle(MessageButtonStyles.PRIMARY);
         switch (type) {
             case DefinePageButtonType.PREVIOUS: {
                 button.setLabel('Previous');

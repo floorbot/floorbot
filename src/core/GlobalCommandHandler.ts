@@ -1,15 +1,13 @@
 import { HandlerOptions, CommandHandler, HandlerResult, CommandClient, HandlerContext } from 'discord.js-commands';
 import { ApplicationCommand, ApplicationCommandData, CommandInteraction } from 'discord.js';
-import { CommonHandler, CommonResponseFactory } from '../..';
+import { CommonHandler } from '../..';
 
 export interface GlobalCommandHandlerOptions extends HandlerOptions {
     readonly commandData: ApplicationCommandData,
-    readonly nsfw: boolean,
 }
 
 export abstract class GlobalCommandHandler extends CommonHandler implements CommandHandler {
 
-    abstract override readonly responseFactory: CommonResponseFactory<GlobalCommandHandler>;
     public readonly commandData: ApplicationCommandData;
 
     constructor(options: GlobalCommandHandlerOptions) {
@@ -19,7 +17,7 @@ export abstract class GlobalCommandHandler extends CommonHandler implements Comm
 
     public abstract onCommand(interaction: CommandInteraction): Promise<HandlerResult | null>;
 
-    public async isEnabled(context: HandlerContext): Promise<boolean> {
+    public override async isEnabled(context: HandlerContext): Promise<boolean> {
         return Boolean(await this.fetchCommand(<CommandClient>context.client))
     }
 

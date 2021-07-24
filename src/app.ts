@@ -7,21 +7,21 @@ import { Intents } from 'discord.js';
 import { LoggerHandler } from '..';
 import { AdminHandler, UtilsHandler } from '..';
 import { DanbooruHandler, SafebooruHandler, Rule34Handler, E621Handler, PregchanHandler } from '..';
-// import { DanbooruHandler, E621Handler, PregchanHandler, Rule34Handler, SafebooruHandler } from '..';
+import { DefineHandler, MarkovHandler } from '..';
 // import { WeatherHandler, MagickHandler, DefineHandler, MarkovHandler } from '..';
 // import { PresenceHandler, LoggerHandler, UpdateHandler } from './index';sd;lfjds;lkjfdslkhjflksdjf
 
 nconf.required(['DATABASE:HOST', 'DATABASE:NAME', 'DATABASE:USERNAME', 'DATABASE:PASSWORD', 'DATABASE:CONNECTION_LIMIT']);
 
-// import { PoolConfig } from 'mariadb';
-// const poolConfig: PoolConfig = {
-//     host: nconf.get('DATABASE:HOST'),
-//     database: nconf.get('DATABASE:NAME'),
-//     user: nconf.get('DATABASE:USERNAME'),
-//     password: nconf.get('DATABASE:PASSWORD'),
-//     connectionLimit: nconf.get('DATABASE:CONNECTION_LIMIT'),
-//     supportBigInt: true
-// };
+import { PoolConfig } from 'mariadb';
+const poolConfig: PoolConfig = {
+    host: nconf.get('DATABASE:HOST'),
+    database: nconf.get('DATABASE:NAME'),
+    user: nconf.get('DATABASE:USERNAME'),
+    password: nconf.get('DATABASE:PASSWORD'),
+    connectionLimit: nconf.get('DATABASE:CONNECTION_LIMIT'),
+    supportBigInt: true
+};
 
 const client = new CommandClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
@@ -39,8 +39,8 @@ const client = new CommandClient({
         //
         // new WeatherHandler(poolConfig),
         // new MagickHandler(),
-        // new DefineHandler(),
-        // new MarkovHandler(poolConfig),
+        new DefineHandler(),
+        new MarkovHandler(poolConfig),
     ]
 });
 

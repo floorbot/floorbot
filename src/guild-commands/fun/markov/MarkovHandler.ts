@@ -1,6 +1,6 @@
 import { CommandInteraction, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, Guild, ApplicationCommand } from 'discord.js';
-import { GuildHandler, MarkovDatabase, MarkovCommandData, MarkovEmbedFactory, GuildHandlerGroup, MarkovButtonFactory } from '../../..';
-import { CommandClient, HandlerContext, HandlerResult, HandlerCustomData } from 'discord.js-commands';
+import { GuildCommandHandler, MarkovDatabase, MarkovCommandData, MarkovEmbedFactory, GuildCommandHandlerGroup, MarkovButtonFactory } from '../../..';
+import { CommandClient, HandlerContext, HandlerResult, HandlerCustomData, ButtonHandler } from 'discord.js-commands';
 import Markov from 'markov-strings';
 import { PoolConfig } from 'mariadb';
 
@@ -24,25 +24,23 @@ export interface MarkovCustomData extends HandlerCustomData {
     readonly channel: string
 }
 
-export class MarkovHandler extends GuildHandler<MarkovCustomData> {
+export class MarkovHandler extends GuildCommandHandler implements ButtonHandler<MarkovCustomData> {
 
     public readonly database: MarkovDatabase;
+    public readonly buttonFactory: MarkovButtonFactory;
+    public readonly embedFactory: MarkovEmbedFactory;
 
     constructor(poolConfig: PoolConfig) {
-        super({
-            commandData: MarkovCommandData,
-            group: GuildHandlerGroup.FUN,
-            id: 'markov',
-            nsfw: false
-        });
-
+        super({ commandData: MarkovCommandData, group: GuildCommandHandlerGroup.FUN, id: 'markov' });
         this.database = new MarkovDatabase(poolConfig, 20, 1);
+        this.buttonFactory = new MarkovButtonFactory(this);
+        this.embedFactory = new MarkovEmbedFactory(this);
     }
 
     public async onCommand(interaction: CommandInteraction): Promise<any> {
         const subCommand = interaction.options.getSubCommand();
         const channel = (interaction.options.getChannel('channel') || interaction.channel) as GuildChannel;
-        if (!this.isAdmin(interaction) && !['generate'].includes(subCommand)) return interaction.reply(MarkovEmbedFactory.getMissingAdminEmbed(interaction).toReplyOptions(true))
+        if (!this.isAdmin(interaction) && !['generate'].includes(subCommand)) return interaction.reply(this.embedFactory.getMissingAdminEmbed(interaction).toReplyOptions(true))
         await interaction.defer();
         switch (subCommand) {
             case 'settings': {
@@ -59,14 +57,14 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
             case 'generate': {
                 const user = interaction.options.getUser('user');
                 const response = await this.fetchMarkovResponse(channel, user);
-                return interaction.followUp(response ? response : MarkovEmbedFactory.getFailedEmbed(interaction, channel, user).toReplyOptions());
+                return interaction.followUp(response ? response : this.embedFactory.getFailedEmbed(interaction, channel, user).toReplyOptions());
             }
             default: throw interaction;
         }
     }
 
-    public override async onButton(interaction: ButtonInteraction, customData: MarkovCustomData): Promise<any> {
-        if (!this.isAdmin(interaction)) return interaction.reply(MarkovEmbedFactory.getMissingAdminEmbed(interaction).toReplyOptions(true))
+    public async onButton(interaction: ButtonInteraction, customData: MarkovCustomData): Promise<any> {
+        if (!this.isAdmin(interaction)) return interaction.reply(this.embedFactory.getMissingAdminEmbed(interaction).toReplyOptions(true))
         await interaction.deferUpdate();
         const channel = <GuildChannel>(await interaction.client.channels.fetch(<any>customData.channel));
 
@@ -100,10 +98,10 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
                 this.toggleMessageComponents(message, true);
                 return await interaction.editReply({
                     ...(message.content && { content: message.content }),
-                    embeds: [...message.embeds, MarkovEmbedFactory.getWipeConfirmEmbed(interaction, channel)],
+                    embeds: [...message.embeds, this.embedFactory.getWipeConfirmEmbed(interaction, channel)],
                     components: [...message.components, new MessageActionRow().addComponents(
-                        new MarkovButtonFactory(this, <GuildChannel>message.channel, MarkovButtonType.BACKOUT),
-                        new MarkovButtonFactory(this, <GuildChannel>message.channel, MarkovButtonType.WIPE_CONFIRMED)
+                        this.buttonFactory.getMarkovButton(<GuildChannel>message.channel, MarkovButtonType.BACKOUT),
+                        this.buttonFactory.getMarkovButton(<GuildChannel>message.channel, MarkovButtonType.WIPE_CONFIRMED)
                     )],
                 });
             }
@@ -120,7 +118,7 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
                 this.toggleMessageComponents(message, false);
                 return await message.edit({
                     ...(message.content && { content: message.content }),
-                    embeds: [...message.embeds.slice(0, -1), MarkovEmbedFactory.getPurgedEmbed(interaction)],
+                    embeds: [...message.embeds.slice(0, -1), this.embedFactory.getPurgedEmbed(interaction)],
                     components: message.components.slice(0, -1),
                 });
             }
@@ -140,15 +138,15 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
     private async fetchControlPanel(context: HandlerContext, channel: GuildChannel): Promise<InteractionReplyOptions> {
         const totals = await this.database.fetchStringsTotals(channel);
         const channelData = await this.database.fetchChannel(channel);
-        const embed = MarkovEmbedFactory.getControlPanel(context, channel, channelData, totals);
+        const embed = this.embedFactory.getControlPanel(context, channel, channelData, totals);
         const primaryRow = new MessageActionRow().addComponents([
-            new MarkovButtonFactory(this, channel, channelData.posting ? MarkovButtonType.POSTING_DISABLE : MarkovButtonType.POSTING_ENABLE),
-            new MarkovButtonFactory(this, channel, channelData.tracking ? MarkovButtonType.TRACKING_DISABLE : MarkovButtonType.TRACKING_ENABLE),
-            new MarkovButtonFactory(this, channel, MarkovButtonType.WIPE)
+            this.buttonFactory.getMarkovButton(channel, channelData.posting ? MarkovButtonType.POSTING_DISABLE : MarkovButtonType.POSTING_ENABLE),
+            this.buttonFactory.getMarkovButton(channel, channelData.tracking ? MarkovButtonType.TRACKING_DISABLE : MarkovButtonType.TRACKING_ENABLE),
+            this.buttonFactory.getMarkovButton(channel, MarkovButtonType.WIPE)
         ]);
         const secondaryRow = new MessageActionRow().addComponents([
-            new MarkovButtonFactory(this, channel, channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
-            new MarkovButtonFactory(this, channel, channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE)
+            this.buttonFactory.getMarkovButton(channel, channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
+            this.buttonFactory.getMarkovButton(channel, channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE)
         ]);
         return { embeds: [embed], components: [primaryRow, secondaryRow] };
     }
@@ -195,10 +193,10 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
             this.toggleMessageComponents(message, true);
             await context.editReply({
                 ...(message.content && { content: message.content }),
-                embeds: [...message.embeds, MarkovEmbedFactory.getPurgeConfirmEmbed(context)],
+                embeds: [...message.embeds, this.embedFactory.getPurgeConfirmEmbed(context)],
                 components: [...message.components, new MessageActionRow().addComponents(
-                    new MarkovButtonFactory(this, <GuildChannel>message.channel, MarkovButtonType.BACKOUT),
-                    new MarkovButtonFactory(this, <GuildChannel>message.channel, MarkovButtonType.PURGE_CONFIRMED)
+                    this.buttonFactory.getMarkovButton(<GuildChannel>message.channel, MarkovButtonType.BACKOUT),
+                    this.buttonFactory.getMarkovButton(<GuildChannel>message.channel, MarkovButtonType.PURGE_CONFIRMED)
                 )],
             });
             return null;

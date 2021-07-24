@@ -1,11 +1,11 @@
 import { CommandClient, HandlerResult } from 'discord.js-commands';
-import { InternalHandler } from '../..';
+import { CommonHandler } from '../..';
 
-export class LoggerHandler extends InternalHandler {
+export class LoggerHandler extends CommonHandler {
 
 
     constructor() {
-        super({ id: 'logger', nsfw: false });
+        super({ id: 'logger' });
     }
 
     public override async setup(client: CommandClient): Promise<HandlerResult> {

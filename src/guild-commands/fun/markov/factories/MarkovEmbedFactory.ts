@@ -1,15 +1,16 @@
 import { MarkovChannelSchema, MarkovStringTotals } from '../../../..';
-import { EmbedFactory, HandlerContext } from 'discord.js-commands';
+import { EmbedFactory, HandlerContext, HandlerEmbed } from 'discord.js-commands';
 import { GuildChannel, User, Util } from 'discord.js';
+import { MarkovHandler } from '../MarkovHandler';
 
-export class MarkovEmbedFactory extends EmbedFactory {
+export class MarkovEmbedFactory extends EmbedFactory<MarkovHandler> {
 
-    constructor(context: HandlerContext) {
-        super(context)
+    constructor(handler: MarkovHandler) {
+        super(handler)
     }
 
-    public static getControlPanel(context: HandlerContext, channel: GuildChannel, channelData: MarkovChannelSchema, totals: MarkovStringTotals): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getControlPanel(context: HandlerContext, channel: GuildChannel, channelData: MarkovChannelSchema, totals: MarkovStringTotals): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription(`**Markov Control Panel for ${channel}**`)
             .addField(`Settings`, [
                 `${channelData.posting ? '🟢' : '🔴'} Post Messages: **${channelData.posting ? 'Enabled' : 'Disabled'}**`,
@@ -26,34 +27,34 @@ export class MarkovEmbedFactory extends EmbedFactory {
             ].join('\n'), false)
     }
 
-    public static getMissingAdminEmbed(context: HandlerContext): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getMissingAdminEmbed(context: HandlerContext): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription(`Sorry! you must be an admin to use the markov control panel!`);
     }
 
-    public static getWipeConfirmEmbed(context: HandlerContext, channel: GuildChannel): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getWipeConfirmEmbed(context: HandlerContext, channel: GuildChannel): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription([
                 `⚠️ Are you sure you want to wipe all saved message data for ${channel}?`,
                 `*Please note this is permanent and cannot be undone*`,
             ].join('\n'));
     }
 
-    public static getPurgeConfirmEmbed(context: HandlerContext): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getPurgeConfirmEmbed(context: HandlerContext): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription([
                 '⚠️ Before you can disable markov all saved data must be purged',
                 '⛔ This is irreversible and will hard reset all markov settings for this guild'
             ].join('\n'))
     }
 
-    public static getPurgedEmbed(context: HandlerContext): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getPurgedEmbed(context: HandlerContext): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription(`🦺 You can now safely disable markov!`);
     }
 
-    public static getFailedEmbed(context: HandlerContext, channel: GuildChannel, user: User | null): MarkovEmbedFactory {
-        return new MarkovEmbedFactory(context)
+    public getFailedEmbed(context: HandlerContext, channel: GuildChannel, user: User | null): HandlerEmbed {
+        return new HandlerEmbed(context)
             .setDescription([
                 `Sorry! I failed to genereate a message for ${channel}${user ? `/${user}` : ''}`,
                 '',

@@ -1,6 +1,6 @@
 import { HandlerOptions, CommandHandler, HandlerResult, HandlerContext } from 'discord.js-commands';
 import { Guild, ApplicationCommand, ApplicationCommandData, CommandInteraction } from 'discord.js';
-import { CommonHandler, CommonResponseFactory } from '../..';
+import { CommonHandler } from '../..';
 
 export enum GuildCommandHandlerGroup {
     BOORU = 'Booru',
@@ -10,12 +10,9 @@ export enum GuildCommandHandlerGroup {
 export interface GuildCommandHandlerOptions extends HandlerOptions {
     readonly commandData: ApplicationCommandData,
     readonly group: GuildCommandHandlerGroup,
-    readonly nsfw: boolean,
 }
 
 export abstract class GuildCommandHandler extends CommonHandler implements CommandHandler {
-
-    abstract override readonly responseFactory: CommonResponseFactory<GuildCommandHandler>;
 
     public readonly commandData: ApplicationCommandData;
     public readonly group: GuildCommandHandlerGroup;
@@ -28,7 +25,7 @@ export abstract class GuildCommandHandler extends CommonHandler implements Comma
 
     public abstract onCommand(interaction: CommandInteraction): Promise<HandlerResult | null>;
 
-    public async isEnabled(context: HandlerContext): Promise<boolean> {
+    public override async isEnabled(context: HandlerContext): Promise<boolean> {
         return Boolean(await this.fetchCommand(<Guild>context.guild))
     }
 
