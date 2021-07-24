@@ -1,59 +1,31 @@
-import { WeatherDatabase, OpenWeatherAPI, LocationData, WeatherCommandData, WeatherSubCommandName, WeatherEmbedFactory, WeatherCustomData, GuildHandlerGroup, WeatherButtonCustomData, WeatherTempsOrder, WeatherDisplayType, WeatherButtonFactory, WeatherSelectMenuFactory, GuildHandler } from '../../..';
+import { WeatherDatabase, OpenWeatherAPI, LocationData, WeatherCommandData, WeatherSubCommandName, WeatherEmbedFactory, WeatherCustomData, WeatherButtonCustomData, WeatherTempsOrder, WeatherDisplayType, WeatherButtonFactory, WeatherSelectMenuFactory } from '../../..';
 import { InteractionReplyOptions, MessageActionRow, ButtonInteraction, GuildMember, CommandInteraction, TextChannel, Message, Guild, GuildChannel, SelectMenuInteraction } from 'discord.js';
-import { CommandClient, HandlerContext, HandlerCustomData, HandlerResult } from 'discord.js-commands';
+import { ButtonHandler, CommandClient, HandlerContext, HandlerCustomData, HandlerResult, HandlerSelectMenu, SelectMenuHandler } from 'discord.js-commands';
 import { PoolConfig } from 'mariadb';
 
 import * as nconf from 'nconf';
+import { GuildCommandHandler, GuildCommandHandlerGroup } from '../../../core/GuildCommandHandler';
 nconf.required(['OPEN_WEATHER_API_KEY']);
 
 
-export class WeatherHandler extends GuildHandler<WeatherCustomData> {
+export class WeatherHandler extends GuildCommandHandler implements ButtonHandler<WeatherCustomData>, SelectMenuHandler<WeatherCustomData> {
 
+    public readonly selectMenuFactory: WeatherSelectMenuFactory;
+    public readonly buttonFactory: WeatherButtonFactory;
+    public readonly embedFactory: WeatherEmbedFactory;
     public readonly database: WeatherDatabase;
     public readonly api: OpenWeatherAPI;
 
     constructor(poolConfig: PoolConfig) {
-        super({
-            commandData: WeatherCommandData,
-            group: GuildHandlerGroup.FUN,
-            id: 'weather',
-            nsfw: false
-        });
+        super({ commandData: WeatherCommandData, group: GuildCommandHandlerGroup.FUN, id: 'weather', });
         this.database = new WeatherDatabase(poolConfig);
         this.api = new OpenWeatherAPI(nconf.get('OPEN_WEATHER_API_KEY'));
+        this.selectMenuFactory = new WeatherSelectMenuFactory(this);
+        this.buttonFactory = new WeatherButtonFactory(this);
+        this.embedFactory = new WeatherEmbedFactory(this);
     }
 
-    public override encodeButton(customData: WeatherButtonCustomData): string {
-        return JSON.stringify({
-            d: customData.display.charAt(0),
-            ...(customData.page && { page: customData.page }),
-            ...(customData.name && {
-                geo: [
-                    customData.name,
-                    customData.state || '',
-                    customData.country || '',
-                    customData.lat,
-                    customData.lon
-                ].join(',')
-            })
-        });
-    }
 
-    public override decodeButton(customId: string): WeatherButtonCustomData {
-        const encoded = JSON.parse(customId);
-        const geoParts = encoded.geo ? encoded.geo.split(',') : [];
-        return {
-            display: Object.values(WeatherDisplayType).find(name => name.charAt(0) === encoded.d)!,
-            ...(encoded.page && { page: encoded.page }),
-            ...(encoded.geo && {
-                name: geoParts[0],
-                ...(geoParts[1] && { state: geoParts[1] }),
-                ...(geoParts[2] && { country: geoParts[2] }),
-                lat: parseFloat(geoParts[3]),
-                lon: parseFloat(geoParts[4]),
-            })
-        }
-    }
 
     public async onCommand(interaction: CommandInteraction): Promise<any> {
         await interaction.defer();
@@ -81,7 +53,7 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         }
     }
 
-    public override async onButton(interaction: ButtonInteraction, customData: WeatherButtonCustomData): Promise<any> {
+    public async onButton(interaction: ButtonInteraction, customData: WeatherButtonCustomData): Promise<any> {
         await interaction.deferUpdate();
         const { message } = <{ message: Message }>interaction;
 
@@ -101,12 +73,12 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         }
     }
 
-    public override async onSelectMenu(interaction: SelectMenuInteraction, _customData: HandlerCustomData): Promise<any> {
+    public async onSelectMenu(interaction: SelectMenuInteraction, _customData: HandlerCustomData): Promise<any> {
         await interaction.deferUpdate();
         const order = <WeatherTempsOrder>interaction.values[0];
         const message = <Message>interaction.message;
-        WeatherEmbedFactory.orderEmbedData((message.embeds[0]!), order);
-        const selectMenu = <WeatherSelectMenuFactory>message.components[0]!.components[0];
+        this.embedFactory.orderEmbedData((message.embeds[0]!), order);
+        const selectMenu = <HandlerSelectMenu<WeatherCustomData, WeatherHandler>>message.components[0]!.components[0];
         selectMenu.options.forEach(option => option.default = option.value === order)
         return await message.edit({
             ...(message.content && { content: message.content }),
@@ -119,13 +91,13 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
         const location = scope instanceof GuildMember ? null : scope;
         const link = await this.database.fetchLink(member);
-        if (!location && !link) return WeatherEmbedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
+        if (!location && !link) return this.embedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
         const geocoding = location ? await this.api.geocoding(location) : [link!];
-        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
-        if (!geocoding.length) return WeatherEmbedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
+        if (OpenWeatherAPI.isError(geocoding)) return this.embedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return this.embedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const onecall = await this.api.oneCall(geocoding[0]!);
-        if (OpenWeatherAPI.isError(onecall)) return WeatherEmbedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
-        const embed = WeatherEmbedFactory.getAlertEmbed(context, geocoding[0]!, onecall);
+        if (OpenWeatherAPI.isError(onecall)) return this.embedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
+        const embed = this.embedFactory.getAlertEmbed(context, geocoding[0]!, onecall);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.CURRENT, geocoding[0]!),
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.FORECAST, geocoding[0]!),
@@ -139,13 +111,13 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
         const location = scope instanceof GuildMember ? null : scope;
         const link = await this.database.fetchLink(member);
-        if (!location && !link) return WeatherEmbedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
+        if (!location && !link) return this.embedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
         const geocoding = location ? await this.api.geocoding(location) : [link!];
-        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
-        if (!geocoding.length) return WeatherEmbedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
+        if (OpenWeatherAPI.isError(geocoding)) return this.embedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return this.embedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const onecall = await this.api.oneCall(geocoding[0]!);
-        if (OpenWeatherAPI.isError(onecall)) return WeatherEmbedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
-        const embed = WeatherEmbedFactory.getCurrentEmbed(context, geocoding[0]!, onecall);
+        if (OpenWeatherAPI.isError(onecall)) return this.embedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
+        const embed = this.embedFactory.getCurrentEmbed(context, geocoding[0]!, onecall);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.FORECAST, geocoding[0]!),
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.AIR_QUALITY, geocoding[0]!),
@@ -159,13 +131,13 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
         const location = scope instanceof GuildMember ? null : scope;
         const link = await this.database.fetchLink(member);
-        if (!location && !link) return WeatherEmbedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
+        if (!location && !link) return this.embedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
         const geocoding = location ? await this.api.geocoding(location) : [link!];
-        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
-        if (!geocoding.length) return WeatherEmbedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
+        if (OpenWeatherAPI.isError(geocoding)) return this.embedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return this.embedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const onecall = await this.api.oneCall(geocoding[0]!);
-        if (OpenWeatherAPI.isError(onecall)) return WeatherEmbedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
-        const embed = WeatherEmbedFactory.getForecastEmbed(context, geocoding[0]!, onecall);
+        if (OpenWeatherAPI.isError(onecall)) return this.embedFactory.getAPIErrorEmbed(context, onecall).toReplyOptions();
+        const embed = this.embedFactory.getForecastEmbed(context, geocoding[0]!, onecall);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.CURRENT, geocoding[0]!),
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.AIR_QUALITY, geocoding[0]!),
@@ -179,13 +151,13 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
         const member = scope instanceof GuildMember ? scope : <GuildMember>context.member;
         const location = scope instanceof GuildMember ? null : scope;
         const link = await this.database.fetchLink(member);
-        if (!location && !link) return WeatherEmbedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
+        if (!location && !link) return this.embedFactory.getMissingParamsEmbed(context, member).toReplyOptions();
         const geocoding = location ? await this.api.geocoding(location) : [link!];
-        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
-        if (!geocoding.length) return WeatherEmbedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
+        if (OpenWeatherAPI.isError(geocoding)) return this.embedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return this.embedFactory.getUnknownLocationEmbed(context, location!).toReplyOptions();
         const airPollution = await this.api.airPollution(geocoding[0]!);
-        if (OpenWeatherAPI.isError(airPollution)) return WeatherEmbedFactory.getAPIErrorEmbed(context, airPollution).toReplyOptions();
-        const embed = WeatherEmbedFactory.getAirPollutionEmbed(context, geocoding[0]!, airPollution);
+        if (OpenWeatherAPI.isError(airPollution)) return this.embedFactory.getAPIErrorEmbed(context, airPollution).toReplyOptions();
+        const embed = this.embedFactory.getAirPollutionEmbed(context, geocoding[0]!, airPollution);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.CURRENT, geocoding[0]!),
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.FORECAST, geocoding[0]!),
@@ -204,11 +176,11 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
             if (member) array.push([link, member])
             return array;
         }, new Array());
-        if (!links.length) return WeatherEmbedFactory.getNoLinkedMembersEmbed(context, channel).toReplyOptions();
+        if (!links.length) return this.embedFactory.getNoLinkedMembersEmbed(context, channel).toReplyOptions();
         const sliced = links.slice((page - 1) * perPage, page * perPage);
         if (!sliced.length && page !== 1) return this.fetchServerTempsResponse(context, { page: 1 });
         for (const slice of sliced) slice.push(await this.api.oneCall(slice[0]));
-        const embed = WeatherEmbedFactory.orderEmbedData(WeatherEmbedFactory.getServerTempsEmbed(context, sliced), order);
+        const embed = this.embedFactory.orderEmbedData(this.embedFactory.getServerTempsEmbed(context, sliced), order);
         const orderActionRow = new MessageActionRow().addComponents([WeatherSelectMenuFactory.getOrderSelectMenu(this, order)]);
         const pageActionRow = new MessageActionRow();
         if ((page - 1 > 0) && (links.length / perPage) >= page - 1) pageActionRow.addComponents(WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.SERVER_TEMPS, page - 1));
@@ -219,17 +191,17 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
 
     private async fetchLinkResponse(context: HandlerContext, location: LocationData, targetMember: GuildMember) {
         const { member } = <{ member: GuildMember }>context;
-        if (targetMember !== member && !this.isAdmin(context)) return WeatherEmbedFactory.getMissingAdminEmbed(context).toReplyOptions();
+        if (targetMember !== member && !this.isAdmin(context)) return this.embedFactory.getMissingAdminEmbed(context).toReplyOptions();
         const geocoding = await this.api.geocoding(location);
-        if (OpenWeatherAPI.isError(geocoding)) return WeatherEmbedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
-        if (!geocoding.length) return WeatherEmbedFactory.getUnknownLocationEmbed(context, location).toReplyOptions();
+        if (OpenWeatherAPI.isError(geocoding)) return this.embedFactory.getAPIErrorEmbed(context, geocoding).toReplyOptions();
+        if (!geocoding.length) return this.embedFactory.getUnknownLocationEmbed(context, location).toReplyOptions();
         await this.database.setLink(targetMember, geocoding[0]!);
         const geoLocation: LocationData = {
             city_name: geocoding[0]!.name,
             ...(geocoding[0]!.state && { state_code: geocoding[0]!.state }),
             ...(geocoding[0]!.country && { country_code: geocoding[0]!.country }),
         };
-        const embed = WeatherEmbedFactory.getLinkedEmbed(context, geoLocation, targetMember);
+        const embed = this.embedFactory.getLinkedEmbed(context, geoLocation, targetMember);
         const actionRow = new MessageActionRow().addComponents([
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.CURRENT, geocoding[0]!),
             WeatherButtonFactory.getWeatherButton(this, WeatherDisplayType.FORECAST, geocoding[0]!),
@@ -241,9 +213,9 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
 
     private async fetchUnlinkResponse(context: HandlerContext, targetMember: GuildMember): Promise<InteractionReplyOptions> {
         const { member } = <{ member: GuildMember }>context;
-        if (targetMember !== member && !this.isAdmin(context)) return WeatherEmbedFactory.getMissingAdminEmbed(context).toReplyOptions();
+        if (targetMember !== member && !this.isAdmin(context)) return this.embedFactory.getMissingAdminEmbed(context).toReplyOptions();
         await this.database.deleteLink(targetMember);
-        const embed = WeatherEmbedFactory.getUnlinkedEmbed(context, member)
+        const embed = this.embedFactory.getUnlinkedEmbed(context, member)
         return { embeds: [embed], components: [] }
     }
 

@@ -1,5 +1,5 @@
 import { WeatherCustomData, WeatherHandler, WeatherTempsOrder } from '../../../..'
-import { SelectMenuFactory } from 'discord.js-commands';
+import { SelectMenuFactory, HandlerSelectMenu, HandlerCustomData } from 'discord.js-commands';
 
 export class WeatherSelectMenuFactory extends SelectMenuFactory<WeatherCustomData, WeatherHandler> {
 
@@ -7,8 +7,8 @@ export class WeatherSelectMenuFactory extends SelectMenuFactory<WeatherCustomDat
         super(handler);
     }
 
-    public static getOrderSelectMenu(handler: WeatherHandler, selected: WeatherTempsOrder): WeatherSelectMenuFactory {
-        const selectMenu = new WeatherSelectMenuFactory(handler);
+    public static getOrderSelectMenu(handler: WeatherHandler, selected: WeatherTempsOrder): HandlerSelectMenu<HandlerCustomData, WeatherHandler> {
+        const selectMenu = new HandlerSelectMenu(handler);
         for (const orderName of Object.values(WeatherTempsOrder)) {
             selectMenu.addOptions({
                 label: `Order by ${orderName}`,

@@ -53,20 +53,20 @@ export * from './guild-commands/booru/safebooru/SafebooruHandler';
 export * from './guild-commands/booru/safebooru/SafebooruAPI';
 
 // /** Fun Commands **/
-//
-// export * from './commands/fun/weather/factories/WeatherSelectMenuFactory';
-// export * from './commands/fun/weather/factories/WeatherButtonFactory';
-// export * from './commands/fun/weather/factories/WeatherEmbedFactory';
-// export * from './commands/fun/weather/api/interfaces/AirPollutionData';
-// export * from './commands/fun/weather/api/interfaces/GeocodeData';
-// export * from './commands/fun/weather/api/interfaces/OneCallData';
-// export * from './commands/fun/weather/api/OpenWeatherAPI';
-// export * from './commands/fun/weather/WeatherCommandData';
-// export * from './commands/fun/weather/WeatherConstants';
-// export * from './commands/fun/weather/WeatherDatabase';
-// export * from './commands/fun/weather/WeatherHandler';
-// export * from './commands/fun/weather/WeatherEmojis';
-//
+
+export * from './guild-commands/fun/weather/factories/WeatherSelectMenuFactory';
+export * from './guild-commands/fun/weather/factories/WeatherButtonFactory';
+export * from './guild-commands/fun/weather/factories/WeatherEmbedFactory';
+export * from './guild-commands/fun/weather/api/interfaces/AirPollutionData';
+export * from './guild-commands/fun/weather/api/interfaces/GeocodeData';
+export * from './guild-commands/fun/weather/api/interfaces/OneCallData';
+export * from './guild-commands/fun/weather/api/OpenWeatherAPI';
+export * from './guild-commands/fun/weather/WeatherCommandData';
+export * from './guild-commands/fun/weather/WeatherConstants';
+export * from './guild-commands/fun/weather/WeatherDatabase';
+export * from './guild-commands/fun/weather/WeatherHandler';
+export * from './guild-commands/fun/weather/WeatherEmojis';
+
 export * from './guild-commands/fun/markov/factories/MarkovButtonFactory';
 export * from './guild-commands/fun/markov/factories/MarkovEmbedFactory';
 export * from './guild-commands/fun/markov/MarkovCommandData';
