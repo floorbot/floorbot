@@ -82,3 +82,9 @@ export * from './commands/fun/magick/MagickCommandData';
 export * from './commands/fun/magick/tools/ImageMagick';
 export * from './commands/fun/magick/MagickConstants';
 export * from './commands/fun/magick/MagickHandler';
+
+export * from './commands/fun/flip/FlipCommandData';
+export * from './commands/fun/flip/FlipHandler';
+
+export * from './commands/fun/roll/RollCommandData';
+export * from './commands/fun/roll/RollHandler';

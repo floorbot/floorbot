@@ -33,9 +33,9 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
         this.database = new MarkovDatabase(poolConfig, 20, 1);
     }
 
-    public override async isAuthorised(context: HandlerContext, _customData?: HandlerCustomData): Promise<string[]> {
+    public override async isAuthorised(context: HandlerContext, customData?: MarkovCustomData): Promise<string[]> {
         if (context instanceof CommandInteraction && ['generate'].includes(context.options.getSubCommand())) { return []; }
-        return super.isAuthorised(context, _customData);
+        return super.isAuthorised(context, customData);
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
