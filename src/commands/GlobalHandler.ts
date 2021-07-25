@@ -38,7 +38,7 @@ export class GlobalHandler<T extends HandlerCustomData> extends BaseHandler impl
     public override async isAuthorised(context: HandlerContext, _customData?: HandlerCustomData): Promise<string[]> {
         const { member, channel } = <{ member: GuildMember, channel: GuildChannel }>context;
         const permissions = member.permissionsIn(channel);
-        return permissions.missing(this.permissions);
+        return permissions.missing(this.permissions, false);
     }
 
     public async fetchCommand(scope: CommandClient | Guild): Promise<ApplicationCommand | null> {
