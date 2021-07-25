@@ -51,8 +51,6 @@ export class GuildHandler<T extends HandlerCustomData> extends GlobalHandler<T> 
     }
 
     public override getHandlerNSFWResponse(context: HandlerContext, customData?: T): InteractionReplyOptions {
-        // const type = this.getContextName(context);
-
         const buffer = fs.readFileSync(`${__dirname}/../../res/thumbnails/nsfw.png`);
         const attachment = new HandlerAttachment(buffer, 'nsfw.png');
         const embed = this.getEmbedTemplate(context, customData)
