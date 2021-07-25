@@ -1,26 +1,17 @@
-import { MagickAttachmentFactory, MagickAction, MagickProgress } from '../../../..'
-import { HandlerContext, EmbedFactory } from 'discord.js-commands';
+import { MagickHandler, MagickAttachment, MagickProgress, MagickAction } from '../../../..'
+import { HandlerContext, HandlerEmbed } from 'discord.js-commands';
 import { Util, GuildChannel } from 'discord.js';
 import { ProbeResult } from 'probe-image-size';
 
 // @ts-ignore
 import * as DHMS from 'dhms.js';
 
-export class MagickEmbedFactory extends EmbedFactory {
+export class MagickEmbedFactory {
 
-    constructor(context: HandlerContext) {
-        super(context);
-        this.setFooter();
-    }
-
-    public override setFooter(text?: string): this {
-        return super.setFooter(text || 'Powered by ImageMagick', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ImageMagick_logo.svg/1200px-ImageMagick_logo.svg.png');
-    }
-
-    public static getImageEmbed(context: HandlerContext, data: ProbeResult | MagickAttachmentFactory): MagickEmbedFactory {
+    public static getImageEmbed(handler: MagickHandler, context: HandlerContext, data: ProbeResult | MagickAttachment): HandlerEmbed {
         const timeString = DHMS.print(Date.now() - context.createdTimestamp, { limit: 1, fullname: true });
-        const embed = new MagickEmbedFactory(context)
-        if (data instanceof MagickAttachmentFactory) {
+        const embed = handler.getEmbedTemplate(context);
+        if (data instanceof MagickAttachment) {
             const { metadata } = data;
             embed.setTitle(`${data.action.label} Original`);
             embed.setImage(`attachment://${data.name}`);
@@ -37,13 +28,8 @@ export class MagickEmbedFactory extends EmbedFactory {
         return embed;
     }
 
-    public static getWhitelistEmbed(context: HandlerContext): MagickEmbedFactory {
-        return new MagickEmbedFactory(context)
-            .setDescription('Sorry! only the original author can make changes to this image');
-    }
-
-    public static getProgressEmbed(context: HandlerContext, image: ProbeResult, action: MagickAction, progress: MagickProgress): MagickEmbedFactory {
-        const embed = new MagickEmbedFactory(context)
+    public static getProgressEmbed(handler: MagickHandler, context: HandlerContext, image: ProbeResult, action: MagickAction, progress: MagickProgress): HandlerEmbed {
+        const embed = handler.getEmbedTemplate(context)
             .setTitle(`Please wait for \`${action.label.toLowerCase()}\``)
             .setDescription('*This may take a while especially for gifs*')
             .setThumbnail(image.url)
@@ -57,20 +43,16 @@ export class MagickEmbedFactory extends EmbedFactory {
         return embed;
     }
 
-    public static getInvalidInputEmbed(context: HandlerContext, input: String): MagickEmbedFactory {
-        return new MagickEmbedFactory(context).setDescription(`Sorry! I'm not sure how to resolve:\n\`${input}\``);
-    }
-
-    public static getMissingCacheEmbed(context: HandlerContext, channel: GuildChannel): MagickEmbedFactory {
-        return new MagickEmbedFactory(context)
+    public static getMissingCacheEmbed(handler: MagickHandler, context: HandlerContext, channel: GuildChannel): HandlerEmbed {
+        return handler.getEmbedTemplate(context)
             .setDescription([
                 `Sorry! there are no cached images for ${channel}`,
                 '*Please post an image or include one in the command*'
             ].join('\n'));
     }
 
-    public static getFailedEmbed(context: HandlerContext, image: ProbeResult, action: MagickAction): MagickEmbedFactory {
-        return new MagickEmbedFactory(context)
+    public static getFailedEmbed(handler: MagickHandler, context: HandlerContext, image: ProbeResult, action: MagickAction): HandlerEmbed {
+        return handler.getEmbedTemplate(context)
             .setThumbnail(image.url)
             .setDescription([
                 `Sorry it looks like I ran into an unexpected issue with \`${action!.label.toLowerCase()}\``,

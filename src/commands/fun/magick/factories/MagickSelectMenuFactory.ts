@@ -1,15 +1,11 @@
 import { MagickHandler, MagickCustomData, MagickAction } from '../../../..';
-import { SelectMenuFactory, HandlerContext } from 'discord.js-commands';
+import { HandlerContext, HandlerSelectMenu } from 'discord.js-commands';
 import { Message } from 'discord.js';
 
-export class MagickSelectMenuFactory extends SelectMenuFactory<MagickCustomData, MagickHandler> {
+export class MagickSelectMenuFactory {
 
-    constructor(handler: MagickHandler) {
-        super(handler);
-    }
-
-    public static getMagickSelectMenu(handler: MagickHandler, context: HandlerContext, selected?: MagickAction): MagickSelectMenuFactory {
-        const selectMenu = new MagickSelectMenuFactory(handler);
+    public static getMagickSelectMenu(handler: MagickHandler, context: HandlerContext, selected?: MagickAction): HandlerSelectMenu<MagickCustomData> {
+        const selectMenu = new HandlerSelectMenu(handler);
         const user = context instanceof Message ? context.author : context.user;
         selectMenu.setCustomId({ wl: user.id });
         selectMenu.setPlaceholder('Select a process to apply to the image');

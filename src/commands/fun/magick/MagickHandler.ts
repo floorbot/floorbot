@@ -1,6 +1,6 @@
-import { GuildHandler, MagickCustomData, MagickCommandData, MagickEmbedFactory, GuildHandlerGroup, MagickAction, MagickSelectMenuFactory, MagickProgress, ImageMagick, MagickAttachmentFactory } from '../../..';
+import { GuildHandler, GuildHandlerGroup, MagickCustomData, MagickCommandData, ImageMagick, MagickEmbedFactory, MagickAction, MagickSelectMenuFactory, MagickAttachmentFactory, MagickProgress } from '../../..';
 import { CommandInteraction, GuildChannel, Message, SelectMenuInteraction, InteractionReplyOptions, Util } from 'discord.js';
-import { CommandClient, HandlerContext, HandlerResult } from 'discord.js-commands';
+import { CommandClient, HandlerContext, HandlerResult, HandlerEmbed } from 'discord.js-commands';
 import * as probe from 'probe-image-size';
 import CacheMap from 'cache-map.js';
 
@@ -9,35 +9,11 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
     private readonly cache: CacheMap<GuildChannel, { readonly message: Message } & probe.ProbeResult>;
 
     constructor() {
-        super({
-            id: 'magick',
-            nsfw: false,
-            group: GuildHandlerGroup.FUN,
-            commandData: MagickCommandData
-        });
+        super({ id: 'magick', group: GuildHandlerGroup.FUN, commandData: MagickCommandData });
         this.cache = new CacheMap({ ttl: 1000 * 60 * 60 * 2 }); // 2 hour ttl
     }
 
-    public override async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
-        const data = <MagickCustomData>customData;
-        if (data.wl && data.wl !== interaction.user.id) {
-            const embed = MagickEmbedFactory.getWhitelistEmbed(interaction);
-            return interaction.reply(embed.toReplyOptions(true))
-        }
-        await interaction.deferUpdate()
-        const { message } = <{ message: Message }>interaction;
-        const action = MagickAction[interaction.values[0]!]!;
-
-        const metadata = (await probe(interaction.message.embeds[0]!.image!.url!).catch(() => null))!;
-        const embed = MagickEmbedFactory.getProgressEmbed(interaction, metadata, action, {});
-        await message.edit({ embeds: [embed], components: [], files: [] });
-        await message.removeAttachments();
-
-        const response = await this.fetchMagickResponse(interaction, metadata, action);
-        return message.edit(response);
-    }
-
-    public async onCommand(interaction: CommandInteraction): Promise<any> {
+    public override async onCommand(interaction: CommandInteraction): Promise<any> {
         const { channel } = <{ channel: GuildChannel }>interaction;
         await interaction.defer();
         const input = interaction.options.getString('image');
@@ -50,16 +26,35 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
                     resolvedEmoji!.imageURL
             ).catch(() => null);
             const response = !metadata ?
-                MagickEmbedFactory.getInvalidInputEmbed(interaction, input).toReplyOptions() :
+                this.getInvalidInputResponse(interaction, input) :
                 await this.fetchMagickResponse(interaction, metadata);
             return interaction.followUp(response);
         }
 
         const metadata = this.cache.get(channel);
         const response = !metadata ?
-            MagickEmbedFactory.getMissingCacheEmbed(interaction, channel).toReplyOptions() :
+            MagickEmbedFactory.getMissingCacheEmbed(this, interaction, channel).toReplyOptions() :
             await this.fetchMagickResponse(interaction, metadata);
         return interaction.followUp(response);
+    }
+
+    public override async onSelectMenu(interaction: SelectMenuInteraction, _customData: MagickCustomData): Promise<any> {
+        await interaction.deferUpdate()
+        const { message } = <{ message: Message }>interaction;
+        const action = MagickAction[interaction.values[0]!]!;
+
+        const metadata = (await probe(interaction.message.embeds[0]!.image!.url!).catch(() => null))!;
+        const embed = MagickEmbedFactory.getProgressEmbed(this, interaction, metadata, action, {});
+        await message.edit({ embeds: [embed], components: [], files: [] });
+        await message.removeAttachments();
+
+        const response = await this.fetchMagickResponse(interaction, metadata, action);
+        return message.edit(response);
+    }
+
+    public override getEmbedTemplate(context: HandlerContext, _customData?: MagickCustomData): HandlerEmbed {
+        return super.getEmbedTemplate(context)
+            .setFooter('Powered by ImageMagick', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ImageMagick_logo.svg/1200px-ImageMagick_logo.svg.png');
     }
 
     private async fetchMagickResponse(context: HandlerContext, metadata: probe.ProbeResult, action?: MagickAction): Promise<InteractionReplyOptions> {
@@ -72,7 +67,7 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
 
         // Command first used and not SVG
         if (!action) {
-            const embed = MagickEmbedFactory.getImageEmbed(context, metadata);
+            const embed = MagickEmbedFactory.getImageEmbed(this, context, metadata);
             const actionRow = MagickSelectMenuFactory.getMagickSelectMenu(this, context, action).toActionRow();
             return { embeds: [embed], components: [actionRow] };
         }
@@ -102,7 +97,7 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
                         if ((updateTime + 1000) <= now) {
                             updateTime = now;
                             const message = <Message>context.message;
-                            const embed = MagickEmbedFactory.getProgressEmbed(context, metadata, action!, progress);
+                            const embed = MagickEmbedFactory.getProgressEmbed(this, context, metadata, action!, progress);
                             message.edit({ embeds: [embed], components: [] })
                         }
                         break;
@@ -115,11 +110,11 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
         ).then((buffer: any) => {
             const newMetadata = probe.sync(buffer)!;
             const actionRow = MagickSelectMenuFactory.getMagickSelectMenu(this, context, action).toActionRow();
-            const attachment = new MagickAttachmentFactory(buffer, action!, newMetadata);
-            const embed = MagickEmbedFactory.getImageEmbed(context, attachment);
+            const attachment = MagickAttachmentFactory.getMagickAttachment(buffer, action!, newMetadata);
+            const embed = MagickEmbedFactory.getImageEmbed(this, context, attachment);
             return { embeds: [embed], components: [actionRow], files: [attachment] };
         }).catch((_reason) => {
-            const embed = MagickEmbedFactory.getFailedEmbed(context, metadata, action!)
+            const embed = MagickEmbedFactory.getFailedEmbed(this, context, metadata, action!)
             return { embeds: [embed], components: [] };
         });
     }
