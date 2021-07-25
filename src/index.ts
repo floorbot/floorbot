@@ -6,6 +6,8 @@ export * from './commands/GuildHandler';
 /** Other **/
 
 export * from './commands/internal/LoggerHandler';
+export * from './commands/internal/PresenceHandler';
+export * from './commands/internal/UpdateHandler';
 
 /** Core Commands **/
 
