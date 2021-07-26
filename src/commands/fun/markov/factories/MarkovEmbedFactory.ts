@@ -11,7 +11,8 @@ export class MarkovEmbedFactory {
                 `${channelData.posting ? '🟢' : '🔴'} Post Messages: **${channelData.posting ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.tracking ? '🟢' : '🔴'} Track Messages: **${channelData.tracking ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.mentions ? '🟢' : '🔴'} Allow Mentions: **${channelData.mentions ? 'Enabled' : 'Disabled'}**`,
-                `${channelData.links ? '🟢' : '🔴'} Allow Links: **${channelData.links ? 'Enabled' : 'Disabled'}**`
+                `${channelData.links ? '🟢' : '🔴'} Allow Links: **${channelData.links ? 'Enabled' : 'Disabled'}**`,
+                `${channelData.owoify ? '🟢' : '🔴'} OwOify: **${channelData.owoify ? 'OwO' : 'NOwW'}**`
             ].join('\n'), false)
             .addField('Statistics', [
                 `Total Messages: **${totals.total}**`,
