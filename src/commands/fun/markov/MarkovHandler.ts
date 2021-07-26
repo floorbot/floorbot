@@ -180,7 +180,7 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
                 prng: Math.random,
                 filter: (result) => (
                     result.refs.length > 1 && // Multiple refs please
-                    !result.refs.some(ref => ref.string === res.string) && // No direct quoting
+                    // !result.refs.some(ref => ref.string === res.string) && // No direct quoting
                     result.string.split(' ').length > minLength && // Word limits
                     (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string)) // No links
                 )
