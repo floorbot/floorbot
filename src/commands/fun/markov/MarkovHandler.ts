@@ -58,7 +58,8 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
             case 'frequency': {
                 const perMessages = interaction.options.getInteger('messages') || undefined;
                 const perMinutes = interaction.options.getInteger('minutes') || undefined;
-                await this.database.setChannel(channel, { messages: perMessages, minutes: perMinutes });
+                const perMessagesMin = perMessages ? Math.max(perMessages, 5) : perMessages;
+                await this.database.setChannel(channel, { messages: perMessagesMin, minutes: perMinutes });
                 const response = await this.fetchControlPanel(interaction, channel);
                 return interaction.followUp(response);
             }

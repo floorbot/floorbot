@@ -20,8 +20,8 @@ export class FlipHandler extends GuildHandler<HandlerCustomData> {
                 const embed = this.getEmbedTemplate(interaction)
                     .setContextAuthor(interaction)
                     .setTitle(`You flipped ${Util.formatCommas(count)} coin${count > 1 ? 's' : ''}`)
-                    .addField('Heads', Util.formatCommas(heads))
-                    .addField('Tails', Util.formatCommas(count - heads));
+                    .addField('Heads', Util.formatCommas(heads), true)
+                    .addField('Tails', Util.formatCommas(count - heads), true);
                 return interaction.followUp(embed.toReplyOptions());
             }
             case 'text': {
