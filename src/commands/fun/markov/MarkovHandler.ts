@@ -1,4 +1,4 @@
-import { CommandInteraction, ApplicationCommand, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions } from 'discord.js';
+import { CommandInteraction, ApplicationCommand, Message, ButtonInteraction, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, Permissions } from 'discord.js';
 import { MarkovCommandData, MarkovDatabase, GuildHandler, MarkovButtonFactory, MarkovEmbedFactory, GuildHandlerGroup } from '../../..';
 import { CommandClient, HandlerContext, HandlerCustomData, HandlerResult } from 'discord.js-commands';
 import { PoolConfig } from 'mariadb';
@@ -32,7 +32,12 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
     public readonly database: MarkovDatabase;
 
     constructor(poolConfig: PoolConfig) {
-        super({ id: 'markov', commandData: MarkovCommandData, group: GuildHandlerGroup.FUN });
+        super({
+            id: 'markov',
+            group: GuildHandlerGroup.FUN,
+            commandData: MarkovCommandData,
+            permissions: [Permissions.FLAGS.ADMINISTRATOR]
+        });
         this.database = new MarkovDatabase(poolConfig, 20, 1);
     }
 
