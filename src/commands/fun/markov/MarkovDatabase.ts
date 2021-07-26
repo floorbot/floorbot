@@ -11,7 +11,8 @@ export interface MarkovChannelSchema {
     readonly posting: boolean,
     readonly tracking: boolean,
     readonly links: boolean,
-    readonly mentions: boolean
+    readonly mentions: boolean,
+    readonly owoify: boolean
 }
 
 export interface MarkovStringSchema {
@@ -52,7 +53,8 @@ export class MarkovDatabase {
             posting: false,
             tracking: false,
             mentions: false,
-            links: false
+            links: false,
+            owoify: false
         }
     }
 
@@ -62,9 +64,9 @@ export class MarkovDatabase {
         return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
     }
 
-    public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean }): Promise<MarkovChannelSchema> {
+    public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean, owoify?: boolean }): Promise<MarkovChannelSchema> {
         const existing = await this.fetchChannel(channel);
-        const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions)';
+        const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions: owoify)';
         const data = {
             guild_id: channel.guild.id,
             channel_id: channel.id,
@@ -73,7 +75,8 @@ export class MarkovDatabase {
             posting: options.posting ?? existing.posting,
             tracking: options.tracking ?? existing.tracking,
             links: options.links ?? existing.links,
-            mentions: options.mentions ?? existing.mentions
+            mentions: options.mentions ?? existing.mentions,
+            owoify: options.owoify ?? existing.owoify
         }
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;

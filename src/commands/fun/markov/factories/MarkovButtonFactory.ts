@@ -20,7 +20,9 @@ export class MarkovButtonFactory {
             case MarkovButtonType.LINKS_ENABLE:
             case MarkovButtonType.LINKS_DISABLE:
             case MarkovButtonType.MENTIONS_ENABLE:
-            case MarkovButtonType.MENTIONS_DISABLE: {
+            case MarkovButtonType.MENTIONS_DISABLE:
+            case MarkovButtonType.OWOIFY_ENABLE:
+            case MarkovButtonType.OWOIFY_DISABLE: {
                 return button.setStyle(MessageButtonStyles.SECONDARY);
             }
             case MarkovButtonType.WIPE:

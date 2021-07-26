@@ -3,6 +3,7 @@ import { MarkovCommandData, MarkovDatabase, GuildHandler, MarkovButtonFactory, M
 import { CommandClient, HandlerContext, HandlerCustomData, HandlerResult } from 'discord.js-commands';
 import { PoolConfig } from 'mariadb';
 import Markov from 'markov-strings';
+import * as owoify from 'owoify-js';
 
 export enum MarkovButtonType {
     POSTING_ENABLE = 'Enable Posting',
@@ -13,6 +14,8 @@ export enum MarkovButtonType {
     LINKS_DISABLE = 'Disable Links',
     MENTIONS_ENABLE = 'Enable Mentions',
     MENTIONS_DISABLE = 'Disable Mentions',
+    OWOIFY_ENABLE = 'Enable OwO',
+    OWOIFY_DISABLE = 'Disable OwO',
     WIPE = 'Wipe Data',
     WIPE_CONFIRMED = 'Confirm Wipe Data',
     PURGE_CONFIRMED = 'Purge All Data',
@@ -92,6 +95,12 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
                 const response = await this.fetchControlPanel(interaction, channel);
                 return (<Message>interaction.message).edit(response);
             }
+            case MarkovButtonType.OWOIFY_ENABLE:
+            case MarkovButtonType.OWOIFY_DISABLE: {
+                await this.database.setChannel(channel, { owoify: customData.type === MarkovButtonType.OWOIFY_ENABLE });
+                const response = await this.fetchControlPanel(interaction, channel);
+                return (<Message>interaction.message).edit(response);
+            }
             case MarkovButtonType.WIPE: {
                 const message = <Message>interaction.message;
                 this.toggleMessageComponents(message, true);
@@ -145,7 +154,8 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
         ]);
         const secondaryRow = new MessageActionRow().addComponents([
             MarkovButtonFactory.getMarkovButton(this, channel, channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
-            MarkovButtonFactory.getMarkovButton(this, channel, channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE)
+            MarkovButtonFactory.getMarkovButton(this, channel, channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE),
+            MarkovButtonFactory.getMarkovButton(this, channel, channelData.owoify ? MarkovButtonType.OWOIFY_DISABLE : MarkovButtonType.OWOIFY_ENABLE)
         ]);
         return { embeds: [embed], components: [primaryRow, secondaryRow] };
     }
@@ -163,15 +173,17 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
             const res = markov.generate({
                 maxTries: 100,
                 prng: Math.random,
-                filter: (result: any) => (
-                    result.refs.length > 1 &&
-                    result.string.split(' ').length > minLength &&
-                    (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string))
+                filter: (result) => (
+                    result.refs.length > 1 && // Multiple refs please
+                    !result.refs.some(ref => ref.string === res.string) && // No direct quoting
+                    result.string.split(' ').length > minLength && // Word limits
+                    (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string)) // No links
                 )
             });
             return resolve(res);
         }).then((res: any) => {
-            return { content: res.string, ...(channelData.mentions && { allowedMentions: { parse: [] } }) };
+            const content = channelData.owoify ? owoify.default(res.string, 'uwu') : res.string;
+            return { content: content, ...(channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;
         });
