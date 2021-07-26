@@ -187,7 +187,7 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
             });
             return resolve(res);
         }).then((res: any) => {
-            const content = channelData.owoify ? owoify.default(res.string, 'uwu') : res.string;
+            const content = channelData.owoify ? owoify.default(res.string) : res.string;
             return { content: content, ...(channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;
