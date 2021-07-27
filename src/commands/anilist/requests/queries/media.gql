@@ -1,0 +1,108 @@
+query($id: Int, $type: MediaType, $search: String) {
+    Media(type: $type, id: $id, search: $search){
+        id
+        type
+        description
+        stats {
+            scoreDistribution {
+                score
+                amount
+            }
+        }
+        trailer {
+            id
+            site
+        }
+        rankings {
+            id
+            rank
+            type
+            format
+            year
+            season
+            allTime
+            context
+        }
+        siteUrl
+        status
+        popularity
+        averageScore
+        season
+        isAdult
+        coverImage {
+            extraLarge
+            large
+            medium
+            color
+        }
+    	bannerImage
+        streamingEpisodes {
+            title
+            thumbnail
+            url
+            site
+        }
+        studios {
+            edges {
+                id
+                isMain
+                node {
+                    id
+                    name
+                    siteUrl
+                }
+            }
+        }
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
+        title {
+            romaji
+            english
+            native
+        }
+        format
+        episodes
+        nextAiringEpisode {
+            id
+            episode
+            airingAt
+            timeUntilAiring
+        }
+        chapters
+        volumes
+        source
+        characters {
+            nodes {
+                id
+                siteUrl
+                name {
+                    first
+                    last
+                    full
+                    native
+                }
+                image {
+                    large
+                    medium
+                }
+                favourites
+                gender
+                age
+                dateOfBirth {
+                    day
+                    month
+                    year
+                }
+                bloodType
+            }
+        }
+    }
+}

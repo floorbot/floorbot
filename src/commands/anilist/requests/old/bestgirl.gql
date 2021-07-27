@@ -1,0 +1,34 @@
+query($id: Int, $search: String) {
+    Media(id: $id, search: $search){
+        id
+        type
+        title {
+            romaji
+        }
+        siteUrl
+        coverImage {
+            extraLarge
+            large
+            medium
+            color
+        }
+        characters(sort: FAVOURITES_DESC) {
+            nodes {
+                description
+                id
+                name {
+                    first
+                    last
+                    full
+                    native
+                }
+                siteUrl
+                favourites
+                image {
+                    large
+                    medium
+                }
+            }
+        }
+    }
+}

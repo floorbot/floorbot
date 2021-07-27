@@ -1,0 +1,20 @@
+query ($type: MediaType, $search: String, $page: Int, $perPage: Int) {
+    Page(page: $page, perPage: $perPage) {
+        pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+        }
+        media(type: $type, search: $search) {
+            id
+            type
+            title {
+                romaji
+                english
+                native
+            }
+        }
+    }
+}

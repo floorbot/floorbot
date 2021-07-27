@@ -1,5 +1,6 @@
 import { ButtonHandler, CommandHandler, HandlerContext, HandlerCustomData, HandlerResult, SelectMenuHandler, HandlerOptions, BaseHandler, CommandClient, HandlerEmbed } from 'discord.js-commands';
 import { Guild, ApplicationCommand, GuildChannel, GuildMember, ButtonInteraction, SelectMenuInteraction, CommandInteraction, ApplicationCommandData } from 'discord.js';
+import * as nconf from 'nconf';
 
 export interface GlobalHandlerOptions extends HandlerOptions {
     readonly commandData: ApplicationCommandData,
@@ -37,6 +38,10 @@ export class GlobalHandler<T extends HandlerCustomData> extends BaseHandler impl
 
     public override async isAuthorised(context: HandlerContext, _customData?: HandlerCustomData): Promise<string[]> {
         const { member, channel } = <{ member: GuildMember, channel: GuildChannel }>context;
+        const devs = nconf.get('devs');
+        if (devs && Array.isArray(devs)) {
+            if (devs.includes(member.user.id)) return [];
+        }
         const permissions = member.permissionsIn(channel);
         return permissions.missing(this.permissions, false);
     }

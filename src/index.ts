@@ -20,6 +20,10 @@ export * from './commands/global/admin/AdminHandler';
 export * from './commands/global/utils/UtilsCommandData';
 export * from './commands/global/utils/UtilsHandler';
 
+/** Anime Commands **/
+
+export * from './commands/anilist/handlers/AnimeHandler';
+
 /** Booru Commands **/
 
 export * from './commands/booru/factories/BooruSelectMenuFactory';

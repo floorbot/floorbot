@@ -6,6 +6,7 @@ import { Intents } from 'discord.js';
 
 import { LoggerHandler, PresenceHandler, UpdateHandler } from '..';
 import { AdminHandler, UtilsHandler } from '..';
+import { AnimeHandler } from '..';
 import { DanbooruHandler, SafebooruHandler, Rule34Handler, E621Handler, PregchanHandler } from '..';
 import { WeatherHandler, DefineHandler, MarkovHandler, MagickHandler, FlipHandler, RollHandler } from '..';
 
@@ -30,6 +31,8 @@ const client = new CommandClient({
 
         new AdminHandler(),
         new UtilsHandler(),
+
+        new AnimeHandler(),
 
         new DanbooruHandler(),
         new SafebooruHandler(),

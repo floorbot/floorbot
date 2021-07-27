@@ -1,0 +1,30 @@
+query($id: Int, $page: Int, $type: ActivityType) {
+    Page(perPage: 50, page: $page) {
+        pageInfo {
+            total
+            perPage
+            currentPage
+            lastPage
+            hasNextPage
+        }
+        activities(userId: $id, type: $type, sort: ID_DESC) {
+            ... on ListActivity {
+                id
+                createdAt
+                status
+                progress
+                siteUrl
+                media {
+                    id
+                    siteUrl
+                    title {
+                        romaji
+                        english
+                        native
+                        userPreferred
+                    }
+                }
+            }
+        }
+    }
+}

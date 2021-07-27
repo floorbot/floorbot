@@ -4,6 +4,7 @@ import { GlobalHandler, GlobalHandlerOptions } from '../..';
 import * as fs from 'fs';
 
 export enum GuildHandlerGroup {
+    ANIME = 'Anime',
     BOORU = 'Booru',
     FUN = 'Fun'
 }
@@ -63,10 +64,16 @@ export class GuildHandler<T extends HandlerCustomData> extends GlobalHandler<T> 
     }
 
     public getNotFoundResponse(context: HandlerContext, query: string): InteractionReplyOptions {
-        return this.getEmbedTemplate(context).setDescription(
-            `Sorry! I could not find \`${query}\` 😟\n` +
-            '*Please check your spelling or try again later!*'
-        ).toReplyOptions();
+        const buffer = fs.readFileSync(`${__dirname}/../../res/thumbnails/404.png`);
+        const attachment = new HandlerAttachment(buffer, '404.png');
+        const embed = this.getEmbedTemplate(context)
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! I could not find \`${query}\``,
+                '*Please check your spelling or try again later!*'
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment] }
     }
 
     public getInvalidInputResponse(context: HandlerContext, input: String): InteractionReplyOptions {
