@@ -1,7 +1,7 @@
 import { Media } from './Media';
 
 export interface Page {
-    readonly pageInfo: PageInfo,
+    readonly pageInfo?: PageInfo,
     readonly media?: Media[]
 }
 
@@ -17,4 +17,10 @@ export interface FuzzyDate {
     readonly year?: number,
     readonly month?: number,
     readonly day?: number
+}
+
+export interface Connection<E, N> {
+    readonly edges?: E[],
+    readonly nodes?: N[],
+    readonly pageInfo?: PageInfo
 }

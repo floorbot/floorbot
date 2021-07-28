@@ -1,23 +1,49 @@
-import { AnimeCustomData, AnimeHandler } from '../../handlers/AnimeHandler';
+import { AniListAPI, AniListResponse } from '../../api/AniListAPI';
 import { HandlerContext, HandlerEmbed } from 'discord.js-commands';
-import { AniListEmbedFactory } from '../AniListEmbedFactory';
-import { Media, MediaRankType } from '../../api/AniListAPI';
+import { AnimeCommandData } from '../anime/AnimeCommandData';
+import { GuildHandlerGroup, GuildHandlerOptions } from '../../../GuildHandler';
+import { AniListCustomData, AniListHandler } from '../../AniListHandler';
+import { MediaRankType } from '../../api/AniListAPI';
 import { Page } from '../../api/interfaces/Common';
+import CacheMap from 'cache-map.js';
 import { Util } from 'discord.js';
+import * as fs from 'fs';
 
 // @ts-ignore
 import * as DHMS from 'dhms.js';
 
-export class MediaEmbedFactory extends AniListEmbedFactory {
+export class MediaHandler extends AniListHandler {
 
-    public static getMediaPageEmbed(handler: AnimeHandler, context: HandlerContext, media: Media, page: Page, customData: AnimeCustomData): HandlerEmbed {
-        const embed = MediaEmbedFactory.getMediaEmbed(handler, context, media, customData);
-        embed.setAuthor(`Search: ${customData.search}`)
-        embed.setFooter(`${customData.page! + 1}/${page.pageInfo.total} - ${embed.footer!.text}`, embed.footer!.iconURL);
-        return embed;
+    protected readonly cache: CacheMap<string, AniListResponse>;
+
+    constructor(options?: GuildHandlerOptions) {
+        super(options || { id: 'media', commandData: AnimeCommandData, group: GuildHandlerGroup.ANIME });
+        this.cache = new CacheMap<string, AniListResponse>({ ttl: 1000 * 60 * 60 * 6 }); // 6 hour ttl
     }
 
-    public static getMediaEmbed(handler: AnimeHandler, context: HandlerContext, media: Media, customData: AnimeCustomData): HandlerEmbed {
+    public async fetchPage(query: string | number, page: number): Promise<Page | null> {
+        const vars = {
+            page: page,
+            perPage: 1,
+            ...(typeof query === 'number' ?
+                { id: query } :
+                { search: query }
+            )
+        }
+        const gql = fs.readFileSync(`${__dirname}/../../queries/media.gql`, 'utf8');
+        const cacheKey = `${query.toString().toLowerCase()}-${page}`;
+        const cached = this.cache.get(cacheKey);
+        return cached ? cached.data.Page! : AniListAPI.request(gql, vars).then(res => {
+            if (res.errors && res.errors[0]!.status !== 404) throw { res };
+            if (!res.data.Page) throw { res };
+            this.cache.set(cacheKey, res);
+            return res.data.Page;
+        });
+    }
+
+    public getEmbed(context: HandlerContext, customData: AniListCustomData, page: Page): HandlerEmbed {
+        const media = page.media![0]!;
+        const pageInfo = page.pageInfo!;
         const popularity = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.POPULAR) : undefined;
         const rated = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.RATED) : undefined;
         const nextAiring = media.nextAiringEpisode;
@@ -28,7 +54,7 @@ export class MediaEmbedFactory extends AniListEmbedFactory {
                 media.trailer.site === 'dailymotion' ? `https://www.dailymotion.com/video/${media.trailer.id}` : null
             )
         ) : null
-        const embed = handler.getEmbedTemplate(context)
+        const embed = this.getEmbedTemplate(context, customData, pageInfo);
         if (media.title) {
             const title = media.title.romaji || media.title.english || media.title.native;
             if (title) embed.setTitle(`${title} ${(media.isAdult ?? false) ? '(18+)' : ''}`)
@@ -56,14 +82,14 @@ export class MediaEmbedFactory extends AniListEmbedFactory {
         embed.addField('\u200b', ([
             `Popularity: **${popularity ? `(#${popularity.rank}) ` : ''}${media.popularity ? Util.formatCommas(media.popularity) : 'N/A'}**`,
             ...(media.episodes ? [`Episodes: **${nextAiring ? nextAiring.episode - 1 : media.episodes}/${media.episodes}**`] : []),
-            `Started: **${media.startDate ? MediaEmbedFactory.getFuzzyDateString(media.startDate) : 'unknown'}**`,
-            `Ended: **${media.endDate ? MediaEmbedFactory.getFuzzyDateString(media.endDate) : 'unknown'}**`,
+            `Started: **${media.startDate ? this.getFuzzyDateString(media.startDate) : 'unknown'}**`,
+            `Ended: **${media.endDate ? this.getFuzzyDateString(media.endDate) : 'unknown'}**`,
             ...(media.season ? media.seasonYear ?
                 [`Season: **[${Util.capitalizeString(media.season)}](https://anilist.co/search/anime?year=${media.seasonYear}%25&season=${media.season})**`] :
                 [`Season: **${Util.capitalizeString(media.season)}**`] : []),
         ].join('\n')), true);
-        if (customData.desc && media.description) {
-            embed.addField('Description', MediaEmbedFactory.reduceDescription(media.description), false);
+        if (customData.display === 'desc' && media.description) {
+            embed.addField('Description', this.reduceDescription(media.description), false);
         } else if (media.bannerImage) {
             embed.setImage(media.bannerImage);
         }

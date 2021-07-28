@@ -28,8 +28,8 @@ export class GlobalHandler<T extends HandlerCustomData> extends BaseHandler impl
     public decodeSelectMenu(customString: string): T { return JSON.parse(customString); }
     public encodeSelectMenu(customData: T): string { return JSON.stringify(customData); }
 
-    public getEmbedTemplate(context: HandlerContext, _customData?: T): HandlerEmbed {
-        return new HandlerEmbed().setContextAuthor(context);
+    public getEmbedTemplate(_context: HandlerContext, _customData?: T): HandlerEmbed {
+        return new HandlerEmbed();
     }
 
     public override async isEnabled(context: HandlerContext): Promise<boolean> {

@@ -45,7 +45,7 @@ export class DanbooruHandler extends BooruHandler {
             embeds: [BooruEmbedFactory.getImageEmbed(this, context, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([
                 BooruButtonFactory.getViewOnlineButton(this, postURL),
-                BooruButtonFactory.getAgainButton(this, postURL),
+                BooruButtonFactory.getAgainButton(this, tags),
                 BooruButtonFactory.getRecycleButton(this, tags, user)
             ])],
             imageURL: data.large_file_url

@@ -22,7 +22,7 @@ export * from './commands/global/utils/UtilsHandler';
 
 /** Anime Commands **/
 
-export * from './commands/anilist/handlers/AnimeHandler';
+export * from './commands/anilist/handlers/anime/AnimeHandler';
 
 /** Booru Commands **/
 

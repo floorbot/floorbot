@@ -3,10 +3,11 @@ import { AiringSchedule, AiringScheduleConnection } from './AiringSchedule';
 import { Staff, StaffConnection, StaffRoleType } from './Staff';
 import { RecommendationConnection } from './Recommendation';
 import { MediaTrendConnection } from './MediaTrend';
-import { FuzzyDate, PageInfo } from './Common';
+import { Connection, FuzzyDate } from './Common';
 import { StudioConnection } from './Studio';
 import { ReviewConnection } from './Review';
 
+export type MediaConnection = Connection<MediaEdge, Media>;
 
 export interface MediaVariables {
     readonly id?: number,
@@ -68,12 +69,6 @@ export interface Media {
     readonly autoCreateForumThread?: boolean,
     readonly isRecommendationBlocked?: boolean,
     readonly modNotes?: string
-}
-
-export interface MediaConnection {
-    readonly edges?: MediaEdge[],
-    readonly nodes?: Media[],
-    readonly pageInfo?: PageInfo
 }
 
 export interface MediaEdge {

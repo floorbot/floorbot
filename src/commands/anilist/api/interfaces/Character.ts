@@ -1,6 +1,8 @@
 import { Media, MediaConnection } from './Media';
-import { FuzzyDate, PageInfo } from './Common';
+import { Connection, FuzzyDate } from './Common';
 import { Staff, StaffRoleType } from './Staff';
+
+export type CharacterConnection = Connection<CharacterEdge, Character>;
 
 export interface Character {
     readonly id: number,
@@ -17,12 +19,6 @@ export interface Character {
     readonly media?: MediaConnection,
     readonly favourites?: number,
     readonly modNotes?: string
-}
-
-export interface CharacterConnection {
-    readonly edges?: CharacterEdge[],
-    readonly nodes?: Character[],
-    readonly pageInfo?: PageInfo
 }
 
 export interface CharacterEdge {

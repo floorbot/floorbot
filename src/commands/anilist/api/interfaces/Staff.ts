@@ -1,7 +1,9 @@
 import { CharacterConnection } from './Character';
-import { FuzzyDate, PageInfo } from './Common';
+import { Connection, FuzzyDate } from './Common';
 import { MediaConnection } from './Media';
 import { User } from './User';
+
+export type StaffConnection = Connection<StaffEdge, Staff>;
 
 export interface Staff {
     readonly id: number,
@@ -29,12 +31,6 @@ export interface Staff {
     readonly submissionNotes?: string,
     readonly favourites?: number,
     readonly modNotes: string
-}
-
-export interface StaffConnection {
-    readonly edges?: StaffEdge[],
-    readonly nodes?: Staff[],
-    readonly pageInfo?: PageInfo
 }
 
 export interface StaffEdge {

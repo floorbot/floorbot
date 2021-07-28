@@ -23,7 +23,10 @@ export interface AniListResponse {
     }[]
 }
 
-export type QueryVars = MediaVariables;
+export type QueryVars = MediaVariables & {
+    page?: number,
+    perPage?: number
+};
 
 export class AniListAPI {
 

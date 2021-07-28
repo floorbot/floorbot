@@ -30,7 +30,7 @@ export class Rule34Handler extends BooruHandler {
             embeds: [BooruEmbedFactory.getImageEmbed(this, context, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([
                 BooruButtonFactory.getViewOnlineButton(this, postURL),
-                BooruButtonFactory.getAgainButton(this, postURL),
+                BooruButtonFactory.getAgainButton(this, tags),
                 BooruButtonFactory.getRecycleButton(this, tags, user)
             ])],
             imageURL: post.file_url

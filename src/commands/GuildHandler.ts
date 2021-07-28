@@ -63,7 +63,7 @@ export class GuildHandler<T extends HandlerCustomData> extends GlobalHandler<T> 
         return { embeds: [embed], files: [attachment] }
     }
 
-    public getNotFoundResponse(context: HandlerContext, query: string): InteractionReplyOptions {
+    public getNotFoundResponse(context: HandlerContext, query: any): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/thumbnails/404.png`);
         const attachment = new HandlerAttachment(buffer, '404.png');
         const embed = this.getEmbedTemplate(context)

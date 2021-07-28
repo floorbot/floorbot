@@ -1,5 +1,7 @@
 import { MediaConnection } from './Media';
-import { PageInfo } from './Common';
+import { Connection } from './Common';
+
+export type StudioConnection = Connection<StudioEdge, Studio>;
 
 export interface Studio {
     readonly id: number,
@@ -9,12 +11,6 @@ export interface Studio {
     readonly siteUrl?: string,
     readonly isFavourite: boolean,
     readonly favourites?: number
-}
-
-export interface StudioConnection {
-    readonly edges?: StudioEdge[],
-    readonly nodes?: Studio[],
-    readonly pageInfo?: PageInfo
 }
 
 export interface StudioEdge {
