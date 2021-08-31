@@ -30,7 +30,10 @@ export class AdminSelectMenuFactory {
             selectMenu.addOptions({
                 label: Util.capitalizeString(handler.id),
                 value: handler.id,
-                description: handler.commandData.description,
+                description: (handler.commandData.type === 'CHAT_INPUT' ?
+                    handler.commandData.description :
+                    'THIS IS NOT A SLASH COMMAND'
+                ),
                 default: selected && selected.includes(handler)
             });
         }

@@ -33,7 +33,7 @@ export class GuildHandler<T extends HandlerCustomData> extends GlobalHandler<T> 
     }
 
     public override async fetchCommand(guild: Guild): Promise<ApplicationCommand | null> {
-        const cachedCommands = guild.commands.cache.array();
+        const cachedCommands = guild.commands.cache;
         const cacheFound = cachedCommands.find(command => command.name === this.commandData.name);
         if (cacheFound) return cacheFound;
         const commands = await guild.commands.fetch();

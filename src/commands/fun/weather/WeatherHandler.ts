@@ -21,7 +21,7 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
 
     public override async isAuthorised(context: HandlerContext, customData?: HandlerCustomData): Promise<string[]> {
         if (context instanceof CommandInteraction) {
-            const subCommand = context.options.getSubCommand();
+            const subCommand = context.options.getSubcommand();
             if ([WeatherSubCommandName.LINK, WeatherSubCommandName.UNLINK].includes(<WeatherSubCommandName>subCommand)) {
                 const targetMember = (context.options.getMember('user') || context.member) as GuildMember;
                 const { member } = <{ member: GuildMember }>context;
@@ -32,9 +32,9 @@ export class WeatherHandler extends GuildHandler<WeatherCustomData> {
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
+        await interaction.deferReply()
 
-        const subCommand = interaction.options.getSubCommand();
+        const subCommand = interaction.options.getSubcommand();
         const member = (interaction.options.getMember('user') || interaction.member) as GuildMember;
         const city_name = interaction.options.getString('city_name');
         const state_code = interaction.options.getString('state_code');

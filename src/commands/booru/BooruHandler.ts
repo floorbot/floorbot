@@ -11,7 +11,7 @@ export abstract class BooruHandler extends GuildHandler<BooruCustomData> {
     public abstract generateResponse(context: HandlerContext, query: string): Promise<BooruHandlerReply>
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
+        await interaction.deferReply();
         const query = (interaction.options.get('tags') || interaction.options.get('thread'));
         const queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
         const response = await this.generateResponse(interaction, queryString);
@@ -25,7 +25,7 @@ export abstract class BooruHandler extends GuildHandler<BooruCustomData> {
     }
 
     public override async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
-        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.defer() }
+        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.deferReply() }
         const response = await this.generateResponse(interaction, customData.t);
         return new Promise(resolve => {
             if (customData.m === 'p') return resolve(interaction.followUp(response));
@@ -40,7 +40,7 @@ export abstract class BooruHandler extends GuildHandler<BooruCustomData> {
     }
 
     public override async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
-        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.defer() }
+        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.deferReply() }
         const response = await this.generateResponse(interaction, interaction.values[0]!);
         return new Promise(resolve => {
             if (customData.m === 'p') return resolve(interaction.followUp(response));

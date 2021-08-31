@@ -1,4 +1,4 @@
-query ($type: MediaType, $id: Int, $search: String, $page: Int, $perPage: Int) {
+query ($type: MediaType, $id: Int, $search: String, $page: Int, $perPage: Int, $edgePage: Int) {
     Page(page: $page, perPage: $perPage) {
         pageInfo {
             total
@@ -87,29 +87,38 @@ query ($type: MediaType, $id: Int, $search: String, $page: Int, $perPage: Int) {
             chapters
             volumes
             source
-            characters {
-                nodes {
-                    id
-                    siteUrl
-                    name {
-                        first
-                        last
-                        full
-                        native
+            characters(page: $edgePage, perPage: $perPage) {
+                pageInfo {
+                    total
+                    currentPage
+                    lastPage
+                    hasNextPage
+                    perPage
+                }
+                edges {
+                    node {
+                        id
+                        siteUrl
+                        name {
+                            first
+                            last
+                            full
+                            native
+                        }
+                        image {
+                            large
+                            medium
+                        }
+                        favourites
+                        gender
+                        age
+                        dateOfBirth {
+                            day
+                            month
+                            year
+                        }
+                        bloodType
                     }
-                    image {
-                        large
-                        medium
-                    }
-                    favourites
-                    gender
-                    age
-                    dateOfBirth {
-                        day
-                        month
-                        year
-                    }
-                    bloodType
                 }
             }
         }

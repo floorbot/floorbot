@@ -22,15 +22,6 @@ export class AniListEmbedFactory {
         return Util.splitMessage(description.replace(/<\/?[^>]+(>|$)/g, ''), { char: ' ', append: '...', maxLength: 1024 })[0]!
     }
 
-    // public static getCharacterNodeEmbed(handler: AniListHandler, context: HandlerContext, character: Character, media: Media, page: number): HandlerEmbed {
-    //     if (!media.characters) throw { handler, context, media, page };
-    //     if (!media.characters.nodes) throw { handler, context, media, page };
-    //     const embed = this.getCharacterEmbed(handler, context, character);
-    //     embed.setFooter(`${page + 1}/${media.characters.nodes.length} - ${embed.footer!.text}`, embed.footer!.iconURL);
-    //     if (media.coverImage && media.coverImage.color) embed.setColor(parseInt(media.coverImage.color.substring(1), 16));
-    //     return embed;
-    // }
-    //
     // public static getCharacterEmbed(handler: AniListHandler, context: HandlerContext, character: Character): HandlerEmbed {
     //     const embed = handler.getEmbedTemplate(context);
     //

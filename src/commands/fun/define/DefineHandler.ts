@@ -14,7 +14,7 @@ export class DefineHandler extends GuildHandler<DefineCustomData> {
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
+        await interaction.deferReply();
         const query = interaction.options.getString('query');
         const response = await this.fetchResponse(interaction, { page: 0, ...(query && { query }) });
         return interaction.followUp(response);

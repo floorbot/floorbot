@@ -49,7 +49,7 @@ export class GlobalHandler<T extends HandlerCustomData> extends BaseHandler impl
     public async fetchCommand(scope: CommandClient | Guild): Promise<ApplicationCommand | null> {
         const client = scope instanceof CommandClient ? scope : scope.client;
         const application = client.application!;
-        const cachedCommands = application.commands.cache.array();
+        const cachedCommands = application.commands.cache;
         const cacheFound = cachedCommands.find(command => command.name === this.commandData.name);
         if (cacheFound) return cacheFound;
         const commands = await application.commands.fetch();

@@ -42,14 +42,14 @@ export class MarkovHandler extends GuildHandler<MarkovCustomData> {
     }
 
     public override async isAuthorised(context: HandlerContext, customData?: MarkovCustomData): Promise<string[]> {
-        if (context instanceof CommandInteraction && ['generate'].includes(context.options.getSubCommand())) { return []; }
+        if (context instanceof CommandInteraction && ['generate'].includes(context.options.getSubcommand())) { return []; }
         return super.isAuthorised(context, customData);
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        const subCommand = interaction.options.getSubCommand();
+        const subCommand = interaction.options.getSubcommand();
         const channel = (interaction.options.getChannel('channel') || interaction.channel) as GuildChannel;
-        await interaction.defer();
+        await interaction.deferReply();
         switch (subCommand) {
             case 'settings': {
                 const response = await this.fetchControlPanel(interaction, channel);

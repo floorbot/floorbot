@@ -15,10 +15,11 @@ export class MagickHandler extends GuildHandler<MagickCustomData> {
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
         const { channel } = <{ channel: GuildChannel }>interaction;
-        await interaction.defer();
+        await interaction.deferReply();
         const input = interaction.options.getString('image');
         if (input) {
             const resolvedUser = Util.resolveUser(interaction, input);
+            console.log(resolvedUser);
             const resolvedEmoji = Util.resolveEmoji(input);
             const metadata = await probe(
                 !resolvedUser && !resolvedEmoji ? input : resolvedUser ?

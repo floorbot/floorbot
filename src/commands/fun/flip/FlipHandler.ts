@@ -10,9 +10,9 @@ export class FlipHandler extends GuildHandler<HandlerCustomData> {
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
+        await interaction.deferReply();
 
-        const subCommand = interaction.options.getSubCommand();
+        const subCommand = interaction.options.getSubcommand();
         switch (subCommand) {
             case 'coin': {
                 const count = interaction.options.getInteger('count') || 1;

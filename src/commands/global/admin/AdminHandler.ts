@@ -16,8 +16,8 @@ export class AdminHandler extends GlobalHandler<AdminCustomData> {
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
-        const subCommand = interaction.options.getSubCommand();
+        await interaction.deferReply();
+        const subCommand = interaction.options.getSubcommand();
         switch (subCommand) {
             case 'commands': {
                 const response = await this.fetchCommandResponse(interaction);

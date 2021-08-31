@@ -11,9 +11,9 @@ export class UpdateHandler extends BaseHandler {
         let totalUpdated = 0;
         const updates = nconf.get('UPDATE');
         const guilds = client.guilds.cache;
-        for (const guild of guilds.array()) {
+        for (const [_id1, guild] of guilds) {
             const commands = await guild.commands.fetch();
-            for (const command of commands.array()) {
+            for (const [_id2, command] of commands) {
                 for (const handler of client.handlers) {
                     if (handler.isCommandHandler() && handler.id === command.name) {
                         if (updates[handler.id] && handler.isCommandHandler()) {

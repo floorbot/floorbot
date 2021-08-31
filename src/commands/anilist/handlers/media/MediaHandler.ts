@@ -41,6 +41,45 @@ export class MediaHandler extends AniListHandler {
         });
     }
 
+    public getCharacterEdgeEmbed(context: HandlerContext, customData: AniListCustomData, page: Page): HandlerEmbed {
+        const media = page.media![0]!;
+        const connection = media.characters!;
+        const pageInfo = connection.pageInfo!;
+        const edge = connection.edges![0]!;
+        const character = edge.node!;
+        const embed = this.getEmbedTemplate(context, customData, pageInfo);
+
+        if (media.title && media.coverImage) {
+            const coverImage = media.coverImage;
+            const coverImageUrl = coverImage.extraLarge || coverImage.large || coverImage.medium;
+            const title = media.title.romaji || media.title.english || media.title.native;
+            if (title && coverImageUrl) if (title) embed.setAuthor(title, coverImageUrl);
+            if (coverImage.color) embed.setColor(parseInt(coverImage.color.substring(1), 16))
+        }
+        if (character.name) {
+            const name = character.name.full || character.name.first || character.name.native;
+            if (name) embed.setTitle(name);
+        }
+        if (character.siteUrl) embed.setURL(character.siteUrl);
+        if (character.image) {
+            const image = character.image.large || character.image.medium;
+            if (image) embed.setThumbnail(image);
+        }
+
+        const dateOfBirth = character.dateOfBirth ? this.getFuzzyDateString(character.dateOfBirth) : null;
+
+        embed.setDescription([
+            ...(character.name && character.name.native ? [`Weeb Name: **${character.name.native}**`] : []),
+            ...(character.favourites ? [`Favourites: **${Util.formatCommas(character.favourites)}**`] : []),
+            ...(character.gender ? [`Gender: **${character.gender}**`] : []),
+            ...(character.age ? [`Age: **${character.age}**`] : []),
+            ...(dateOfBirth ? [`Birthday: **${dateOfBirth}**`] : []),
+            ...(character.bloodType ? [`Blood Type: **${character.bloodType}**`] : [])
+        ].join('\n'));
+        if (media.coverImage && media.coverImage.color) embed.setColor(parseInt(media.coverImage.color.substring(1), 16));
+        return embed;
+    }
+
     public getEmbed(context: HandlerContext, customData: AniListCustomData, page: Page): HandlerEmbed {
         const media = page.media![0]!;
         const pageInfo = page.pageInfo!;

@@ -13,7 +13,7 @@ export class UtilsHandler extends GlobalHandler<any> {
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
         const { guild, member } = <{ guild: Guild, member: GuildMember }>interaction;
-        const subCommand = interaction.options.getSubCommand();
+        const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
             case 'ping': {
@@ -23,17 +23,17 @@ export class UtilsHandler extends GlobalHandler<any> {
                 return reply.edit(response);
             }
             case 'guild': {
-                await interaction.defer();
+                await interaction.deferReply();
                 const response = await this.fetchGuildResponse(interaction, guild);
                 return interaction.followUp(response);
             }
             case 'invite': {
-                await interaction.defer();
+                await interaction.deferReply();
                 const response = this.getInviteResponse(interaction);
                 return interaction.followUp(response);
             }
             case 'screenshare': {
-                await interaction.defer();
+                await interaction.deferReply();
                 const channel = interaction.options.getChannel('channel') || member.voice.channel;
                 if (!channel || !(channel instanceof GuildChannel)) return interaction.followUp(this.getNoVoiceChannelResponse(interaction));
                 if (!(channel instanceof VoiceChannel)) return interaction.followUp(this.getInvalidChannelResponse(interaction, channel));
@@ -103,7 +103,7 @@ export class UtilsHandler extends GlobalHandler<any> {
                 `Partnered: **${guild.partnered}**`,
                 `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**`,
                 `Description: **${guild.description || '*none*'}**`,
-                `Channels: **${guild.channels.cache.array().length}**`,
+                `Channels: **${guild.channels.cache.size}**`,
                 `Members: **${guild.memberCount}**`,
                 `Roles: **${guild.roles.cache.size}**`,
                 `Emojis: **${guild.emojis.cache.filter(emoji => !emoji.animated).size}**`,

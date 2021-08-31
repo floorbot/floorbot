@@ -9,7 +9,7 @@ export class RollHandler extends GuildHandler<HandlerCustomData> {
     }
 
     public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.defer();
+        await interaction.deferReply();
         const query = interaction.options.getString('dice') || '1d6';
 
         const embed = this.getEmbedTemplate(interaction)

@@ -1,10 +1,17 @@
 import { AniListCustomData, AniListHandler } from '../AniListHandler';
 import { Connection, Page } from '../api/interfaces/Common';
 import { HandlerButton } from 'discord.js-commands';
-import { Constants } from 'discord.js'
+import { Constants, Util } from 'discord.js'
 const { MessageButtonStyles } = Constants;
 
 export class AniListButtonFactory {
+
+    public static getPlusButton(handler: AniListHandler, customData: AniListCustomData): HandlerButton<AniListCustomData> {
+        return new HandlerButton(handler)
+            .setCustomId({ ...customData, plus: true })
+            .setStyle(MessageButtonStyles.SUCCESS)
+            .setLabel(`+`);
+    }
 
     public static getNextPageButton(handler: AniListHandler, customData: AniListCustomData, page: Page): HandlerButton<AniListCustomData> {
         const pageInfo = page.pageInfo!;
@@ -20,6 +27,13 @@ export class AniListButtonFactory {
             .setCustomId({ ...customData, page: (pageInfo.currentPage! - 1) || pageInfo.lastPage! })
             .setStyle(MessageButtonStyles.PRIMARY)
             .setLabel(`<`);
+    }
+
+    public static getConnectionButton(handler: AniListHandler, customData: AniListCustomData, edge: AniListCustomData['edge']): HandlerButton<AniListCustomData> {
+        return new HandlerButton(handler)
+            .setCustomId({ ...customData, edge: edge })
+            .setStyle(MessageButtonStyles.PRIMARY)
+            .setLabel(Util.capitalizeString(edge!));
     }
 
     public static getNextConnectionButton(handler: AniListHandler, customData: AniListCustomData, connection: Connection<any, any>): HandlerButton<AniListCustomData> {
