@@ -20,7 +20,7 @@ export interface HandlerClientOptions extends ClientOptions {
 export class HandlerClient extends Client {
 
     private readonly handlers: Collection<string, Handler>;
-    private readonly pool: Pool;
+    public readonly pool: Pool;
 
     // Static factory method to allow async setup before constructor
     public static async create(options: HandlerClientOptions): Promise<HandlerClient> {

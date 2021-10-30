@@ -25,6 +25,7 @@ import { E621Handler } from './src/commands/booru/e621/E621Handler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
 import { FlipHandler } from './src/commands/fun/flip/FlipHandler';
 import { MagickMessageHandler } from './src/commands/fun/magick/MagickMessageHandler';
+import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
 
 nconf.argv().env().file({ file: './config.json' }).required(['DISCORD_TOKEN']);
 nconf.required(['DATABASE:HOST', 'DATABASE:NAME', 'DATABASE:USERNAME', 'DATABASE:PASSWORD', 'DATABASE:CONNECTION_LIMIT']);
@@ -41,14 +42,14 @@ const poolConfig: PoolConfig = {
 HandlerClient.create({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
     pool: MariaDB.createPool(poolConfig)
-}).then(client => {
+}).then(async client => {
     ClientLogger.setup(client);
-    PresenceController.setup(client);
 
     client.addHandlers(...[
         new AdminHandler(),
         new UtilsHandler(),
 
+        new MarkovHandler(),
         new DefineHandler(),
         new RollHandler(),
         new FlipHandler(),
@@ -66,5 +67,6 @@ HandlerClient.create({
     ]);
 
 
-    client.login(nconf.get('DISCORD_TOKEN'));
+    await client.login(nconf.get('DISCORD_TOKEN'));
+    PresenceController.setup(client);
 })

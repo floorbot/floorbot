@@ -33,7 +33,7 @@ export abstract class BaseHandler extends Handler {
 
     protected createEnderFunction(message: Message) {
         return async () => {
-            const replyOptions = { content: message.content, embeds: message.embeds, components: [] };
+            const replyOptions = { ...(message.content ? { content: message.content } : {}), embeds: message.embeds, components: [] };
             if (replyOptions.embeds.length) {
                 if (replyOptions.embeds[0] ?.footer ?.text ?.length) replyOptions.embeds[0].footer.text += ' - 🔒 Locked';
                 else replyOptions.embeds[0]!.setFooter('🔒 Locked');

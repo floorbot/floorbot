@@ -6,6 +6,7 @@ export type HandlerContext = Interaction | Message;
 
 declare module 'discord.js' {
     export namespace Util {
+        export function toggleMessageComponents(message: Message, disabled: boolean): void;
         export function toFahrenheit(degrees: number): number;
         export function resolveEmoji(string: string): { string: string, imageURL: string } | null;
         export function resolveRole(context: HandlerContext, string: string): Role | null;
@@ -24,6 +25,14 @@ declare module 'discord.js' {
         export function formatDecimal(number: number, significance?: number): string;
         export function formatCommas(number: number): string;
         export function formatDate(date: Date | number, options?: FormatDateOptions): string;
+    }
+}
+
+Util.toggleMessageComponents = function(message: Message, disabled: boolean): void {
+    for (const actionRow of message.components) {
+        for (const component of actionRow.components) {
+            component.setDisabled(disabled);
+        }
     }
 }
 
