@@ -1,119 +1,84 @@
-import { CommandInteraction, Message, GuildMember, Guild, VoiceChannel, GuildChannel, Util, Channel, InteractionReplyOptions } from 'discord.js';
-import { GlobalHandler, UtilsCommandData } from '../../..';
-import { HandlerContext } from 'discord.js-commands';
+import { CommandInteraction, Message, Util, GuildMember, Guild } from 'discord.js';
+import { UtilsCommandData } from './UtilsCommandData';
+import { BaseHandler } from '../../BaseHandler';
 
 // @ts-ignore
 import * as DHMS from 'dhms.js';
 
-export class UtilsHandler extends GlobalHandler<any> {
+export class UtilsHandler extends BaseHandler {
 
     constructor() {
-        super({ id: 'utils', commandData: UtilsCommandData });
+        super({
+            id: 'utils',
+            group: 'Global',
+            global: true,
+            nsfw: false,
+            data: UtilsCommandData
+        })
     }
 
-    public override async onCommand(interaction: CommandInteraction): Promise<any> {
+    public async execute(interaction: CommandInteraction): Promise<any> {
         const { guild, member } = <{ guild: Guild, member: GuildMember }>interaction;
         const subCommand = interaction.options.getSubcommand();
-
+        const clientUser = interaction.client.user!;
         switch (subCommand) {
             case 'ping': {
-                await interaction.reply(this.getPingingResponse(interaction));
+                const pingingEmbed = this.getEmbedTemplate(interaction).setDescription('Pinging...');
+                await interaction.reply(pingingEmbed.toReplyOptions());
                 const reply = await interaction.fetchReply() as Message;
-                const response = this.getPingResponse(interaction, reply);
-                return reply.edit(response);
+
+                const pingEmbed = this.getEmbedTemplate(interaction)
+                    .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
+                    .setThumbnail(clientUser.displayAvatarURL())
+                    .setTitle(clientUser.tag)
+                    .setDescription(
+                        `Ping: **${DHMS.print(reply.createdTimestamp - interaction.createdTimestamp)}**\n` +
+                        (interaction.client.ws.ping ? `Heartbeat: **${DHMS.print(Math.round(interaction.client.ws.ping))}**\n` : '') +
+                        `Uptime: **${DHMS.print(interaction.client.uptime)}**`
+                    );
+                return reply.edit(pingEmbed.toReplyOptions());
             }
             case 'guild': {
+                if (!guild) return interaction.reply(this.getEmbedTemplate(interaction).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
                 await interaction.deferReply();
-                const response = await this.fetchGuildResponse(interaction, guild);
-                return interaction.followUp(response);
+                const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return null });
+                const embed = this.getEmbedTemplate(interaction)
+                    .setTitle(`${guild.name} Stats!`)
+                    .setDescription([
+                        `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**`,
+                        `Verified: **${guild.verified}**`,
+                        `Partnered: **${guild.partnered}**`,
+                        `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**`,
+                        `Description: **${guild.description || '*none*'}**`,
+                        `Channels: **${guild.channels.cache.size}**`,
+                        `Members: **${guild.memberCount}**`,
+                        `Roles: **${guild.roles.cache.size}**`,
+                        `Emojis: **${guild.emojis.cache.filter(emoji => !emoji.animated).size}**`,
+                        `Gif Emojis: **${guild.emojis.cache.filter(emoji => !!emoji.animated).size}**`,
+                        `Stickers: **${guild.stickers.cache.size}**`,
+                        `NSFW Level: **${Util.capitalizeString(guild.nsfwLevel)}**`,
+                        `Bans: **${bans ? bans.size : '*administrator permission*'}**`
+                    ].join('\n'))
+                if (guild.icon) embed.setThumbnail(guild.iconURL({ dynamic: true })!);
+                if (guild.splash) embed.setImage(`${guild.splashURL({ size: 4096 })}`);
+                return interaction.followUp(embed.toReplyOptions());
             }
             case 'invite': {
-                await interaction.deferReply();
-                const response = this.getInviteResponse(interaction);
-                return interaction.followUp(response);
+                const embed = this.getEmbedTemplate(interaction)
+                    .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
+                    .setThumbnail(clientUser.displayAvatarURL())
+                    .setDescription(`Make sure you have permissions to invite!`)
+                    .setTitle(`Invite ${clientUser.tag}`)
+                return interaction.reply(embed.toReplyOptions());
             }
             case 'screenshare': {
+                if (!member) return interaction.reply(this.getEmbedTemplate(interaction).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
                 await interaction.deferReply();
                 const channel = interaction.options.getChannel('channel') || member.voice.channel;
-                if (!channel || !(channel instanceof GuildChannel)) return interaction.followUp(this.getNoVoiceChannelResponse(interaction));
-                if (!(channel instanceof VoiceChannel)) return interaction.followUp(this.getInvalidChannelResponse(interaction, channel));
-                return interaction.followUp(this.getScreenShareResponse(interaction, channel));
+                if (!channel) return interaction.followUp(this.getEmbedTemplate(interaction).setDescription('Sorry! Please provide or join a voice channel 😦').toReplyOptions());
+                return interaction.followUp(this.getEmbedTemplate(interaction).setDescription(`[Screenshare in ${channel}](${`https://discordapp.com/channels/${guild.id}/${channel.id}`})`).toReplyOptions());
             }
             default: throw interaction;
         }
-    }
-
-    public getInviteResponse(context: HandlerContext): InteractionReplyOptions {
-        const clientUser = context.client.user!;
-        return this.getEmbedTemplate(context)
-            .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
-            .setThumbnail(clientUser.displayAvatarURL())
-            .setDescription(`Make sure you have permissions to invite!`)
-            .setTitle(`Invite ${clientUser.tag}`)
-            .toReplyOptions();
-    }
-
-    public getPingingResponse(context: HandlerContext): InteractionReplyOptions {
-        return this.getEmbedTemplate(context)
-            .setDescription('Pinging...')
-            .toReplyOptions();
-    }
-
-    public getPingResponse(context: HandlerContext, message: Message): InteractionReplyOptions {
-        const clientUser = context.client.user!;
-        return this.getEmbedTemplate(context)
-            .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
-            .setThumbnail(clientUser.displayAvatarURL())
-            .setTitle(clientUser.tag)
-            .setDescription(
-                `Ping: **${DHMS.print(message.createdTimestamp - context.createdTimestamp)}**\n` +
-                (context.client.ws.ping ? `Heartbeat: **${DHMS.print(Math.round(context.client.ws.ping))}**\n` : '') +
-                `Uptime: **${DHMS.print(context.client.uptime)}**`
-            ).toReplyOptions();
-    }
-
-    public getNoVoiceChannelResponse(context: HandlerContext): InteractionReplyOptions {
-        return this.getEmbedTemplate(context)
-            .setDescription('Sorry! Please provide or join a voice channel 😦')
-            .toReplyOptions();
-    }
-
-    public getInvalidChannelResponse(context: HandlerContext, channel: Channel): InteractionReplyOptions {
-        return this.getEmbedTemplate(context)
-            .setDescription(`Sorry! ${channel} is not a voice channel... 😶`)
-            .toReplyOptions();
-    }
-
-    public getScreenShareResponse(context: HandlerContext, voiceChannel: VoiceChannel): InteractionReplyOptions {
-        return this.getEmbedTemplate(context)
-            .setDescription(`[Screenshare in ${voiceChannel}](${`https://discordapp.com/channels/${voiceChannel.guild.id}/${voiceChannel.id}`})`)
-            .toReplyOptions();
-    }
-
-    public async fetchGuildResponse(context: HandlerContext, guild: Guild): Promise<InteractionReplyOptions> {
-        const bans = await guild.bans.fetch({ cache: false }).catch(error => {
-            if (error.message === 'Missing Permissions') return null;
-            throw error;
-        })
-        const embed = this.getEmbedTemplate(context)
-            .setTitle(`${guild.name} Stats!`)
-            .setDescription([
-                `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**`,
-                `Verified: **${guild.verified}**`,
-                `Partnered: **${guild.partnered}**`,
-                `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**`,
-                `Description: **${guild.description || '*none*'}**`,
-                `Channels: **${guild.channels.cache.size}**`,
-                `Members: **${guild.memberCount}**`,
-                `Roles: **${guild.roles.cache.size}**`,
-                `Emojis: **${guild.emojis.cache.filter(emoji => !emoji.animated).size}**`,
-                `Gif Emojis: **${guild.emojis.cache.filter(emoji => !!emoji.animated).size}**`,
-                `Stickers: **TODO**`,
-                `NSFW Level: **${Util.capitalizeString(guild.nsfwLevel)}**`,
-                `Bans: **${bans ? bans.size : '*administrator permission*'}**`
-            ].join('\n'))
-        if (guild.icon) embed.setThumbnail(guild.iconURL({ dynamic: true })!);
-        if (guild.splash) embed.setImage(`${guild.splashURL({ size: 4096 })}`);
-        return embed.toReplyOptions();
     }
 }

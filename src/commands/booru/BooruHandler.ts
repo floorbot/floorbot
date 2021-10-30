@@ -1,56 +1,75 @@
-import { BooruCustomData, GuildHandler, GuildHandlerGroup, BooruHandlerOptions, BooruHandlerReply } from '../../..';
-import { CommandInteraction, ButtonInteraction, Message, SelectMenuInteraction } from 'discord.js';
-import { HandlerContext } from 'discord.js-commands';
+import { ApplicationCommandData, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
+import { HandlerContext } from '../../discord/Util';
+import { BaseHandler } from '../BaseHandler';
 
-export abstract class BooruHandler extends GuildHandler<BooruCustomData> {
+export interface BooruHandlerOptions {
+    readonly data: ApplicationCommandData
+    readonly nsfw: boolean,
+    readonly id: string,
+    readonly apiName: string,
+    readonly apiIcon: string
+}
+
+export interface BooruSuggestionData {
+    readonly suggestions: Array<{
+        readonly name: string,
+        readonly count: number
+    }>,
+    readonly tags: string,
+    readonly url404: string | null
+}
+
+export abstract class BooruHandler extends BaseHandler {
+
+    public readonly apiName: string;
+    public readonly apiIcon: string;
 
     constructor(options: BooruHandlerOptions) {
-        super({ group: GuildHandlerGroup.BOORU, ...options });
+        super({ group: 'Booru', global: false, ...options });
+        this.apiName = options.apiName;
+        this.apiIcon = options.apiIcon;
     }
 
-    public abstract generateResponse(context: HandlerContext, query: string): Promise<BooruHandlerReply>
+    public abstract generateResponse(context: HandlerContext, query: string): Promise<InteractionReplyOptions>
 
-    public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.deferReply();
-        const query = (interaction.options.get('tags') || interaction.options.get('thread'));
-        const queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
-        const response = await this.generateResponse(interaction, queryString);
-        return interaction.followUp(response).then(sent => {
-            if (response.imageURL) {
-                const webmp4 = /(\.webm)|(\.mp4)/g.test(response.imageURL);
-                if (webmp4) return interaction.followUp({ content: response.imageURL });
-            }
-            return sent;
-        });
+    public override async execute(interaction: Interaction): Promise<any> {
+        if (interaction.isCommand()) {
+            await interaction.deferReply();
+            const query = (interaction.options.get('tags') || interaction.options.get('thread'));
+            let queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
+            const response = await this.generateResponse(interaction, queryString);
+            let message = await interaction.followUp(response) as Message;
+            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
+            collector.on('collect', this.createCollectorFunction(message, queryString));
+            collector.on('end', this.createEnderFunction(message));
+        }
     }
 
-    public override async onButton(interaction: ButtonInteraction, customData: any): Promise<any> {
-        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.deferReply() }
-        const response = await this.generateResponse(interaction, customData.t);
-        return new Promise(resolve => {
-            if (customData.m === 'p') return resolve(interaction.followUp(response));
-            if (customData.m === 'e') return resolve((<Message>interaction.message).edit(response));
-        }).then(sent => {
-            if (response.imageURL) {
-                const webmp4 = /(\.webm)|(\.mp4)/g.test(response.imageURL);
-                if (webmp4) return interaction.followUp({ content: response.imageURL });
+    private createCollectorFunction(message: Message, queryString: string) {
+        return async (interaction: MessageComponentInteraction) => {
+            if (interaction.isSelectMenu()) {
+                await interaction.deferUpdate();
+                queryString = interaction.values[0] || '';
+                const response = await this.generateResponse(interaction, queryString);
+                message = await (<Message>interaction.message).edit(response);
             }
-            return sent;
-        });
-    }
-
-    public override async onSelectMenu(interaction: SelectMenuInteraction, customData: any): Promise<any> {
-        if (customData.m === 'e') { await interaction.deferUpdate() } else { await interaction.deferReply() }
-        const response = await this.generateResponse(interaction, interaction.values[0]!);
-        return new Promise(resolve => {
-            if (customData.m === 'p') return resolve(interaction.followUp(response));
-            if (customData.m === 'e') return resolve((<Message>interaction.message).edit(response));
-        }).then(sent => {
-            if (response.imageURL) {
-                const webmp4 = /(\.webm)|(\.mp4)/g.test(response.imageURL);
-                if (webmp4) return interaction.followUp({ content: response.imageURL });
+            if (interaction.isButton() && interaction.customId === 'recycle') {
+                if (message.interaction && interaction.user !== message.interaction.user) {
+                    await interaction.reply({ content: `Sorry! Only the creator of this search can recycle the image`, ephemeral: true });
+                } else {
+                    await interaction.deferUpdate();
+                    const response = await this.generateResponse(interaction, queryString);
+                    message = await (<Message>interaction.message).edit(response);
+                }
             }
-            return sent;
-        });
+            if (interaction.isButton() && interaction.customId === 'repeat') {
+                await interaction.deferReply();
+                const response = await this.generateResponse(interaction, queryString);
+                const followUp = await interaction.followUp(response) as Message;
+                const collector = followUp.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
+                collector.on('collect', this.createCollectorFunction(followUp, queryString));
+                collector.on('end', this.createEnderFunction(message));
+            }
+        }
     }
 }

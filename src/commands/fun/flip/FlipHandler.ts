@@ -1,15 +1,21 @@
-import { GuildHandler, GuildHandlerGroup, FlipCommandData } from '../../..';
-import { HandlerCustomData } from 'discord.js-commands';
+import * as FlipData from '../../../../res/flip_data.json';
 import { CommandInteraction, Util } from 'discord.js';
-import * as FlipData from './flip_data.json';
+import { FlipCommandData } from './FlipCommandData';
+import { BaseHandler } from '../../BaseHandler';
 
-export class FlipHandler extends GuildHandler<HandlerCustomData> {
+export class FlipHandler extends BaseHandler {
 
     constructor() {
-        super({ id: 'flip', commandData: FlipCommandData, group: GuildHandlerGroup.FUN });
+        super({
+            id: 'flip',
+            group: 'Fun',
+            global: false,
+            nsfw: false,
+            data: FlipCommandData
+        })
     }
 
-    public override async onCommand(interaction: CommandInteraction): Promise<any> {
+    public async execute(interaction: CommandInteraction): Promise<any> {
         await interaction.deferReply();
 
         const subCommand = interaction.options.getSubcommand();

@@ -1,93 +1,113 @@
-import { InteractionReplyOptions, MessageActionRow, CommandInteraction, ButtonInteraction, SelectMenuInteraction, MessageSelectMenu, Permissions } from 'discord.js';
-import { AdminCommandData, GlobalHandler, AdminEmbedFactory, GuildHandler, GuildHandlerGroup, AdminSelectMenuFactory, AdminButtonFactory } from '../../..';
-import { CommandClient, HandlerCustomData, HandlerResult, HandlerContext } from 'discord.js-commands';
+import { Client, CommandInteraction, Guild, GuildMember, Message, MessageActionRow, MessageButton, Permissions, Constants, InteractionReplyOptions, SelectMenuInteraction, MessageComponentInteraction } from 'discord.js';
+import { CommandHandlerSchema, HandlerClient } from '../../../discord/HandlerClient';
+import { HandlerContext } from '../../../discord/Util';
+import { AdminCommandData } from './AdminCommandData';
+import { AdminSelectMenu } from './AdminSelectMenu';
+import { Handler } from '../../../discord/Handler';
+import { BaseHandler } from '../../BaseHandler';
+import { AdminEmbed } from './AdminEmbed';
 
-export enum AdminButtonType { ENABLE = 'add', DISABLE = 'del' }
-export interface AdminCustomData extends HandlerCustomData {
-    sub: 'commands',
-    group?: GuildHandlerGroup,
-    type?: AdminButtonType
-}
+const { MessageButtonStyles } = Constants;
 
-export class AdminHandler extends GlobalHandler<AdminCustomData> {
+export type HandlerMap = Map<string, { handler: Handler, appCommand: CommandHandlerSchema | null }>;
+export type GroupHandlerMap = Map<string, HandlerMap>;
+
+export class AdminHandler extends BaseHandler {
 
     constructor() {
-        super({ id: 'admin', commandData: AdminCommandData, permissions: [Permissions.FLAGS.ADMINISTRATOR] });
+        super({
+            id: 'admin',
+            group: 'Global',
+            global: true,
+            nsfw: false,
+            data: AdminCommandData
+        })
     }
 
-    public override async onCommand(interaction: CommandInteraction): Promise<any> {
-        await interaction.deferReply();
+    public async execute(interaction: CommandInteraction): Promise<any> {
         const subCommand = interaction.options.getSubcommand();
+        const { client, guild } = <{ client: Client, guild: Guild }>interaction;
+        if (!(client instanceof HandlerClient)) throw interaction;
+        if (!guild) return interaction.reply(this.getEmbedTemplate(interaction).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
+        if (await this.replyIfAdmin(interaction)) return;
         switch (subCommand) {
             case 'commands': {
-                const response = await this.fetchCommandResponse(interaction);
-                return interaction.followUp(response);
+                await interaction.deferReply();
+                let groupComponent: SelectMenuInteraction | undefined = undefined;
+                let commandsComponent: SelectMenuInteraction | undefined = undefined;
+                let groupHandlerMap = await this.fetchHandlerMap(guild);
+                const response = this.createResponse(interaction, groupHandlerMap, groupComponent, commandsComponent);
+                let message = await interaction.followUp(response) as Message;
+                const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
+                collector.on('collect', async (component) => {
+                    if (await this.replyIfAdmin(component)) return;
+                    if (component.isSelectMenu() && component.customId === 'groups') {
+                        await component.deferUpdate();
+                        const response = this.createResponse(interaction, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
+                        message = await (<Message>component.message).edit(response);
+                    }
+                    if (component.isSelectMenu() && component.customId === 'commands') {
+                        await component.deferUpdate();
+                        const response = this.createResponse(interaction, groupHandlerMap, groupComponent, commandsComponent = component);
+                        message = await (<Message>component.message).edit(response);
+                    }
+                    if (component.isButton()) {
+                        await component.deferUpdate();
+                        const group = groupComponent!.values[0]!;
+                        const handlers = groupHandlerMap.get(group)!.values();
+                        for (const { handler } of handlers) {
+                            if (commandsComponent!.values.includes(handler.id)) {
+                                if (component.customId === 'enable') await client.postCommand(handler, guild);
+                                if (component.customId === 'disable') {
+                                    const appCommand = await client.fetchGuildAppCommand(handler, guild);
+                                    if (appCommand) await client.deleteCommand(appCommand, guild);
+                                }
+                            }
+                        }
+                        groupHandlerMap = await this.fetchHandlerMap(guild);
+                        const response = this.createResponse(interaction, groupHandlerMap, groupComponent, commandsComponent);
+                        message = await (<Message>component.message).edit(response);
+                    }
+                });
+                collector.on('end', this.createEnderFunction(message));
+                return message;
             }
             default: throw interaction;
         }
     }
 
-    public override async onSelectMenu(interaction: SelectMenuInteraction, customData: AdminCustomData): Promise<any> {
-        await interaction.deferUpdate();
-        switch (customData.sub) {
-            case 'commands': {
-                if (!customData.group) {
-                    const group = interaction.values[0] as GuildHandlerGroup;
-                    const response = await this.fetchCommandResponse(interaction, group);
-                    return interaction.editReply(response);
-                } else {
-                    const response = await this.fetchCommandResponse(interaction, customData.group, interaction.values);
-                    return interaction.editReply(response);
-                }
-            }
+    private async replyIfAdmin(context: CommandInteraction | MessageComponentInteraction): Promise<Message | null> {
+        if (!(context.member as GuildMember).permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            const response = this.getEmbedTemplate(context).setDescription(`Sorry! Only admins can use the admin command`).toReplyOptions(true);
+            return await context.reply({ ...response, fetchReply: true }) as Message;
         }
+        return null;
     }
 
-    public override async onButton(interaction: ButtonInteraction, customData: AdminCustomData): Promise<any> {
-        await interaction.deferUpdate();
-        switch (customData.sub) {
-            case 'commands': {
-                if (!(interaction.client instanceof CommandClient)) throw interaction;
-                const handlerSelectMenu = <MessageSelectMenu>interaction.message.components![1]!.components[0]!;
-                const handlerIds = handlerSelectMenu.options.filter(option => option.default).map(option => option.value);
-                for (const handlerId of handlerIds) {
-                    const handler = interaction.client.handlers.find(handler => handler instanceof GuildHandler && handler.id === handlerId) as GuildHandler<any>;
-                    if (customData.type === AdminButtonType.ENABLE) await handler.enable(interaction, customData);
-                    if (customData.type === AdminButtonType.DISABLE) await handler.disable(interaction, customData);
-                }
-                if (!interaction.replied) {
-                    const response = await this.fetchCommandResponse(interaction, customData.group, handlerIds);
-                    return interaction.editReply(response);
-                }
-            }
-        }
+    private createResponse(context: HandlerContext, groupHandlerMap: GroupHandlerMap, groupComponent?: SelectMenuInteraction, commandsComponent?: SelectMenuInteraction): InteractionReplyOptions {
+        return {
+            embeds: [AdminEmbed.createCommandsEmbed(context, groupHandlerMap)],
+            components: [
+                AdminSelectMenu.createGroupsSelectMenu(groupHandlerMap, groupComponent).toActionRow(),
+                ...(groupComponent ? [AdminSelectMenu.createHandlerSelectMenu(groupHandlerMap, groupComponent, commandsComponent).toActionRow()] : []),
+                ...(commandsComponent && commandsComponent.values.length ? [new MessageActionRow().addComponents([
+                    new MessageButton().setLabel('Enable Commands').setStyle(MessageButtonStyles.SUCCESS).setCustomId('enable'),
+                    new MessageButton().setLabel('Disable Commands').setStyle(MessageButtonStyles.DANGER).setCustomId('disable')
+                ])] : [])
+            ]
+        };
     }
 
-    public async fetchCommandResponse(context: HandlerContext, group?: GuildHandlerGroup, handlerIds?: Array<string>): Promise<InteractionReplyOptions> {
-        if (!(context.client instanceof CommandClient)) throw context;
-        const embed = await AdminEmbedFactory.fetchCommandsEmbed(this, context);
-        const groupActionRow = AdminSelectMenuFactory.getGuildHandlerGroupSelectMenu(this, group).toActionRow();
-        if (!group) return { embeds: [embed], components: [groupActionRow] };
-        const handlers = context.client.handlers.filter(handler => handler instanceof GuildHandler && handlerIds && handlerIds.includes(handler.id)) as [GuildHandler<any>, ...GuildHandler<any>[]];
-        const handlerActionRow = AdminSelectMenuFactory.getGuildHandlerSelectMenu(this, context, group, handlers).toActionRow();
-        if (!handlers.length) return { embeds: [embed], components: [groupActionRow, handlerActionRow] }
-        const handlerButtonActionRow = new MessageActionRow().addComponents([
-            AdminButtonFactory.getAdminButton(this, AdminButtonType.ENABLE, group, handlers),
-            AdminButtonFactory.getAdminButton(this, AdminButtonType.DISABLE, group, handlers)
-        ]);
-        return { embeds: [embed], components: [groupActionRow, handlerActionRow, handlerButtonActionRow] }
-    }
-
-    public override async initialise(client: CommandClient): Promise<HandlerResult> {
-        const globalHandlers = [];
-        const commands = await client.application!.commands.fetch();
-        for (const handler of client.handlers) {
-            if (!handler.isCommandHandler()) continue;
-            if (handler instanceof GuildHandler) continue;
-            const command = commands.find((command => command.name === handler.commandData.name));
-            if (!command) await client.application!.commands.create(handler.commandData);
-            globalHandlers.push(handler);
+    private async fetchHandlerMap(guild: Guild): Promise<GroupHandlerMap> {
+        const client = guild.client as HandlerClient;
+        const handlers = client.getAllHandlers().filter(handler => !handler.global);
+        const appCommands = await client.fetchGuildCommands(guild);
+        const groupHandlerMap = new Map();
+        for (const handler of handlers) {
+            const appCommand = appCommands.find(appCommand => appCommand.handler_id === handler.id) ?? null;
+            if (!groupHandlerMap.has(handler.group)) groupHandlerMap.set(handler.group, new Map());
+            groupHandlerMap.get(handler.group).set(handler.id, { handler, appCommand });
         }
-        return { message: `Found ${globalHandlers.length} global command handlers` }
+        return groupHandlerMap;
     }
 }

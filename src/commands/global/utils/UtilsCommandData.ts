@@ -23,7 +23,8 @@ export const UtilsCommandData: ApplicationCommandData = {
         options: [{
             name: 'channel',
             type: ApplicationCommandOptionTypes.CHANNEL,
-            description: 'The channel to get a screenshare link for'
+            description: 'The channel to get a screenshare link for',
+            channelTypes: ['GUILD_VOICE']
         }]
     }]
 }

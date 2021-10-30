@@ -7,7 +7,7 @@ export const MagickCommandData: ApplicationCommandData = {
     options: [{
         type: ApplicationCommandOptionTypes.STRING,
         name: 'image',
-        required: false,
+        required: true,
         description: 'The user, emoji or url to use'
     }]
 }

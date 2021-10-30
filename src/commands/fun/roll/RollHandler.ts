@@ -1,14 +1,20 @@
-import { GuildHandler, GuildHandlerGroup, RollCommandData } from '../../..';
-import { HandlerCustomData } from 'discord.js-commands';
+import { RollCommandData } from './RollCommandData';
 import { CommandInteraction, Util } from 'discord.js';
+import { BaseHandler } from '../../BaseHandler';
 
-export class RollHandler extends GuildHandler<HandlerCustomData> {
+export class RollHandler extends BaseHandler {
 
     constructor() {
-        super({ id: 'roll', commandData: RollCommandData, group: GuildHandlerGroup.FUN });
+        super({
+            id: 'roll',
+            group: 'Fun',
+            global: false,
+            nsfw: false,
+            data: RollCommandData
+        })
     }
 
-    public override async onCommand(interaction: CommandInteraction): Promise<any> {
+    public async execute(interaction: CommandInteraction): Promise<any> {
         await interaction.deferReply();
         const query = interaction.options.getString('dice') || '1d6';
 
@@ -54,6 +60,5 @@ export class RollHandler extends GuildHandler<HandlerCustomData> {
             embed.addField(roll.toLowerCase(), description);
         }
         return interaction.followUp(embed.toReplyOptions())
-
     }
 }

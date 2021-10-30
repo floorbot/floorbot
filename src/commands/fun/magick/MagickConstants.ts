@@ -1,7 +1,4 @@
-import { HandlerCustomData } from 'discord.js-commands';
 import * as probe from 'probe-image-size';
-
-export interface MagickCustomData extends HandlerCustomData { }
 
 export interface MagickAction {
     readonly label: string;

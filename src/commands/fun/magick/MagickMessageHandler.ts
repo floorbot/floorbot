@@ -1,39 +1,41 @@
-import { CommandInteraction, InteractionReplyOptions, Message, SelectMenuInteraction, Util } from 'discord.js';
+import { ContextMenuInteraction, InteractionReplyOptions, Message, SelectMenuInteraction } from 'discord.js';
+import { MagickMessageCommandData } from './MagickMessageCommandData';
 import { MagickAction, MagickProgress } from './MagickConstants';
 import { MagickAttachment } from './components/MagickAttachment';
 import { MagickSelectMenu } from './components/MagickSelectMenu';
 import { MagickEmbed } from './components/MagickEmbed';
-import { MagickCommandData } from './MagickCommandData';
 import { HandlerContext } from '../../../discord/Util';
 import { ImageMagick } from './tools/ImageMagick';
 import { BaseHandler } from '../../BaseHandler';
+import { ProbeResult } from 'probe-image-size';
 import * as probe from 'probe-image-size';
 
-export class MagickHandler extends BaseHandler {
+export class MagickMessageHandler extends BaseHandler {
 
     constructor() {
         super({
-            id: 'magick',
+            id: 'magick_message',
             group: 'Fun',
             global: false,
             nsfw: false,
-            data: MagickCommandData
+            data: MagickMessageCommandData
         })
     }
 
-    public async execute(interaction: CommandInteraction): Promise<any> {
+    public async execute(interaction: ContextMenuInteraction): Promise<any> {
         await interaction.deferReply();
-        const input = interaction.options.getString('image', true);
-        const resolvedUser = Util.resolveUser(interaction, input);
-        const resolvedEmoji = Util.resolveEmoji(input);
-        const metadata = await probe(
-            !resolvedUser && !resolvedEmoji ? input : resolvedUser ?
-                resolvedUser.displayAvatarURL({ dynamic: true }) :
-                resolvedEmoji!.imageURL
-        ).catch(() => null);
+        const targetMessage = interaction.options.getMessage('message', true) as Message;
+        let metadata: ProbeResult | null = null;
+        for (const embed of targetMessage.embeds) {
+            if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
+            if (embed.thumbnail && embed.thumbnail.url) metadata = await probe(embed.thumbnail.url).catch(() => null) || metadata;
+        }
+        for (const attachment of targetMessage.attachments.values()) {
+            metadata = await probe(attachment.url).catch(() => null) || metadata;
+        }
         if (!metadata) {
             const embed = this.getEmbedTemplate(interaction)
-                .setDescription(`Sorry! \`${input}\` is not a valid image`);
+                .setDescription(`Sorry! I could not find a valid image in that message`);
             return interaction.followUp(embed.toReplyOptions(true));
         }
         const response = await this.fetchMagickResponse(interaction, metadata);
