@@ -6,7 +6,7 @@ export class MagickSelectMenu extends HandlerSelectMenu {
 
     constructor(data?: MessageSelectMenu | MessageSelectMenuOptions) {
         super(data);
-    };
+    }
 
     public static getMagickSelectMenu(selected?: MagickAction): MagickSelectMenu {
         const selectMenu = new MagickSelectMenu();

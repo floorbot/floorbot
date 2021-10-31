@@ -168,7 +168,7 @@ export class MarkovHandler extends BaseHandler {
             return resolve(res);
         }).then((res: any) => {
             const content = channelData.owoify ? owoify.default(res.string) : res.string;
-            return { content: content, ...(channelData.mentions && { allowedMentions: { parse: [] } }) };
+            return { content: content, ...(!channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;
         });

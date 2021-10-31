@@ -34,7 +34,7 @@ export class DefineHandler extends BaseHandler {
             const response = await this.fetchResponse(iButton, query, page);
             message = await message.edit(response);
         });
-        collector.on('end', this.createEnderFunction(message))
+        collector.on('end', this.createEnderFunction(message));
     }
 
     private async fetchResponse(context: HandlerContext, query: string | null, page: number = 0): Promise<MessageOptions> {
