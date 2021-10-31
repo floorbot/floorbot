@@ -18,16 +18,16 @@ export class UrbanDictionaryAPI {
 
     public static async define(term: string): Promise<UrbanDictionaryData[]> {
         const params = new Map([['term', term]]);
-        return await UrbanDictionaryAPI.request('define', params).then(res => res.list);
+        return await UrbanDictionaryAPI.request('define', params).then(res => { return res.list ?? []});
     }
 
     public static async random(): Promise<UrbanDictionaryData[]> {
-        return await UrbanDictionaryAPI.request('random').then(res => res.list);
+        return await UrbanDictionaryAPI.request('random').then(res => res.list ?? []);
     }
 
     public static async autocomplete(term: string): Promise<UrbanDictionaryAutocomplete[]> {
         const params = new Map([['term', term]]);
-        return await UrbanDictionaryAPI.request('autocomplete-extra', params).then(res => res.results);
+        return await UrbanDictionaryAPI.request('autocomplete-extra', params).then(res => res.results ?? []);
     }
 }
 
