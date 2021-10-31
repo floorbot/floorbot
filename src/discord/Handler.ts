@@ -45,4 +45,9 @@ export abstract class Handler {
     public onError(interaction: BaseCommandInteraction): Promise<any> {
         return interaction.followUp(`Sorry! ${interaction.commandName} seems to have run into an error...`);
     }
+
+    public toString(): string {
+        const prefix = (this.data.type === 'MESSAGE' || this.data.type === 'USER') ? '☰ ' : '/'
+        return `${prefix}${this.data.name}`
+    }
 }

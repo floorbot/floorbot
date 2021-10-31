@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, BaseCommandInteraction, InteractionReplyOptions, Message } from 'discord.js';
+import { AutocompleteInteraction, BaseCommandInteraction, InteractionReplyOptions, Message, MessageEmbed } from 'discord.js';
 import { HandlerAttachment } from '../components/HandlerAttachment';
 import { Handler, HandlerOptions } from '../discord/Handler';
 import { HandlerEmbed } from '../components/HandlerEmbed';
@@ -33,12 +33,17 @@ export abstract class BaseHandler extends Handler {
 
     protected createEnderFunction(message: Message) {
         return async () => {
-            const replyOptions = { ...(message.content ? { content: message.content } : {}), embeds: message.embeds, components: [] };
-            if (replyOptions.embeds.length) {
+            const replyOptions: InteractionReplyOptions = {
+                ...(message.content ? { content: message.content } : {}),
+                embeds: message.embeds,
+                components: [],
+                attachments: [...message.attachments.values()]
+            };
+            if (replyOptions.embeds && replyOptions.embeds.length) {
                 if (replyOptions.embeds[0] ?.footer ?.text ?.length) replyOptions.embeds[0].footer.text += ' - 🔒 Locked';
-                else replyOptions.embeds[0]!.setFooter('🔒 Locked');
+                else (replyOptions.embeds[0] as MessageEmbed).setFooter('🔒 Locked');
             }
-            await message.edit(replyOptions);
+            await message.edit(replyOptions).catch(() => { });
         }
     }
 

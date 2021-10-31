@@ -1,4 +1,11 @@
-import { MessageButton, MessageButtonOptions, MessageActionRow } from 'discord.js';
+import { MessageButton, MessageButtonOptions, MessageActionRow, Constants } from 'discord.js';
+
+const { MessageButtonStyles } = Constants;
+
+export enum HandlerButtonID {
+    NEXT_PAGE = 'next_page',
+    PREVIOUS_PAGE = 'past_page'
+}
 
 export class HandlerButton<T = string> extends MessageButton {
 
@@ -27,5 +34,19 @@ export class HandlerButton<T = string> extends MessageButton {
 
     public toActionRow(): MessageActionRow {
         return new MessageActionRow().addComponents(this)
+    }
+
+    public static createNextPageButton(page?: number): HandlerButton {
+        return new HandlerButton()
+            .setCustomId(HandlerButtonID.NEXT_PAGE)
+            .setLabel(page === undefined ? 'Next' : `Page ${page}`)
+            .setStyle(MessageButtonStyles.PRIMARY)
+    }
+
+    public static createPreviousPageButton(page?: number): HandlerButton {
+        return new HandlerButton()
+            .setCustomId(HandlerButtonID.PREVIOUS_PAGE)
+            .setLabel(page === undefined ? 'Previous' : `Page ${page}`)
+            .setStyle(MessageButtonStyles.PRIMARY)
     }
 }

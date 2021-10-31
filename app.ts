@@ -72,6 +72,20 @@ HandlerClient.create({
     await client.login(nconf.get('DISCORD_TOKEN'));
     PresenceController.setup(client);
 
+    // client.application!.commands.fetch().then(async commands => {
+    //     for (const command of commands.values()) {
+    //         console.log(command.name)
+    //         await command.delete();
+    //     }
+    // })
+    //
+    // for (const guild of client.guilds.cache.values()) {
+    //     const commands = await guild.commands.fetch();
+    //     for (const command of commands.values()) {
+    //         console.log(command.name)
+    //         await command.delete();
+    //     }
+    // }
 
     // client.channels.fetch('661112326694502412').then((channel: any) => {
     //     // return { content: content, ...(channelData.mentions && { allowedMentions: { parse: [] } }) };
