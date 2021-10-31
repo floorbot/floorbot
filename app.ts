@@ -30,6 +30,7 @@ import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
 import { E621Handler } from './src/commands/booru/e621/E621Handler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
 import { FlipHandler } from './src/commands/fun/flip/FlipHandler';
+import { LostHandler } from './src/commands/temp/lose/DefineHandler';
 
 const poolConfig: PoolConfig = {
     host: nconf.get('DATABASE:HOST'),
@@ -49,6 +50,8 @@ HandlerClient.create({
     client.addHandlers(...[
         new AdminHandler(),
         new UtilsHandler(),
+
+        new LostHandler(),
 
         new MarkovHandler(),
         new WeatherHandler(),
