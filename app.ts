@@ -28,9 +28,9 @@ import { OwoifyHandler } from './src/commands/fun/owoify/OwoifyHandler';
 import { MagickHandler } from './src/commands/fun/magick/MagickHandler';
 import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
 import { E621Handler } from './src/commands/booru/e621/E621Handler';
+import { LostHandler } from './src/commands/temp/lost/LostHandler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
 import { FlipHandler } from './src/commands/fun/flip/FlipHandler';
-import { LostHandler } from './src/commands/temp/lose/DefineHandler';
 
 const poolConfig: PoolConfig = {
     host: nconf.get('DATABASE:HOST'),
