@@ -13,8 +13,9 @@ import { ClientLogger } from './src/discord/ClientLogger';
 import { PresenceController } from './src/automations/PresenceController';
 
 // Commands
+import { OwoifyChatInputHandler } from './src/commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler';
+import { OwoifyMessageHandler } from './src/commands/fun/owoify/owoify_message/OwoifyMessageHandler';
 import { FlipChatInputHandler } from './src/commands/fun/flip/flip_chat_input/FlipChatInputHandler';
-import { OwoifyMessageHandler } from './src/commands/fun/owoify_message/OwoifyMessageHandler';
 import { FlipMessageHandler } from './src/commands/fun/flip/flip_message/FlipMessageHandler';
 import { MagickMessageHandler } from './src/commands/fun/magick/MagickMessageHandler';
 import { SafebooruHandler } from './src/commands/booru/safebooru/SafebooruHandler';
@@ -25,7 +26,6 @@ import { Rule34Handler } from './src/commands/booru/rule34/Rule34Handler';
 import { DefineHandler } from './src/commands/fun/define/DefineHandler';
 import { UtilsHandler } from './src/commands/global/utils/UtilsHandler';
 import { AdminHandler } from './src/commands/global/admin/AdminHandler';
-import { OwoifyHandler } from './src/commands/fun/owoify/OwoifyHandler';
 import { MagickHandler } from './src/commands/fun/magick/MagickHandler';
 import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
 import { E621Handler } from './src/commands/booru/e621/E621Handler';
@@ -53,15 +53,18 @@ HandlerClient.create({
 
         new LostHandler(),
 
-        new MarkovHandler(),
-        new WeatherHandler(),
+        // Start Complete
         new DefineHandler(),
-        new RollHandler(),
         new FlipChatInputHandler(),
-        new OwoifyHandler(),
-        new MagickHandler(),
+        new OwoifyChatInputHandler(),
         new FlipMessageHandler(),
         new OwoifyMessageHandler(),
+        // End Complete
+
+        new MarkovHandler(),
+        new WeatherHandler(),
+        new RollHandler(),
+        new MagickHandler(),
         new MagickMessageHandler(),
 
         new DanbooruHandler(),

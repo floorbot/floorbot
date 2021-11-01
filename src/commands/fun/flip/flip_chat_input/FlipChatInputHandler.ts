@@ -33,7 +33,8 @@ export class FlipChatInputHandler extends BaseHandler {
             case 'text': {
                 const text = command.options.getString('text', true);
                 const flipped = Flipper.flipText(text);
-                return command.followUp({ content: flipped, allowedMentions: { parse: [] } });
+                const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!
+                return command.followUp({ content: split, allowedMentions: { parse: [] } });
             }
             default: {
                 return command.followUp(HandlerReply.createUnexpectedErrorReply(command, this));

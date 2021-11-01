@@ -25,7 +25,7 @@ export class Rule34Handler extends BooruHandler {
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
                 name: `${tag.label} [${Util.formatCommas(tag.total)} posts]`,
-                value: tag.value
+                value: tag.label
             }
         });
         return interaction.respond(options);

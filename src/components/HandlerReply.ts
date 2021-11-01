@@ -7,6 +7,19 @@ import * as fs from 'fs';
 
 export class HandlerReply {
 
+    public static createMessageContentReply(context: HandlerContext, action: string): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like that message has no content to ${action}`,
+                `*Please make the correct changes before trying again!*`
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment], ephemeral: true }
+    }
+
     public static createInvalidInputReply(context: HandlerContext, message: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
