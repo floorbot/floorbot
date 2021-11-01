@@ -40,7 +40,7 @@ export abstract class BooruHandler extends BaseHandler {
             let queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
             const response = await this.generateResponse(interaction, queryString);
             let message = await interaction.followUp(response) as Message;
-            const collector = message.createMessageComponentCollector({ idle: 1000 * 5 });
+            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
             collector.on('collect', this.createCollectorFunction(message, queryString));
             collector.on('end', async () => {
                 try {
