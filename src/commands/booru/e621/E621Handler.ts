@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow, Util } from 'discord.js';
+import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
 import { HandlerContext } from '../../../discord/Util';
 import { BooruSelectMenu } from '../BooruSelectMenu';
 import { E621CommandData } from './E621CommandData';
@@ -20,12 +20,15 @@ export class E621Handler extends BooruHandler {
     }
 
     public override async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
-        const partial = interaction.options.getString('tags', true);
+        const partialTags = interaction.options.getString('tags', true);
+        const tags = partialTags.split('+');
+        const partial = tags.pop() as string;
+        if (!partial.length) return interaction.respond([]);
         const autocomplete = await E621API.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
-                name: `${tag.name} [${Util.formatCommas(tag.post_count)} posts]`,
-                value: tag.name
+                name: [...tags, tag.name].join('+'),
+                value: [...tags, tag.name].join('+')
             }
         });
         return interaction.respond(options);

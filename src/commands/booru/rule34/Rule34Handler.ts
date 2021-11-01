@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow, Util } from 'discord.js';
+import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
 import { Rule34API, Rule34APIAutocomplete } from './Rule34API';
 import { Rule34CommandData } from './Rule34CommandData';
 import { HandlerContext } from '../../../discord/Util';
@@ -20,12 +20,15 @@ export class Rule34Handler extends BooruHandler {
     }
 
     public override async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
-        const partial = interaction.options.getString('tags', true);
-        const autocomplete = await Rule34API.autocomplete(partial);
+        const partialTags = interaction.options.getString('tags', true);
+        const tags = partialTags.split('+');
+        const partial = tags.pop() as string;
+        if (!partial.length) return interaction.respond([]);
+        const autocomplete = await Rule34API.autocomplete(partial); console.log(autocomplete)
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
-                name: `${tag.label} [${Util.formatCommas(tag.total)} posts]`,
-                value: tag.label
+                name: [...tags, tag.value].join('+'),
+                value: [...tags, tag.value].join('+')
             }
         });
         return interaction.respond(options);

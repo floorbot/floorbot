@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow, Util } from 'discord.js';
+import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
 import { DanbooruCommandData } from './DanbooruCommandData';
 import { HandlerContext } from '../../../discord/Util';
 import { BooruSelectMenu } from '../BooruSelectMenu';
@@ -20,12 +20,15 @@ export class DanbooruHandler extends BooruHandler {
     }
 
     public override async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
-        const partial = interaction.options.getString('tags', true);
+        const partialTags = interaction.options.getString('tags', true);
+        const tags = partialTags.split('+');
+        const partial = tags.pop() as string;
+        if (!partial.length) return interaction.respond([]);
         const autocomplete = await DanbooruAPI.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
-                name: `${tag.label} [${Util.formatCommas(tag.post_count)} posts]`,
-                value: tag.value
+                name: [...tags, tag.value].join('+'),
+                value: [...tags, tag.value].join('+')
             }
         });
         return interaction.respond(options);
