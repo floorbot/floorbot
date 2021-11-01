@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
+import { ApplicationCommandData, GuildTextBasedChannel, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
 import { HandlerContext } from '../../discord/Util';
 import { BaseHandler } from '../BaseHandler';
 import { BooruEmbed } from './BooruEmbed';
@@ -40,10 +40,11 @@ export abstract class BooruHandler extends BaseHandler {
             let queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
             const response = await this.generateResponse(interaction, queryString);
             let message = await interaction.followUp(response) as Message;
-            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+            const collector = message.createMessageComponentCollector({ idle: 1000 * 5 });
             collector.on('collect', this.createCollectorFunction(message, queryString));
             collector.on('end', async () => {
                 try {
+                    message = await (interaction.channel as GuildTextBasedChannel).messages.fetch(message.id);
                     const embed = message.embeds[0] as BooruEmbed;
                     embed.footer!.text += ' - 🔒 Locked';
                     embed.setThumbnail(embed.image!.url);

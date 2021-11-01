@@ -24,7 +24,7 @@ export class Rule34Handler extends BooruHandler {
         const tags = partialTags.split('+');
         const partial = tags.pop() as string;
         if (!partial.length) return interaction.respond([]);
-        const autocomplete = await Rule34API.autocomplete(partial); console.log(autocomplete)
+        const autocomplete = await Rule34API.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
                 name: [...tags, tag.value].join('+'),
