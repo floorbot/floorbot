@@ -1,6 +1,7 @@
 import { ApplicationCommandData, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
 import { HandlerContext } from '../../discord/Util';
 import { BaseHandler } from '../BaseHandler';
+import { BooruEmbed } from './BooruEmbed';
 
 export interface BooruHandlerOptions {
     readonly data: ApplicationCommandData
@@ -39,9 +40,21 @@ export abstract class BooruHandler extends BaseHandler {
             let queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
             const response = await this.generateResponse(interaction, queryString);
             let message = await interaction.followUp(response) as Message;
-            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
+            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
             collector.on('collect', this.createCollectorFunction(message, queryString));
-            collector.on('end', this.createEnderFunction(message));
+            collector.on('end', async () => {
+                try {
+                    const embed = message.embeds[0] as BooruEmbed;
+                    embed.footer!.text += ' - 🔒 Locked';
+                    embed.setThumbnail(embed.image!.url);
+                    embed.image = null;
+                    const replyOptions = {
+                        embeds: [embed],
+                        components: [],
+                    }
+                    await message.edit(replyOptions);
+                } catch { }
+            });
         }
     }
 
@@ -60,6 +73,14 @@ export abstract class BooruHandler extends BaseHandler {
                     await interaction.deferUpdate();
                     const response = await this.generateResponse(interaction, queryString);
                     message = await (<Message>interaction.message).edit(response);
+                }
+            }
+            if (interaction.isButton() && interaction.customId === 'delete') {
+                if (message.interaction && interaction.user !== message.interaction.user) {
+                    await interaction.reply({ content: `Sorry! Only the creator of this search can delete the image`, ephemeral: true });
+                } else {
+                    await interaction.deferUpdate();
+                    await (<Message>interaction.message).delete().catch(_err => { });
                 }
             }
             if (interaction.isButton() && interaction.customId === 'repeat') {

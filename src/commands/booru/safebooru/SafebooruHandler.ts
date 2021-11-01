@@ -66,7 +66,8 @@ export class SafebooruHandler extends BooruHandler {
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(postURL),
                 BooruButton.createRepeatButton(tags),
-                BooruButton.createRecycleButton()
+                BooruButton.createRecycleButton(),
+                // BooruButton.createDeleteButton()
             ])]
         }
     }

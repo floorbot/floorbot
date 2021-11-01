@@ -23,6 +23,13 @@ export class BooruButton extends HandlerButton {
             .setCustomId('recycle');
     }
 
+    public static createDeleteButton(): BooruButton {
+        return new BooruButton()
+            .setLabel('✖️')
+            .setStyle(MessageButtonStyles.DANGER)
+            .setCustomId('delete');
+    }
+
     public static createViewOnlineButton(postURL: string): BooruButton {
         return new BooruButton()
             .setURL(postURL)
