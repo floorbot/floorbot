@@ -16,8 +16,8 @@ export class AdminEmbed extends HandlerEmbed {
             const lines: string[] = [];
             // lines.push(`__${group} Commands__`)
             handlerMap.forEach(({ handler, appCommand }) => {
-                const prefix = (handler.data.type === 'MESSAGE' || handler.data.type === 'USER') ? '☰ ' : '/'
-                lines.push(`${appCommand ? '🟢' : '🔴'} \`${prefix}${handler.data.name}${handler.nsfw ? '\*' : ''}\` - *${handler.description}*`);
+                // const prefix = (handler.data.type === 'MESSAGE' || handler.data.type === 'USER') ? '☰ ' : '/'
+                lines.push(`${appCommand ? '🟢' : '🔴'} \`${handler.toString()}${handler.nsfw ? '\*' : ''}\` - *${handler.description}*`);
                 // lines.push(`${appCommand ? '🟢' : '🔴'} \`${prefix}${handler.data.name}${handler.nsfw ? '\*' : ''}\``);
             });
             embed.addField(`${group} Commands`, lines.join('\n'), false)

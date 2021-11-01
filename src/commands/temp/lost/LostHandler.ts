@@ -16,14 +16,10 @@ export class LostHandler extends BaseHandler {
 
     public async execute(command: CommandInteraction): Promise<any> {
         const member = command.member as GuildMember;
-        console.log(member.roles.cache)
-        if (member.roles.cache.has('256715626951868416')) {
-            await command.deferReply();
-            await member.roles.remove('256715626951868416');
-            await command.followUp({
-                content: `<@&256715626951868416> ${member.toString()} has lost NNN!`,
-                allowedMentions: { parse: [] }
-            })
+        if (member.roles.cache.has('904334044257452042')) {
+            await member.roles.remove('904334044257452042');
+            await member.roles.add('904346113702785024');
+            await (<any>command.channel).send(`<@&904334044257452042> <@&904346113702785024> ${member.toString()} has lost No Nut November!`);
         }
     }
 }

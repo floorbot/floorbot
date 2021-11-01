@@ -44,13 +44,15 @@ export class DefineHandler extends BaseHandler {
         const message = await command.followUp(replyOptions) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', async component => {
-            await component.deferUpdate();
-            if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
-            if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
-            page = page % definitions.length;
-            page = page >= 0 ? page : definitions.length + page;
-            const replyOptions = this.createDefinitionReply(command, definitions, page);
-            await component.editReply(replyOptions);
+            try {
+                await component.deferUpdate();
+                if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
+                if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
+                page = page % definitions.length;
+                page = page >= 0 ? page : definitions.length + page;
+                const replyOptions = this.createDefinitionReply(command, definitions, page);
+                await component.editReply(replyOptions);
+            } catch { }
         });
         collector.on('end', this.createEnderFunction(message));
     }

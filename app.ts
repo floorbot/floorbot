@@ -13,8 +13,9 @@ import { ClientLogger } from './src/discord/ClientLogger';
 import { PresenceController } from './src/automations/PresenceController';
 
 // Commands
+import { FlipChatInputHandler } from './src/commands/fun/flip/flip_chat_input/FlipChatInputHandler';
 import { OwoifyMessageHandler } from './src/commands/fun/owoify_message/OwoifyMessageHandler';
-import { FlipMessageHandler } from './src/commands/fun/flip_message/FlipMessageHandler';
+import { FlipMessageHandler } from './src/commands/fun/flip/flip_message/FlipMessageHandler';
 import { MagickMessageHandler } from './src/commands/fun/magick/MagickMessageHandler';
 import { SafebooruHandler } from './src/commands/booru/safebooru/SafebooruHandler';
 import { DanbooruHandler } from './src/commands/booru/danbooru/DanbooruHandler';
@@ -30,7 +31,6 @@ import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
 import { E621Handler } from './src/commands/booru/e621/E621Handler';
 import { LostHandler } from './src/commands/temp/lost/LostHandler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
-import { FlipHandler } from './src/commands/fun/flip/FlipHandler';
 
 const poolConfig: PoolConfig = {
     host: nconf.get('DATABASE:HOST'),
@@ -57,7 +57,7 @@ HandlerClient.create({
         new WeatherHandler(),
         new DefineHandler(),
         new RollHandler(),
-        new FlipHandler(),
+        new FlipChatInputHandler(),
         new OwoifyHandler(),
         new MagickHandler(),
         new FlipMessageHandler(),

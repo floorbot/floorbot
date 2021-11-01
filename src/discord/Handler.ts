@@ -1,5 +1,7 @@
-import { ApplicationCommandData, ApplicationCommandPermissionData, AutocompleteInteraction, BaseCommandInteraction } from 'discord.js';
+import { ApplicationCommandData, ApplicationCommandPermissionData, AutocompleteInteraction, BaseCommandInteraction, Constants } from 'discord.js';
 import { HandlerClient } from './HandlerClient';
+
+const { ApplicationCommandTypes } = Constants;
 
 export interface HandlerOptions {
     readonly id: string;
@@ -47,7 +49,7 @@ export abstract class Handler {
     }
 
     public toString(): string {
-        const prefix = (this.data.type === 'MESSAGE' || this.data.type === 'USER') ? '☰ ' : '/'
+        const prefix = (this.data.type === 'MESSAGE' || this.data.type === ApplicationCommandTypes.MESSAGE || this.data.type === 'USER' || this.data.type === ApplicationCommandTypes.USER) ? '☰ ' : '/'
         return `${prefix}${this.data.name}`
     }
 }

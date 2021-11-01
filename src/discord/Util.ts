@@ -6,6 +6,7 @@ export type HandlerContext = Interaction | Message;
 
 declare module 'discord.js' {
     export namespace Util {
+        export function tryIt(fn: Function): Function;
         export function toggleMessageComponents(message: Message, disabled: boolean): void;
         export function toFahrenheit(degrees: number): number;
         export function resolveEmoji(string: string): { string: string, imageURL: string } | null;

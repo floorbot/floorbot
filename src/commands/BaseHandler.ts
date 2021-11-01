@@ -33,17 +33,19 @@ export abstract class BaseHandler extends Handler {
 
     protected createEnderFunction(message: Message) {
         return async () => {
-            const replyOptions: InteractionReplyOptions = {
-                ...(message.content ? { content: message.content } : {}),
-                embeds: message.embeds,
-                components: [],
-                attachments: [...message.attachments.values()]
-            };
-            if (replyOptions.embeds && replyOptions.embeds.length) {
-                if (replyOptions.embeds[0] ?.footer ?.text ?.length) replyOptions.embeds[0].footer.text += ' - 🔒 Locked';
-                else (replyOptions.embeds[0] as MessageEmbed).setFooter('🔒 Locked');
-            }
-            await message.edit(replyOptions).catch(() => { });
+            try {
+                const replyOptions: InteractionReplyOptions = {
+                    ...(message.content ? { content: message.content } : {}),
+                    embeds: message.embeds,
+                    components: [],
+                    attachments: [...message.attachments.values()]
+                };
+                if (replyOptions.embeds && replyOptions.embeds.length) {
+                    if (replyOptions.embeds[0] ?.footer ?.text ?.length) replyOptions.embeds[0].footer.text += ' - 🔒 Locked';
+                    else (replyOptions.embeds[0] as MessageEmbed).setFooter('🔒 Locked');
+                }
+                await message.edit(replyOptions).catch(() => { });
+            } catch { }
         }
     }
 
