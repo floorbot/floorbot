@@ -44,7 +44,7 @@ export class WeatherHandler extends BaseHandler {
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
                 collector.on('end', Util.deleteComponentsOnEnd(message));
-                return message;
+                break;
             }
             case WeatherSubCommandName.USER: {
                 await command.deferReply();
@@ -64,7 +64,7 @@ export class WeatherHandler extends BaseHandler {
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
                 collector.on('end', Util.deleteComponentsOnEnd(message));
-                return message;
+                break;
             }
             case WeatherSubCommandName.SERVER_TEMPS: {
                 await command.deferReply();
@@ -92,7 +92,7 @@ export class WeatherHandler extends BaseHandler {
                     await component.editReply(replyOptions);
                 });
                 collector.on('end', Util.deleteComponentsOnEnd(message));
-                return message;
+                break;
             }
             case WeatherSubCommandName.LINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
@@ -121,7 +121,7 @@ export class WeatherHandler extends BaseHandler {
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
                 collector.on('end', Util.deleteComponentsOnEnd(message));
-                return message;
+                break;
             }
             case WeatherSubCommandName.UNLINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
@@ -131,7 +131,6 @@ export class WeatherHandler extends BaseHandler {
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
                 return command.followUp({ embeds: [embed], components: [] });
             }
-            default: { throw command }
         }
     }
 
@@ -189,9 +188,9 @@ export class WeatherHandler extends BaseHandler {
 
     private createServerTempsResponse(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkSchema][], viewData: { page: number, perPage: number, order: WeatherTempsOrder }): InteractionReplyOptions {
         if (viewData.order === WeatherTempsOrder.HOTTEST) links.sort((link1, link2) => { return link2[0].current.temp - link1[0].current.temp });
-        if (viewData.order === WeatherTempsOrder.COLDEST) links.sort((link1, link2) => { return link1[0].current.temp - link2[0].current.temp });
-        if (viewData.order === WeatherTempsOrder.HUMIDITY) links.sort((link1, link2) => { return link2[0].current.humidity - link1[0].current.humidity });
-        if (viewData.order === WeatherTempsOrder.TIMEZONE) links.sort((link1, link2) => { return link2[0].timezone_offset - link1[0].timezone_offset });
+        else if (viewData.order === WeatherTempsOrder.COLDEST) links.sort((link1, link2) => { return link1[0].current.temp - link2[0].current.temp });
+        else if (viewData.order === WeatherTempsOrder.HUMIDITY) links.sort((link1, link2) => { return link2[0].current.humidity - link1[0].current.humidity });
+        else if (viewData.order === WeatherTempsOrder.TIMEZONE) links.sort((link1, link2) => { return link2[0].timezone_offset - link1[0].timezone_offset });
         const sliced = links.slice((viewData.page - 1) * viewData.perPage, viewData.page * viewData.perPage);
         if (!sliced.length && viewData.page !== 1) return this.createServerTempsResponse(interaction, links, { ...viewData, page: 1 });
         const embed = WeatherEmbed.getServerTempsEmbed(interaction, sliced);
