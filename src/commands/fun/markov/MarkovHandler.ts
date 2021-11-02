@@ -149,19 +149,12 @@ export class MarkovHandler extends BaseHandler {
     }
 
     public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<InteractionReplyOptions | null> {
-        const time = Date.now();
-
-        channel.client.emit('log', 'STARTED A MARKOV MISSION STARTING NOW!!!!!!!!!!!')
         const channelData = await MarkovDatabase.fetchChannel(channel);
-        channel.client.emit('log', `<markov> - fetched the channel ${(Date.now() - time) / 1000}`)
         if (!MarkovHandler.CORPUSES.has(channel.id)) {
             const rows = await MarkovDatabase.fetchStrings(channel, user ? user : undefined);
-            channel.client.emit('log', `<markov> - fetched the rows ${(Date.now() - time) / 1000}`)
             if (!rows.length) return null;
             const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
-            channel.client.emit('log', `<markov> - created the variable ${(Date.now() - time) / 1000}`)
             markov.addData(rows.map(row => row.content));
-            channel.client.emit('log', `<markov> - mapped and added the data ${(Date.now() - time) / 1000}`)
             MarkovHandler.CORPUSES.set(channel.id, markov);
         }
         const markov = MarkovHandler.CORPUSES.get(channel.id)!;
@@ -178,7 +171,6 @@ export class MarkovHandler extends BaseHandler {
                     (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string)) // No links
                 )
             });
-            channel.client.emit('log', `<markov> - generated the message ${(Date.now() - time) / 1000}`)
             return resolve(res);
         }).then((res: any) => {
             const content = channelData.owoify ? owoify.default(res.string) : res.string;
