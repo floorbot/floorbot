@@ -1,4 +1,5 @@
 import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
+import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
 import { SafebooruCommandData } from './SafebooruCommandData';
 import { HandlerContext } from '../../../discord/Util';
 import { BooruSelectMenu } from '../BooruSelectMenu';
@@ -7,7 +8,7 @@ import { BooruButton } from '../BooruButton';
 import { SafebooruAPI } from './SafebooruAPI';
 import { BooruEmbed } from '../BooruEmbed';
 
-export class SafebooruHandler extends BooruHandler {
+export class SafebooruHandler extends BooruHandler implements Autocomplete {
 
     constructor() {
         super({
@@ -19,7 +20,7 @@ export class SafebooruHandler extends BooruHandler {
         });
     }
 
-    public override async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
+    public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partialTags = interaction.options.getString('tags', true);
         const tags = partialTags.split('+');
         const partial = tags.pop() as string;
@@ -66,8 +67,7 @@ export class SafebooruHandler extends BooruHandler {
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(postURL),
                 BooruButton.createRepeatButton(tags),
-                BooruButton.createRecycleButton(),
-                // BooruButton.createDeleteButton()
+                BooruButton.createRecycleButton()
             ])]
         }
     }

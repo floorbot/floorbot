@@ -3,6 +3,7 @@ import { MessageButton, MessageButtonOptions, MessageActionRow, Constants } from
 const { MessageButtonStyles } = Constants;
 
 export enum HandlerButtonID {
+    DELETE = 'delete',
     NEXT_PAGE = 'next_page',
     PREVIOUS_PAGE = 'past_page'
 }
@@ -34,6 +35,20 @@ export class HandlerButton<T = string> extends MessageButton {
 
     public toActionRow(): MessageActionRow {
         return new MessageActionRow().addComponents(this)
+    }
+
+    public static createViewOnlineButton(url: string): HandlerButton {
+        return new HandlerButton()
+            .setURL(url)
+            .setStyle(MessageButtonStyles.LINK)
+            .setLabel('View Online')
+    }
+
+    public static createDeleteButton(): HandlerButton {
+        return new HandlerButton()
+            .setLabel('✖️')
+            .setStyle(MessageButtonStyles.DANGER)
+            .setCustomId(HandlerButtonID.DELETE);
     }
 
     public static createNextPageButton(page?: number): HandlerButton {

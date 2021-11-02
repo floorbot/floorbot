@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, BaseCommandInteraction, InteractionReplyOptions, Message, MessageEmbed } from 'discord.js';
+import { AutocompleteInteraction, BaseCommandInteraction, CommandInteraction, GuildMember, InteractionReplyOptions, Message, MessageComponentInteraction, MessageEmbed, Permissions } from 'discord.js';
 import { HandlerAttachment } from '../components/HandlerAttachment';
 import { Handler, HandlerOptions } from '../discord/Handler';
 import { HandlerEmbed } from '../components/HandlerEmbed';
@@ -11,10 +11,6 @@ export abstract class BaseHandler extends Handler {
     constructor(options: HandlerOptions) {
         const description = options.description ?? ('description' in options.data ? options.data.description : options.description);
         super({ ...options, description });
-    }
-
-    public autocomplete(_interaction: AutocompleteInteraction): Promise<any> {
-        throw `Autocomplete not supported for ${this.id} handler`;
     }
 
     public override async setup(client: HandlerClient): Promise<any> {

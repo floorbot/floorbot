@@ -26,8 +26,7 @@ export class PregchanHandler extends BooruHandler {
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(post.thread.url),
                 BooruButton.createRepeatButton(search),
-                BooruButton.createRecycleButton(),
-                // BooruButton.createDeleteButton()
+                BooruButton.createRecycleButton()
             ])]
         }
     }

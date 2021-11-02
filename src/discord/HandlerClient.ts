@@ -122,7 +122,7 @@ export class HandlerClient extends Client {
     private async onInteractionCreate(interaction: Interaction): Promise<any> {
         const { channel } = interaction;
         const handler = await this.fetchHandler(interaction);
-        if (handler && interaction.isAutocomplete()) return handler.autocomplete(interaction).catch(console.error);
+        if (handler && interaction.isAutocomplete() && handler.hasAutocomplete()) return handler.autocomplete(interaction).catch(() => { });
         if (handler && (interaction.isCommand() || interaction.isContextMenu())) {
             if (channel && handler.nsfw) {
                 switch (channel.type) {

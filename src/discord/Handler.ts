@@ -1,5 +1,6 @@
 import { ApplicationCommandData, ApplicationCommandPermissionData, AutocompleteInteraction, BaseCommandInteraction, Constants } from 'discord.js';
 import { HandlerClient } from './HandlerClient';
+import { Autocomplete } from './interfaces/Autocomplete';
 
 const { ApplicationCommandTypes } = Constants;
 
@@ -34,7 +35,8 @@ export abstract class Handler {
     }
 
     public abstract execute(interaction: BaseCommandInteraction): Promise<any>;
-    public abstract autocomplete(interaction: AutocompleteInteraction): Promise<any>;
+
+    public hasAutocomplete(): this is Autocomplete { return 'autocomplete' in this }
 
     public async initialise(_client: HandlerClient): Promise<any> { return null; }
     public async finalise(_client: HandlerClient): Promise<any> { return null; }

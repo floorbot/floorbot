@@ -1,12 +1,13 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
 import { HandlerButton, HandlerButtonID } from '../../../components/HandlerButton';
 import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI';
+import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
 import { HandlerEmbed } from '../../../components/HandlerEmbed';
 import { HandlerReply } from '../../../components/HandlerReply';
 import { DefineCommandData } from './DefineCommandData';
 import { BaseHandler } from '../../BaseHandler';
 
-export class DefineHandler extends BaseHandler {
+export class DefineHandler extends BaseHandler implements Autocomplete {
 
     constructor() {
         super({
@@ -18,7 +19,7 @@ export class DefineHandler extends BaseHandler {
         })
     }
 
-    public override async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
+    public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partial = interaction.options.getString('query', true);
         const autocomplete = await UrbanDictionaryAPI.autocomplete(partial).catch(() => null);
         if (!autocomplete) return interaction.respond([]);

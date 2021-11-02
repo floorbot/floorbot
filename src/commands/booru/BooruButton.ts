@@ -1,7 +1,14 @@
+import { HandlerButton, HandlerButtonID } from '../../components/HandlerButton';
 import { MessageButton, MessageButtonOptions, Constants } from 'discord.js';
-import { HandlerButton } from '../../components/HandlerButton';
 
 const { MessageButtonStyles } = Constants;
+
+export const BooruButtonID = {
+    ...HandlerButtonID, ...{
+        REPEAT: 'repeat',
+        RECYCLE: 'recycle'
+    }
+};
 
 export class BooruButton extends HandlerButton {
 
@@ -13,27 +20,13 @@ export class BooruButton extends HandlerButton {
         return new BooruButton()
             .setLabel(tags ? 'Search Again' : 'Random Again')
             .setStyle(MessageButtonStyles.PRIMARY)
-            .setCustomId('repeat');
+            .setCustomId(BooruButtonID.REPEAT);
     }
 
     public static createRecycleButton(): BooruButton {
         return new BooruButton()
             .setLabel('♻️')
             .setStyle(MessageButtonStyles.SUCCESS)
-            .setCustomId('recycle');
-    }
-
-    public static createDeleteButton(): BooruButton {
-        return new BooruButton()
-            .setLabel('✖️')
-            .setStyle(MessageButtonStyles.DANGER)
-            .setCustomId('delete');
-    }
-
-    public static createViewOnlineButton(postURL: string): BooruButton {
-        return new BooruButton()
-            .setURL(postURL)
-            .setStyle(MessageButtonStyles.LINK)
-            .setLabel('View Online')
+            .setCustomId(BooruButtonID.RECYCLE);
     }
 }

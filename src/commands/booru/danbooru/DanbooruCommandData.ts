@@ -1,8 +1,10 @@
 import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+
+const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
 export const DanbooruCommandData: ApplicationCommandData = {
     name: 'danbooru',
+    type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Search for random danbooru images',
     options: [{
         type: ApplicationCommandOptionTypes.STRING,

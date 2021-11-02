@@ -1,4 +1,4 @@
-import { CommandInteraction, ContextMenuInteraction, BaseCommandInteraction, ButtonInteraction, SelectMenuInteraction, MessageComponentInteraction, Interaction } from 'discord.js'
+import { CommandInteraction, ContextMenuInteraction, BaseCommandInteraction, ButtonInteraction, SelectMenuInteraction, MessageComponentInteraction, Interaction, Permissions, InteractionReplyOptions } from 'discord.js'
 import { Util, Collection, User, Guild, GuildMember, TextChannel, DMChannel, Role, Message, GuildChannel, Channel, Client } from 'discord.js';
 import * as twemoji from 'twemoji';
 
@@ -6,7 +6,8 @@ export type HandlerContext = Interaction | Message;
 
 declare module 'discord.js' {
     export namespace Util {
-        export function tryIt(fn: Function): Function;
+        export function deleteComponentsOnEnd(message: Message): () => void;
+        export function isAdminOrOwner(interaction: CommandInteraction | MessageComponentInteraction): boolean;
         export function toggleMessageComponents(message: Message, disabled: boolean): void;
         export function toFahrenheit(degrees: number): number;
         export function resolveEmoji(string: string): { string: string, imageURL: string } | null;
@@ -27,6 +28,32 @@ declare module 'discord.js' {
         export function formatCommas(number: number): string;
         export function formatDate(date: Date | number, options?: FormatDateOptions): string;
     }
+}
+
+Util.deleteComponentsOnEnd = function(message: Message) {
+    return async () => {
+        try {
+            message = await message.fetch();
+            const replyOptions: InteractionReplyOptions = {
+                ...(message.content && { content: message.content }),
+                embeds: message.embeds,
+                components: [],
+                attachments: [...message.attachments.values()]
+            };
+            await message.edit(replyOptions);
+        } catch { }
+    }
+}
+
+Util.isAdminOrOwner = function(interaction: CommandInteraction | MessageComponentInteraction): boolean {
+    const member = interaction.member as GuildMember;
+    if (!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return false;
+    if (interaction.isMessageComponent()) {
+        const message = interaction.message as Message;
+        const messageInteraction = message.interaction;
+        if (messageInteraction) return messageInteraction.user === interaction.user;
+    }
+    return true;
 }
 
 Util.toggleMessageComponents = function(message: Message, disabled: boolean): void {

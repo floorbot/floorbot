@@ -1,8 +1,10 @@
 import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+
+const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
 export const PregchanCommandData: ApplicationCommandData = {
     name: 'pregchan',
+    type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Search for random pregchan images',
     options: [{
         type: ApplicationCommandOptionTypes.STRING,

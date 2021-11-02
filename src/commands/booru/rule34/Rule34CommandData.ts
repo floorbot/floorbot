@@ -1,8 +1,10 @@
 import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+
+const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
 export const Rule34CommandData: ApplicationCommandData = {
     name: 'rule34',
+    type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Search for random rule34 images',
     options: [{
         type: ApplicationCommandOptionTypes.STRING,

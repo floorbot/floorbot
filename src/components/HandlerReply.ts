@@ -33,6 +33,19 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment], ephemeral: true }
     }
 
+    public static createAdminOrOwnerReply(context: HandlerContext): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-5.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! Only the creator of this interaction can use this component`,
+                `*If possible try using the command for youself!*`
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment], ephemeral: true }
+    }
+
     public static createNotFoundReply(context: HandlerContext, query: string, message?: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-3.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');

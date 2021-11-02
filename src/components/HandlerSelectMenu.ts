@@ -1,5 +1,7 @@
 import { MessageSelectMenu, MessageSelectMenuOptions, MessageActionRow } from 'discord.js';
 
+export enum HandlerSelectMenuID { }
+
 export class HandlerSelectMenu<T = string> extends MessageSelectMenu {
 
     constructor(data?: MessageSelectMenu | MessageSelectMenuOptions) {

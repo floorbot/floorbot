@@ -1,7 +1,9 @@
-import { ApplicationCommandData, GuildTextBasedChannel, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, InteractionReplyOptions, Message, MessageComponentInteraction, Util } from 'discord.js';
+import { HandlerReply } from '../../components/HandlerReply';
+import { BooruSelectMenuID } from './BooruSelectMenu';
 import { HandlerContext } from '../../discord/Util';
 import { BaseHandler } from '../BaseHandler';
-import { BooruEmbed } from './BooruEmbed';
+import { BooruButtonID } from './BooruButton';
 
 export interface BooruHandlerOptions {
     readonly data: ApplicationCommandData
@@ -33,65 +35,51 @@ export abstract class BooruHandler extends BaseHandler {
 
     public abstract generateResponse(context: HandlerContext, query: string): Promise<InteractionReplyOptions>
 
-    public override async execute(interaction: Interaction): Promise<any> {
-        if (interaction.isCommand()) {
-            await interaction.deferReply();
-            const query = (interaction.options.get('tags') || interaction.options.get('thread'));
-            let queryString = query ? query.value!.toString().replace(/ /g, '+') : '';
-            const response = await this.generateResponse(interaction, queryString);
-            let message = await interaction.followUp(response) as Message;
-            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
-            collector.on('collect', this.createCollectorFunction(message, queryString));
-            collector.on('end', async () => {
-                try {
-                    message = await (interaction.channel as GuildTextBasedChannel).messages.fetch(message.id);
-                    const embed = message.embeds[0] as BooruEmbed;
-                    embed.footer!.text += ' - 🔒 Locked';
-                    embed.setThumbnail(embed.image!.url);
-                    embed.image = null;
-                    const replyOptions = {
-                        embeds: [embed],
-                        components: [],
-                    }
-                    await message.edit(replyOptions);
-                } catch { }
-            });
-        }
+    public async execute(command: CommandInteraction): Promise<any> {
+        await command.deferReply();
+        const query = (command.options.getString('tags') || command.options.getString('thread') || '').replace(/ /g, '+');
+        const response = await this.generateResponse(command, query);
+        const message = await command.followUp(response) as Message;
+        const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+        collector.on('collect', this.createCollectorFunction(query));
+        collector.on('end', Util.deleteComponentsOnEnd(message));
     }
 
-    private createCollectorFunction(message: Message, queryString: string) {
-        return async (interaction: MessageComponentInteraction) => {
-            if (interaction.isSelectMenu()) {
-                await interaction.deferUpdate();
-                queryString = interaction.values[0] || '';
-                const response = await this.generateResponse(interaction, queryString);
-                message = await (<Message>interaction.message).edit(response);
-            }
-            if (interaction.isButton() && interaction.customId === 'recycle') {
-                if (message.interaction && interaction.user !== message.interaction.user) {
-                    await interaction.reply({ content: `Sorry! Only the creator of this search can recycle the image`, ephemeral: true });
-                } else {
-                    await interaction.deferUpdate();
-                    const response = await this.generateResponse(interaction, queryString);
-                    message = await (<Message>interaction.message).edit(response);
+    private createCollectorFunction(query: string) {
+        return async (component: MessageComponentInteraction) => {
+            try {
+                if (component.isSelectMenu()) {
+                    switch (component.customId) {
+                        case BooruSelectMenuID.SUGGESTIONS: {
+                            await component.deferUpdate();
+                            query = component.values[0]!;
+                            const replyOptions = await this.generateResponse(component, query);
+                            await component.editReply(replyOptions);
+                            break;
+                        }
+                    }
                 }
-            }
-            if (interaction.isButton() && interaction.customId === 'delete') {
-                if (message.interaction && interaction.user !== message.interaction.user) {
-                    await interaction.reply({ content: `Sorry! Only the creator of this search can delete the image`, ephemeral: true });
-                } else {
-                    await interaction.deferUpdate();
-                    await (<Message>interaction.message).delete().catch(_err => { });
+                if (component.isButton()) {
+                    switch (component.customId) {
+                        case BooruButtonID.RECYCLE: {
+                            if (!Util.isAdminOrOwner(component)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
+                            await component.deferUpdate();
+                            const replyOptions = await this.generateResponse(component, query);
+                            await component.editReply(replyOptions);
+                            break;
+                        }
+                        case BooruButtonID.REPEAT: {
+                            await component.deferReply();
+                            const replyOptions = await this.generateResponse(component, query);
+                            const message = await component.followUp(replyOptions) as Message;
+                            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
+                            collector.on('collect', this.createCollectorFunction(query));
+                            collector.on('end', Util.deleteComponentsOnEnd(message));
+                            break;
+                        }
+                    }
                 }
-            }
-            if (interaction.isButton() && interaction.customId === 'repeat') {
-                await interaction.deferReply();
-                const response = await this.generateResponse(interaction, queryString);
-                const followUp = await interaction.followUp(response) as Message;
-                const collector = followUp.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
-                collector.on('collect', this.createCollectorFunction(followUp, queryString));
-                collector.on('end', this.createEnderFunction(message));
-            }
+            } catch { }
         }
     }
 }
