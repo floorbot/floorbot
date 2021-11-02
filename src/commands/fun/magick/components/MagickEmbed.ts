@@ -51,13 +51,6 @@ export class MagickEmbed extends HandlerEmbed {
         return embed;
     }
 
-    // public static getMissingCacheEmbed(context: HandlerContext, channel: GuildChannel): HandlerEmbed {
-    //     return new MagickEmbed(context)
-    //         .setDescription([
-    //             `Sorry! there are no cached images for ${channel}`,
-    //             '*Please post an image or include one in the command*'
-    //         ].join('\n'));
-    // }
 
     public static getFailedEmbed(context: HandlerContext, image: ProbeResult, action: MagickAction): HandlerEmbed {
         return new MagickEmbed(context)

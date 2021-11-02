@@ -1,5 +1,6 @@
 import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+
+const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
 export enum WeatherSubCommandName {
     USER = 'user',
@@ -11,6 +12,7 @@ export enum WeatherSubCommandName {
 
 export const WeatherCommandData: ApplicationCommandData = {
     name: 'weather',
+    type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Get weather, forecast or air pollution for places',
     options: [{
         type: ApplicationCommandOptionTypes.SUB_COMMAND,

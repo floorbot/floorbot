@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, BaseCommandInteraction, CommandInteraction, GuildMember, InteractionReplyOptions, Message, MessageComponentInteraction, MessageEmbed, Permissions } from 'discord.js';
+import { BaseCommandInteraction, InteractionReplyOptions, Message, MessageEmbed } from 'discord.js';
 import { HandlerAttachment } from '../components/HandlerAttachment';
 import { Handler, HandlerOptions } from '../discord/Handler';
 import { HandlerEmbed } from '../components/HandlerEmbed';

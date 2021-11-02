@@ -2,9 +2,9 @@ import { GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError
 import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions } from 'discord.js';
 import { HandlerEmbed } from '../../../../components/HandlerEmbed';
 import { HandlerContext } from '../../../../discord/Util';
+import { WeatherLinkSchema } from '../WeatherDatabase';
 import { OpenWeatherData } from '../WeatherHandler';
 import { WeatherEmojis } from '../WeatherEmojis';
-import { WeatherLinkSchema } from '../WeatherDatabase';
 
 export class WeatherEmbed extends HandlerEmbed {
 

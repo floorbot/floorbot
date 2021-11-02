@@ -1,15 +1,17 @@
+import { HandlerButton, HandlerButtonID } from '../../../../components/HandlerButton';
 import { Constants, MessageButton, MessageButtonOptions } from 'discord.js';
-import { HandlerButton } from '../../../../components/HandlerButton';
 import { LatLonData, OpenWeatherAPI } from '../api/OpenWeatherAPI';
 
 const { MessageButtonStyles } = Constants;
 
-export enum WeatherButtonTypes {
-    WARNING = 'warning',
-    CURRENT = 'current',
-    FORECAST = 'forecast',
-    AIR_QUALITY = 'air_quality'
-}
+export const WeatherButtonID = {
+    ...HandlerButtonID, ...{
+        WARNING: 'warning',
+        CURRENT: 'current',
+        FORECAST: 'forecast',
+        AIR_QUALITY: 'air_quality'
+    }
+};
 
 export class WeatherButton extends HandlerButton {
 
@@ -17,48 +19,34 @@ export class WeatherButton extends HandlerButton {
         super(data);
     }
 
-    public static getViewMapButton(location: LatLonData): WeatherButton {
+    public static createViewMapButton(location: LatLonData): WeatherButton {
         return new WeatherButton()
             .setURL(OpenWeatherAPI.getGoogleMapsLink(location))
             .setStyle(MessageButtonStyles.LINK)
             .setLabel('View Map');
     }
 
-    public static getWeatherButton(display: WeatherButtonTypes): WeatherButton {
+    public static createWeatherButton(display: string): WeatherButton {
         const button = new WeatherButton().setCustomId(display);
         switch (display) {
-            case WeatherButtonTypes.WARNING:
+            case WeatherButtonID.WARNING:
                 button.setStyle(MessageButtonStyles.DANGER);
                 button.setLabel('⚠️ Weather Alert');
                 break;
-            case WeatherButtonTypes.CURRENT:
+            case WeatherButtonID.CURRENT:
                 button.setStyle(MessageButtonStyles.SUCCESS);
                 button.setLabel('Current');
                 break;
-            case WeatherButtonTypes.FORECAST:
+            case WeatherButtonID.FORECAST:
                 button.setStyle(MessageButtonStyles.SUCCESS);
                 button.setLabel('Forecast');
                 break;
-            case WeatherButtonTypes.AIR_QUALITY:
+            case WeatherButtonID.AIR_QUALITY:
                 button.setStyle(MessageButtonStyles.SUCCESS);
                 button.setLabel('Air Quality');
                 break;
             default: throw display;
         }
         return button;
-    }
-
-    public static getNextPageButton(page: number): WeatherButton {
-        return new WeatherButton()
-            .setCustomId('next_page')
-            .setLabel(page ? `Page ${page}` : 'Next')
-            .setStyle(MessageButtonStyles.PRIMARY)
-    }
-
-    public static getPreviousPageButton(page: number): WeatherButton {
-        return new WeatherButton()
-            .setCustomId('previous_page')
-            .setLabel(page ? `Page ${page}` : 'Previous')
-            .setStyle(MessageButtonStyles.PRIMARY)
     }
 }

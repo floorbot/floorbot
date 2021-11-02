@@ -1,5 +1,11 @@
+import { HandlerSelectMenu, HandlerSelectMenuID } from '../../../../components/HandlerSelectMenu';
 import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
-import { HandlerSelectMenu } from '../../../../components/HandlerSelectMenu';
+
+export const WeatherSelectMenuID = {
+    ...HandlerSelectMenuID, ...{
+        ORDER: 'order'
+    }
+};
 
 export enum WeatherTempsOrder {
     HUMIDITY = 'humidity',
@@ -14,7 +20,7 @@ export class WeatherSelectMenu extends HandlerSelectMenu {
         super(data);
     };
 
-    public static getOrderSelectMenu(selected: WeatherTempsOrder): WeatherSelectMenu {
+    public static createOrderSelectMenu(selected: WeatherTempsOrder): WeatherSelectMenu {
         const selectMenu = new WeatherSelectMenu();
         for (const orderName of Object.values(WeatherTempsOrder)) {
             selectMenu.addOptions({
@@ -23,7 +29,7 @@ export class WeatherSelectMenu extends HandlerSelectMenu {
                 value: orderName
             })
         }
-        selectMenu.setCustomId('order');
+        selectMenu.setCustomId(WeatherSelectMenuID.ORDER);
         return selectMenu;
     }
 }

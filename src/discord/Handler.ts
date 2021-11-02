@@ -1,4 +1,4 @@
-import { ApplicationCommandData, ApplicationCommandPermissionData, AutocompleteInteraction, BaseCommandInteraction, Constants } from 'discord.js';
+import { ApplicationCommandData, ApplicationCommandPermissionData, BaseCommandInteraction, Constants } from 'discord.js';
 import { HandlerClient } from './HandlerClient';
 import { Autocomplete } from './interfaces/Autocomplete';
 

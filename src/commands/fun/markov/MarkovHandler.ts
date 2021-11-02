@@ -30,6 +30,7 @@ export class MarkovHandler extends BaseHandler {
         await interaction.deferReply();
         switch (subCommand) {
             case 'settings': {
+                if (await this.replyIfAdmin(interaction)) return;
                 const response = await this.fetchControlPanel(interaction, channel);
                 let message = await interaction.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
@@ -165,7 +166,7 @@ export class MarkovHandler extends BaseHandler {
         }
         const markov = MarkovHandler.CORPUSES.get(channel.id)!;
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             const minLength = Math.floor(Math.random() * 10);
             const res = markov.generate({
                 maxTries: 100,

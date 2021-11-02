@@ -202,7 +202,7 @@ Util.formatDate = function(date: Date | number, options: FormatDateOptions = {})
 
     const months = options.fullName ? ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const dateText = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    const amAMpmPM = date.getHours() / 12 > 1 ?
+    const amAMpmPM = date.getHours() >= 12 ?
         (options.fullName ? ' PM' : 'pm') :
         (options.fullName ? ' AM' : 'am')
     const timeText = `${date.getHours() % 12 || '12'}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}${amAMpmPM}`;

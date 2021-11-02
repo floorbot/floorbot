@@ -1,6 +1,6 @@
 import './src/discord/Util'; // Must be imported early to add custom functions
 import { HandlerClient } from './src/discord/HandlerClient';
-import { GuildTextBasedChannel, Intents } from 'discord.js';
+import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import * as MariaDB from 'mariadb';
 import * as nconf from 'nconf';
