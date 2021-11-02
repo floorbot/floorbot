@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, Util, MessageComponentInteraction, GuildMember, Permissions } from 'discord.js';
+import { CommandInteraction, Message, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, Util, MessageComponentInteraction, GuildMember, Permissions, Collection } from 'discord.js';
 import { MarkovButton, MarkovButtonType } from './components/MarkovButton';
 import { HandlerClient } from '../../../discord/HandlerClient';
 import { MarkovCommandData } from './MarkovCommandData';
@@ -10,6 +10,8 @@ import Markov from 'markov-strings';
 import * as owoify from 'owoify-js';
 
 export class MarkovHandler extends BaseHandler {
+
+    private static CORPUSES: Collection<string, Markov> = new Collection();
 
     constructor() {
         super({
@@ -147,19 +149,23 @@ export class MarkovHandler extends BaseHandler {
 
     public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<InteractionReplyOptions | null> {
         const time = Date.now();
+
         channel.client.emit('log', 'STARTED A MARKOV MISSION STARTING NOW!!!!!!!!!!!')
-        const rows = await MarkovDatabase.fetchStrings(channel, user ? user : undefined);
-        channel.client.emit('log', `<markov> - fetched the rows ${(Date.now() - time) / 1000}`)
         const channelData = await MarkovDatabase.fetchChannel(channel);
         channel.client.emit('log', `<markov> - fetched the channel ${(Date.now() - time) / 1000}`)
-        if (!rows.length) return null;
-        const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
-        channel.client.emit('log', `<markov> - created the variable ${(Date.now() - time) / 1000}`)
-        markov.addData(rows.map(row => row.content));
-        channel.client.emit('log', `<markov> - mapped and added the data ${(Date.now() - time) / 1000}`)
+        if (!MarkovHandler.CORPUSES.has(channel.id)) {
+            const rows = await MarkovDatabase.fetchStrings(channel, user ? user : undefined);
+            channel.client.emit('log', `<markov> - fetched the rows ${(Date.now() - time) / 1000}`)
+            if (!rows.length) return null;
+            const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
+            channel.client.emit('log', `<markov> - created the variable ${(Date.now() - time) / 1000}`)
+            markov.addData(rows.map(row => row.content));
+            channel.client.emit('log', `<markov> - mapped and added the data ${(Date.now() - time) / 1000}`)
+            MarkovHandler.CORPUSES.set(channel.id, markov);
+        }
+        const markov = MarkovHandler.CORPUSES.get(channel.id)!;
 
         return new Promise((resolve, reject) => {
-            if (!rows.length) return reject();
             const minLength = Math.floor(Math.random() * 10);
             const res = markov.generate({
                 maxTries: 100,
@@ -208,7 +214,11 @@ export class MarkovHandler extends BaseHandler {
         const client = message.client as HandlerClient
         if (message.guild && await client.fetchGuildAppCommand(this, message.guild)) {
             const row = await MarkovDatabase.fetchChannel(<GuildChannel>message.channel);
-            if (row.tracking) await MarkovDatabase.setStrings(message);
+            if (row.tracking) {
+                await MarkovDatabase.setStrings(message);
+                const markov = MarkovHandler.CORPUSES.get(message.channel.id);
+                if (markov && message.content.length) markov.addData([message.content]);
+            }
             if (row.posting && !message.editedTimestamp) {
                 const random = Math.floor(Math.random() * row.messages)
                 if (!random) {
