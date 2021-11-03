@@ -64,18 +64,29 @@ export class WeatherEmbed extends HandlerEmbed {
     public static getServerTempsEmbed(context: HandlerContext, links: [OneCallData, GuildMember, WeatherLinkSchema][]): WeatherEmbed {
         const embed = new WeatherEmbed(context);
         embed.setAuthor(`Temps for ${context.guild!.name}`, context.guild!.iconURL()!);
-        embed.addField('Location/Person', (
-            links.map(([weather, member, link]) => {
-                const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
-                const localeEmoji = Util.localeToEmoji(link.country);
-                return `${localeEmoji} ${timeString} ${member}`
-            }).join('\n')
-        ), true);
-        embed.addField('Temp/Humidity', (
-            links.map(([weather, _member]) => {
-                return `${WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon)} ${weather.current.temp.toFixed(2)}°C (${Util.toFahrenheit(weather.current.temp)}°F) ${weather.current.humidity}%`
-            }).join('\n')
-        ), true);
+        embed.setDescription(links.map(([weather, member, link]) => {
+            const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
+            const localeEmoji = Util.localeToEmoji(link.country);
+            const weatherEmoji = WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon);
+            const tempString = `${weather.current.temp.toFixed(2)}°C`.padEnd(8); // -99.99°C
+            const tempStringF = `(${Util.toFahrenheit(weather.current.temp)}°F)`.padEnd(7); // 999°F
+            const humidityString = `${weather.current.humidity}%`.padEnd(3)
+            const line = `${localeEmoji} \`${timeString}\` ${weatherEmoji} \`${tempString} ${tempStringF} ${humidityString}\` ${member}`;
+            console.log(line.length)
+            return line;
+        }));
+        // embed.addField('Location/Person', (
+        //     links.map(([weather, member, link]) => {
+        //         const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
+        //         const localeEmoji = Util.localeToEmoji(link.country);
+        //         return `${localeEmoji} ${timeString} ${member}`
+        //     }).join('\n')
+        // ), true);
+        // embed.addField('Temp/Humidity', (
+        //     links.map(([weather, _member]) => {
+        //         return `${WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon)} ${weather.current.temp.toFixed(2)}°C (${Util.toFahrenheit(weather.current.temp)}°F) ${weather.current.humidity}%`
+        //     }).join('\n')
+        // ), true);
         return embed;
     }
 

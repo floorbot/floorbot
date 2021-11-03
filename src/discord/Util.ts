@@ -7,7 +7,7 @@ export type HandlerContext = Interaction | Message;
 declare module 'discord.js' {
     export namespace Util {
         export function deleteComponentsOnEnd(message: Message): () => void;
-        export function isAdminOrOwner(interaction: CommandInteraction | MessageComponentInteraction): boolean;
+        export function isAdminOrOwner(member: GuildMember, interaction?: Interaction): boolean;
         export function toggleMessageComponents(message: Message, disabled: boolean): void;
         export function toFahrenheit(degrees: number): number;
         export function resolveEmoji(string: string): { string: string, imageURL: string } | null;
@@ -45,14 +45,9 @@ Util.deleteComponentsOnEnd = function(message: Message) {
     }
 }
 
-Util.isAdminOrOwner = function(interaction: CommandInteraction | MessageComponentInteraction): boolean {
-    const member = interaction.member as GuildMember;
+Util.isAdminOrOwner = function(member: GuildMember, interaction?: Interaction): boolean {
     if (!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return false;
-    if (interaction.isMessageComponent()) {
-        const message = interaction.message as Message;
-        const messageInteraction = message.interaction;
-        if (messageInteraction) return messageInteraction.user === interaction.user;
-    }
+    if (interaction) return member.user === interaction.user;
     return true;
 }
 
@@ -205,7 +200,7 @@ Util.formatDate = function(date: Date | number, options: FormatDateOptions = {})
     const amAMpmPM = date.getHours() >= 12 ?
         (options.fullName ? ' PM' : 'pm') :
         (options.fullName ? ' AM' : 'am')
-    const timeText = `${date.getHours() % 12 || '12'}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}${amAMpmPM}`;
+    const timeText = `${(date.getHours() % 12) < 10 ? '0' : ''}${date.getHours() % 12 || '12'}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}${amAMpmPM}`;
     if (options.showDate && options.showTime) return `${dateText} at ${timeText}`;
     return options.showDate ? dateText : timeText;
 }

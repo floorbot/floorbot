@@ -1,4 +1,4 @@
-import { ApplicationCommandData, CommandInteraction, InteractionReplyOptions, Message, MessageComponentInteraction, Util } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Util } from 'discord.js';
 import { HandlerReply } from '../../components/HandlerReply';
 import { BooruSelectMenuID } from './BooruSelectMenu';
 import { HandlerContext } from '../../discord/Util';
@@ -41,11 +41,11 @@ export abstract class BooruHandler extends BaseHandler {
         const response = await this.generateResponse(command, query);
         const message = await command.followUp(response) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
-        collector.on('collect', this.createCollectorFunction(query));
+        collector.on('collect', this.createCollectorFunction(query, command));
         collector.on('end', Util.deleteComponentsOnEnd(message));
     }
 
-    private createCollectorFunction(query: string) {
+    private createCollectorFunction(query: string, source: Interaction) {
         return async (component: MessageComponentInteraction) => {
             try {
                 if (component.isSelectMenu()) {
@@ -62,7 +62,8 @@ export abstract class BooruHandler extends BaseHandler {
                 if (component.isButton()) {
                     switch (component.customId) {
                         case BooruButtonID.RECYCLE: {
-                            if (!Util.isAdminOrOwner(component)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
+                            const member = component.member as GuildMember;
+                            if (!Util.isAdminOrOwner(member, source)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
                             await component.deferUpdate();
                             const replyOptions = await this.generateResponse(component, query);
                             await component.editReply(replyOptions);
@@ -73,7 +74,7 @@ export abstract class BooruHandler extends BaseHandler {
                             const replyOptions = await this.generateResponse(component, query);
                             const message = await component.followUp(replyOptions) as Message;
                             const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
-                            collector.on('collect', this.createCollectorFunction(query));
+                            collector.on('collect', this.createCollectorFunction(query, component));
                             collector.on('end', Util.deleteComponentsOnEnd(message));
                             break;
                         }

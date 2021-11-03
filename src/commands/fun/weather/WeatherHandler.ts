@@ -79,7 +79,7 @@ export class WeatherHandler extends BaseHandler {
                     };
                 }
                 if (!links.length) return command.followUp(WeatherEmbed.getNoLinkedMembersEmbed(command, channel).toReplyOptions());
-                const viewData = { page: 1, perPage: 20, order: WeatherTempsOrder.HOTTEST };
+                const viewData = { page: 1, perPage: 40, order: WeatherTempsOrder.HOTTEST };
                 const replyOptions = this.createServerTempsResponse(command, links, viewData);
                 const message = await command.followUp(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
@@ -96,7 +96,7 @@ export class WeatherHandler extends BaseHandler {
             }
             case WeatherSubCommandName.LINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!Util.isAdminOrOwner(command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!Util.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -125,7 +125,7 @@ export class WeatherHandler extends BaseHandler {
             }
             case WeatherSubCommandName.UNLINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!Util.isAdminOrOwner(command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!Util.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 await WeatherDatabase.deleteLink(member);
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
