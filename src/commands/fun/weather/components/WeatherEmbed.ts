@@ -70,10 +70,8 @@ export class WeatherEmbed extends HandlerEmbed {
             const weatherEmoji = WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon);
             const tempString = `${weather.current.temp.toFixed(2)}°C`.padEnd(8); // -99.99°C
             const tempStringF = `(${Util.toFahrenheit(weather.current.temp)}°F)`.padEnd(7); // 999°F
-            const humidityString = `${weather.current.humidity}%`.padEnd(3)
-            const line = `${localeEmoji} \`${timeString}\` ${weatherEmoji} \`${tempString} ${tempStringF} ${humidityString}\` ${member}`;
-            console.log(line.length)
-            return line;
+            const humidityString = `${weather.current.humidity}%`.padEnd(3);
+            return `${localeEmoji} \`${timeString}\` ${weatherEmoji} \`${tempString} ${tempStringF} ${humidityString}\` ${member}`;
         }));
         // embed.addField('Location/Person', (
         //     links.map(([weather, member, link]) => {
