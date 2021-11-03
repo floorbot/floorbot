@@ -48,7 +48,7 @@ Util.deleteComponentsOnEnd = function(message: Message) {
 Util.isAdminOrOwner = function(member: GuildMember, interaction?: Interaction): boolean {
     if (member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return true;
     if (interaction) return member.user === interaction.user;
-    return true;
+    return false;
 }
 
 Util.toggleMessageComponents = function(message: Message, disabled: boolean): void {

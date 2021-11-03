@@ -22,6 +22,14 @@ export class WeatherEmbed extends HandlerEmbed {
         return Util.formatDate(date, { showTime: true, showDate: false, fullName: false });
     }
 
+    public static getLoadingEmbed(context: HandlerContext, total: number, current: number): HandlerEmbed {
+        const progressBar = new Array(11).fill('▬');
+        progressBar[Math.floor(current / total * 10)] = '🟢';
+        return new WeatherEmbed(context)
+            .setTitle(`Loading Weather!`)
+            .setDescription(`Progress: ${progressBar.join('')} [${Math.round(current / total * 100)}%] ${current}/${total}`);
+    }
+
     public static getUnknownLocationEmbed(context: HandlerContext, location: LocationData): HandlerEmbed {
         return new WeatherEmbed(context)
             .setDescription(`Sorry! I could not find \`${OpenWeatherAPI.getLocationString(location, true)}\`\n*Please check the spelling or try another nearby location*`);

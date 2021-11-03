@@ -70,18 +70,25 @@ export class WeatherHandler extends BaseHandler {
                 await command.deferReply();
                 const { channel, guild } = <{ channel: GuildChannel, guild: Guild }>command;
                 const links: [OneCallData, GuildMember, WeatherLinkSchema][] = new Array();
-                for (const link of await WeatherDatabase.fetchAllLinks(guild)) {
+                const allLinks = await WeatherDatabase.fetchAllLinks(guild);
+                let loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, 0).toReplyOptions();
+                let lastUpdate = (await command.followUp(loadingReplyOptions) as Message).createdTimestamp;
+                for (const [i, link] of allLinks.entries()) {
                     const member = channel.members.get(link.user_id.toString());
                     if (member) {
                         const onecall = await OpenWeatherAPI.oneCall(link);
                         if (OpenWeatherAPI.isError(onecall)) continue;
-                        links.push([onecall, member, link])
-                    };
+                        links.push([onecall, member, link]);
+                    }
+                    if (Date.now() - lastUpdate >= 1000) {
+                        loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, i + 1).toReplyOptions();
+                        lastUpdate = (await command.editReply(loadingReplyOptions) as Message).createdTimestamp;
+                    }
                 }
                 if (!links.length) return command.followUp(WeatherEmbed.getNoLinkedMembersEmbed(command, channel).toReplyOptions());
                 const viewData = { page: 1, perPage: 40, order: WeatherTempsOrder.HOTTEST };
                 const replyOptions = this.createServerTempsResponse(command, links, viewData);
-                const message = await command.followUp(replyOptions) as Message;
+                const message = await command.editReply(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', async component => {
                     await component.deferUpdate();
@@ -196,8 +203,8 @@ export class WeatherHandler extends BaseHandler {
         const embed = WeatherEmbed.getServerTempsEmbed(interaction, sliced);
         const orderActionRow = new MessageActionRow().addComponents([WeatherSelectMenu.createOrderSelectMenu(viewData.order)]);
         const pageActionRow = new MessageActionRow();
-        if ((viewData.page - 1 > 0) && (links.length / viewData.perPage) >= viewData.page - 1) pageActionRow.addComponents(WeatherButton.createPreviousPageButton(viewData.page - 1));
-        if ((viewData.page + 1 > 0) && (links.length / viewData.perPage) >= viewData.page + 1) pageActionRow.addComponents(WeatherButton.createNextPageButton(viewData.page + 1));
+        if ((viewData.page - 1 > 0) && Math.ceil(links.length / viewData.perPage) >= viewData.page - 1) pageActionRow.addComponents(WeatherButton.createPreviousPageButton(viewData.page - 1));
+        if ((viewData.page + 1 > 0) && Math.ceil(links.length / viewData.perPage) >= viewData.page + 1) pageActionRow.addComponents(WeatherButton.createNextPageButton(viewData.page + 1));
         const components = pageActionRow.components.length ? [orderActionRow, pageActionRow] : [orderActionRow];
         return { embeds: [embed], components: components };
     }
