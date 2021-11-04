@@ -1,5 +1,6 @@
 import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+
+const { ApplicationCommandOptionTypes, ChannelTypes } = Constants;
 
 export const UtilsCommandData: ApplicationCommandData = {
     name: 'utils',
@@ -24,7 +25,7 @@ export const UtilsCommandData: ApplicationCommandData = {
             name: 'channel',
             type: ApplicationCommandOptionTypes.CHANNEL,
             description: 'The channel to get a screenshare link for',
-            channelTypes: ['GUILD_VOICE']
+            channelTypes: [ChannelTypes.GUILD_VOICE]
         }]
     }]
 }

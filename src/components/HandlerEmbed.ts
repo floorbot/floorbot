@@ -21,8 +21,13 @@ export class HandlerEmbed extends MessageEmbed {
     }
 
     public override setDescription(description: string | string[]): this {
-        if (Array.isArray(description)) return super.setDescription(description.join('\n'))
+        if (Array.isArray(description)) return super.setDescription(description.join('\n'));
         return super.setDescription(description);
+    }
+
+    public override addField(name: string, value: string | string[], inline?: boolean): this {
+        if (Array.isArray(value)) return super.addField(name, value.join('\n'), inline);
+        return super.addField(name, value, inline);
     }
 
     public toReplyOptions(ephemeral?: boolean): InteractionReplyOptions {

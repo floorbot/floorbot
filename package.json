@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "@types/async-exit-hook": "^2.0.0",
+        "@types/luxon": "^2.0.5",
         "@types/nconf": "^0.10.0",
         "@types/node-fetch": "^2.5.10",
         "@types/probe-image-size": "^7.0.1",
@@ -31,12 +32,14 @@
         "cache-map.js": "github:floorbot/cache-map.js",
         "dhms.js": "github:floorbot/dhms.js",
         "discord.js": "^13.3.0",
+        "luxon": "^2.0.2",
         "mariadb": "^2.5.4",
         "markov-strings": "^3.0.1",
         "nconf": "^0.11.3",
         "owoify-js": "^1.0.7",
         "probe-image-size": "^7.2.1",
         "twemoji": "^13.1.0",
+        "tzdata": "^1.0.29",
         "xml2js": "^0.4.23"
     }
 }
