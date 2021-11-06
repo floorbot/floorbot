@@ -51,6 +51,7 @@ export class MarkovHandler extends ChatInputHandler {
                 return message;
             }
             case 'generate': {
+                await command.deferReply();
                 const user = command.options.getUser('user');
                 const response = await this.fetchMarkovResponse(channel, user);
                 return command.followUp(response ? response : MarkovEmbed.getFailedEmbed(command, channel, user).toReplyOptions());
