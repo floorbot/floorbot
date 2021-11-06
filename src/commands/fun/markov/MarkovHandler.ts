@@ -88,7 +88,6 @@ export class MarkovHandler extends ChatInputHandler {
             MarkovHandler.CORPUSES.set(channel.id, markov);
         }
         const markov = MarkovHandler.CORPUSES.get(channel.id)!;
-
         return new Promise((resolve, _reject) => {
             const minLength = Math.floor(Math.random() * 10);
             const res = markov.generate({
@@ -98,7 +97,7 @@ export class MarkovHandler extends ChatInputHandler {
                     result.refs.length > 1 && // Multiple refs please
                     result.string.split(' ').length > minLength && // Word limits
                     (channelData.links || !/(https?:\/\/[a-zA-Z]+)/g.test(result.string)) && // No links
-                    (channelData.quoting || !result.refs.some(ref => ref.string === res.string)) // No exact quoting
+                    (channelData.quoting || !result.refs.some(ref => ref.string === result.string)) // No exact quoting
                 )
             });
             return resolve(res);
