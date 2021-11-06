@@ -30,83 +30,10 @@ export class MarkovHandler extends ChatInputHandler {
                 if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const response = await this.fetchControlPanel(command, channel);
-                let message = await command.followUp(response) as Message;
+                const message = await command.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
-                collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
-                    try {
-                        if (component.isButton()) {
-                            if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
-                            await component.deferUpdate();
-                            switch (component.customId as MarkovButtonType) {
-                                case MarkovButtonType.POSTING_ENABLE:
-                                case MarkovButtonType.POSTING_DISABLE: {
-                                    await this.database.setChannel(channel, { posting: component.customId === MarkovButtonType.POSTING_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.TRACKING_ENABLE:
-                                case MarkovButtonType.TRACKING_DISABLE: {
-                                    await this.database.setChannel(channel, { tracking: component.customId === MarkovButtonType.TRACKING_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.LINKS_ENABLE:
-                                case MarkovButtonType.LINKS_DISABLE: {
-                                    await this.database.setChannel(channel, { links: component.customId === MarkovButtonType.LINKS_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.MENTIONS_ENABLE:
-                                case MarkovButtonType.MENTIONS_DISABLE: {
-                                    await this.database.setChannel(channel, { mentions: component.customId === MarkovButtonType.MENTIONS_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.OWOIFY_ENABLE:
-                                case MarkovButtonType.OWOIFY_DISABLE: {
-                                    await this.database.setChannel(channel, { owoify: component.customId === MarkovButtonType.OWOIFY_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.QUOTING_ENABLE:
-                                case MarkovButtonType.QUOTING_DISABLE: {
-                                    await this.database.setChannel(channel, { quoting: component.customId === MarkovButtonType.QUOTING_ENABLE });
-                                    break;
-                                }
-                                case MarkovButtonType.WIPE: {
-                                    HandlerUtil.toggleMessageComponents(message, true);
-                                    await component.editReply({
-                                        ...(message.content && { content: message.content }),
-                                        embeds: [...message.embeds, MarkovEmbed.getWipeConfirmEmbed(command, channel)],
-                                        components: [...message.components, new MessageActionRow().addComponents(
-                                            MarkovButton.getMarkovButton(MarkovButtonType.BACKOUT),
-                                            MarkovButton.getMarkovButton(MarkovButtonType.WIPE_CONFIRMED),
-                                            MarkovButton.getMarkovButton(MarkovButtonType.PURGE_CONFIRMED)
-                                        )],
-                                    });
-                                    return;
-                                }
-                                case MarkovButtonType.WIPE_CONFIRMED: {
-                                    await this.database.deleteStrings(channel);
-                                    break;
-                                }
-
-                                case MarkovButtonType.PURGE_CONFIRMED: {
-                                    await this.database.purge(component.guild);
-                                    break;
-                                }
-                                case MarkovButtonType.BACKOUT: {
-                                    HandlerUtil.toggleMessageComponents(message, false);
-                                    await message.edit({
-                                        ...(message.content && { content: message.content }),
-                                        embeds: message.embeds.slice(0, -1),
-                                        components: message.components.slice(0, -1),
-                                    });
-                                    break;
-                                }
-                                default: { throw component }
-                            }
-                            const response = await this.fetchControlPanel(command, channel);
-                            message = await component.editReply(response) as Message;
-                        }
-                    } catch { }
-                });
-                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message))
+                collector.on('collect', this.createCollectHandler(command, message, channel));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 return message;
             }
             case 'frequency': {
@@ -117,7 +44,11 @@ export class MarkovHandler extends ChatInputHandler {
                 const perMessagesMin = perMessages ? Math.max(perMessages, 5) : perMessages;
                 await this.database.setChannel(channel, { messages: perMessagesMin, minutes: perMinutes });
                 const response = await this.fetchControlPanel(command, channel);
-                return command.followUp(response);
+                const message = await command.followUp(response);
+                const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
+                collector.on('collect', this.createCollectHandler(command, message, channel));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+                return message;
             }
             case 'generate': {
                 const user = command.options.getUser('user');
@@ -176,6 +107,83 @@ export class MarkovHandler extends ChatInputHandler {
         }).catch(() => {
             return null;
         });
+    }
+
+    private createCollectHandler(command: CommandInteraction, message: Message, channel: GuildChannel) {
+        return async (component: MessageComponentInteraction<'cached'>) => {
+            try {
+                if (component.isButton()) {
+                    if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                    await component.deferUpdate();
+                    switch (component.customId as MarkovButtonType) {
+                        case MarkovButtonType.POSTING_ENABLE:
+                        case MarkovButtonType.POSTING_DISABLE: {
+                            await this.database.setChannel(channel, { posting: component.customId === MarkovButtonType.POSTING_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.TRACKING_ENABLE:
+                        case MarkovButtonType.TRACKING_DISABLE: {
+                            await this.database.setChannel(channel, { tracking: component.customId === MarkovButtonType.TRACKING_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.LINKS_ENABLE:
+                        case MarkovButtonType.LINKS_DISABLE: {
+                            await this.database.setChannel(channel, { links: component.customId === MarkovButtonType.LINKS_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.MENTIONS_ENABLE:
+                        case MarkovButtonType.MENTIONS_DISABLE: {
+                            await this.database.setChannel(channel, { mentions: component.customId === MarkovButtonType.MENTIONS_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.OWOIFY_ENABLE:
+                        case MarkovButtonType.OWOIFY_DISABLE: {
+                            await this.database.setChannel(channel, { owoify: component.customId === MarkovButtonType.OWOIFY_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.QUOTING_ENABLE:
+                        case MarkovButtonType.QUOTING_DISABLE: {
+                            await this.database.setChannel(channel, { quoting: component.customId === MarkovButtonType.QUOTING_ENABLE });
+                            break;
+                        }
+                        case MarkovButtonType.WIPE: {
+                            HandlerUtil.toggleMessageComponents(message, true);
+                            await component.editReply({
+                                ...(message.content && { content: message.content }),
+                                embeds: [...message.embeds, MarkovEmbed.getWipeConfirmEmbed(command, channel)],
+                                components: [...message.components, new MessageActionRow().addComponents(
+                                    MarkovButton.getMarkovButton(MarkovButtonType.BACKOUT),
+                                    MarkovButton.getMarkovButton(MarkovButtonType.WIPE_CONFIRMED),
+                                    MarkovButton.getMarkovButton(MarkovButtonType.PURGE_CONFIRMED)
+                                )],
+                            });
+                            return;
+                        }
+                        case MarkovButtonType.WIPE_CONFIRMED: {
+                            await this.database.deleteStrings(channel);
+                            break;
+                        }
+
+                        case MarkovButtonType.PURGE_CONFIRMED: {
+                            await this.database.purge(component.guild);
+                            break;
+                        }
+                        case MarkovButtonType.BACKOUT: {
+                            HandlerUtil.toggleMessageComponents(message, false);
+                            await message.edit({
+                                ...(message.content && { content: message.content }),
+                                embeds: message.embeds.slice(0, -1),
+                                components: message.components.slice(0, -1),
+                            });
+                            break;
+                        }
+                        default: { throw component }
+                    }
+                    const response = await this.fetchControlPanel(command, channel);
+                    message = await component.editReply(response) as Message;
+                }
+            } catch { }
+        }
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
