@@ -24,12 +24,12 @@ export const MarkovCommandData: ChatInputApplicationCommandData = {
             name: 'messages',
             required: false,
             type: ApplicationCommandOptionTypes.INTEGER,
-            description: 'How many channel messages per markov message (default 20)'
+            description: 'How many channel messages per markov message (default 50)'
         }, {
             name: 'minutes',
             required: false,
             type: ApplicationCommandOptionTypes.INTEGER,
-            description: 'How many minutes between random markov messages (default 60)'
+            description: 'How many minutes between random markov messages (default 100)'
         }]
     }, {
         name: 'generate',
