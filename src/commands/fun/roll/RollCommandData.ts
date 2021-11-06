@@ -1,7 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
+
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
-export const RollCommandData: ApplicationCommandData = {
+export const RollCommandData: ChatInputApplicationCommandData = {
     name: 'roll',
     description: 'Roll dice (up to 25 types)',
     type: ApplicationCommandTypes.CHAT_INPUT,

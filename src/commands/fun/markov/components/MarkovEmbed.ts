@@ -1,57 +1,58 @@
-import { GuildChannel, MessageEmbed, MessageEmbedOptions, User, Util } from 'discord.js';
-import { MarkovChannelSchema, MarkovStringTotals } from '../MarkovDatabase';
-import { HandlerEmbed } from '../../../../components/HandlerEmbed';
-import { HandlerContext } from '../../../../discord/Util';
+import { GuildChannel, Interaction, MessageEmbed, MessageEmbedOptions, User } from 'discord.js';
+import { MarkovChannelRow, MarkovStringTotals } from '../MarkovDatabase';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
 
 export class MarkovEmbed extends HandlerEmbed {
 
-    constructor(context: HandlerContext, data?: MessageEmbed | MessageEmbedOptions) {
+    constructor(interaction: Interaction, data?: MessageEmbed | MessageEmbedOptions) {
         super(data);
-        this.setContextAuthor(context);
+        this.setContextAuthor(interaction);
     }
 
-    public static getControlPanel(context: HandlerContext, channel: GuildChannel, channelData: MarkovChannelSchema, totals: MarkovStringTotals): MarkovEmbed {
-        return new MarkovEmbed(context)
+    public static getControlPanel(interaction: Interaction, channel: GuildChannel, channelData: MarkovChannelRow, totals: MarkovStringTotals): MarkovEmbed {
+        return new MarkovEmbed(interaction)
             .setDescription(`**Markov Control Panel for ${channel}**`)
             .addField(`Settings`, [
                 `${channelData.posting ? '🟢' : '🔴'} Post Messages: **${channelData.posting ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.tracking ? '🟢' : '🔴'} Track Messages: **${channelData.tracking ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.mentions ? '🟢' : '🔴'} Allow Mentions: **${channelData.mentions ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.links ? '🟢' : '🔴'} Allow Links: **${channelData.links ? 'Enabled' : 'Disabled'}**`,
+                `${channelData.quoting ? '🟢' : '🔴'} Exact Quoting: **${channelData.quoting ? 'Enabled' : 'Disabled'}**`,
                 `${channelData.owoify ? '🟢' : '🔴'} OwOify: **${channelData.owoify ? 'OwO' : 'NOwO'}**`
             ].join('\n'), false)
             .addField('Statistics', [
-                `Total Messages: **${Util.formatCommas(totals.total)}**`,
-                `User Messages: **${Util.formatCommas(totals.users)}**`,
+                `Total Messages: **${HandlerUtil.formatCommas(totals.total)}**`,
+                `User Messages: **${HandlerUtil.formatCommas(totals.users)}**`,
                 'Post frequency:',
-                `- One in \`${channelData.messages}\` messages (\`${Util.formatDecimal(100 / channelData.messages, 2)}%\` chance per message)`,
-                `- Once every \`${channelData.minutes}\` minutes (\`${Util.formatDecimal(100 / channelData.minutes, 2)}%\` chance per minute)`
+                `- One in \`${channelData.messages}\` messages (\`${HandlerUtil.formatDecimal(100 / channelData.messages, 2)}%\` chance per message)`,
+                `- Once every \`${channelData.minutes}\` minutes (\`${HandlerUtil.formatDecimal(100 / channelData.minutes, 2)}%\` chance per minute)`
             ].join('\n'), false)
     }
 
-    public static getWipeConfirmEmbed(context: HandlerContext, channel: GuildChannel): MarkovEmbed {
-        return new MarkovEmbed(context)
+    public static getWipeConfirmEmbed(interaction: Interaction, channel: GuildChannel): MarkovEmbed {
+        return new MarkovEmbed(interaction)
             .setDescription([
                 `⚠️ Are you sure you want to wipe all saved message data for ${channel}?`,
                 `*Please note this is permanent and cannot be undone*`,
             ].join('\n'));
     }
 
-    public static getPurgeConfirmEmbed(context: HandlerContext): MarkovEmbed {
-        return new MarkovEmbed(context)
+    public static getPurgeConfirmEmbed(interaction: Interaction): MarkovEmbed {
+        return new MarkovEmbed(interaction)
             .setDescription([
                 '⚠️ Before you can disable markov all saved data must be purged',
                 '⛔ This is irreversible and will hard reset all markov settings for this guild'
             ].join('\n'))
     }
 
-    public static getPurgedEmbed(context: HandlerContext): MarkovEmbed {
-        return new MarkovEmbed(context)
+    public static getPurgedEmbed(interaction: Interaction): MarkovEmbed {
+        return new MarkovEmbed(interaction)
             .setDescription(`🦺 You can now safely disable markov!`);
     }
 
-    public static getFailedEmbed(context: HandlerContext, channel: GuildChannel, user: User | null): MarkovEmbed {
-        return new MarkovEmbed(context)
+    public static getFailedEmbed(interaction: Interaction, channel: GuildChannel, user: User | null): MarkovEmbed {
+        return new MarkovEmbed(interaction)
             .setDescription([
                 `Sorry! I failed to genereate a message for ${channel}${user ? `/${user}` : ''}`,
                 '',

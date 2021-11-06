@@ -1,17 +1,11 @@
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
 import { CommandInteraction, GuildMember } from 'discord.js';
 import { LostCommandData } from './LostCommandData';
-import { BaseHandler } from '../../BaseHandler';
 
-export class LostHandler extends BaseHandler {
+export class LostHandler extends ChatInputHandler {
 
     constructor() {
-        super({
-            id: 'lost',
-            group: 'temp',
-            global: false,
-            nsfw: false,
-            data: LostCommandData
-        })
+        super({ group: 'temp', global: false, nsfw: false, data: LostCommandData });
     }
 
     public async execute(command: CommandInteraction): Promise<any> {

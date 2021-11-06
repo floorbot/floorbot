@@ -1,4 +1,4 @@
-import { HandlerSelectMenu, HandlerSelectMenuID } from '../../../../components/HandlerSelectMenu';
+import { HandlerSelectMenu, HandlerSelectMenuID } from '../../../../discord/components/HandlerSelectMenu';
 import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
 
 export const WeatherSelectMenuID = {

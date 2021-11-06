@@ -1,7 +1,6 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
+import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
 import { DanbooruCommandData } from './DanbooruCommandData';
-import { HandlerContext } from '../../../discord/Util';
 import { BooruSelectMenu } from '../BooruSelectMenu';
 import { BooruHandler } from '../BooruHandler';
 import { BooruButton } from '../BooruButton';
@@ -35,35 +34,35 @@ export class DanbooruHandler extends BooruHandler implements Autocomplete {
         return interaction.respond(options);
     }
 
-    public async generateResponse(context: HandlerContext, tags: string = String()): Promise<InteractionReplyOptions> {
+    public async generateResponse(interaction: Interaction, tags: string = String()): Promise<InteractionReplyOptions> {
         const data = await DanbooruAPI.random(tags);
         if ('success' in data && !data.success) {
             const details = data.message || 'The database timed out running your query.'
             switch (details) {
                 case 'You cannot search for more than 2 tags at a time.':
-                    return BooruEmbed.createTagLimitEmbed(this, context, 'basic', details.match(/\d+/)![1]!).toReplyOptions();
+                    return BooruEmbed.createTagLimitEmbed(this, interaction, 'basic', details.match(/\d+/)![1]!).toReplyOptions();
                 case 'You cannot search for more than 6 tags at a time.':
-                    return BooruEmbed.createTagLimitEmbed(this, context, 'gold', details.match(/\d+/)![1]!).toReplyOptions();
+                    return BooruEmbed.createTagLimitEmbed(this, interaction, 'gold', details.match(/\d+/)![1]!).toReplyOptions();
                 case 'You cannot search for more than 12 tags at a time.':
-                    return BooruEmbed.createTagLimitEmbed(this, context, 'platinum', details.match(/\d+/)![1]!).toReplyOptions();
+                    return BooruEmbed.createTagLimitEmbed(this, interaction, 'platinum', details.match(/\d+/)![1]!).toReplyOptions();
                 case 'The database timed out running your query.':
-                    return BooruEmbed.createTimeoutEmbed(this, context, tags).toReplyOptions();
+                    return BooruEmbed.createTimeoutEmbed(this, interaction, tags).toReplyOptions();
                 case 'That record was not found.':
                     const url404 = await DanbooruAPI.get404();
                     const autocomplete = await DanbooruAPI.autocomplete(tags);
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count } });
                     return {
-                        embeds: [BooruEmbed.createSuggestionEmbed(this, context, { suggestions, tags, url404 })],
+                        embeds: [BooruEmbed.createSuggestionEmbed(this, interaction, { suggestions, tags, url404 })],
                         components: suggestions.length ? [BooruSelectMenu.createSuggestionSelectMenu({ tags, suggestions, url404 }).toActionRow()] : []
                     };
-                default: throw { context, tags };
+                default: throw { interaction, tags };
             }
         } else if (!('id' in data)) {
-            return BooruEmbed.createRestrictedTagEmbed(this, context, tags).toReplyOptions();
+            return BooruEmbed.createRestrictedTagEmbed(this, interaction, tags).toReplyOptions();
         }
         const postURL = `https://danbooru.donmai.us/posts/${data.id}`;
         return {
-            embeds: [BooruEmbed.createImageEmbed(this, context, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags })],
+            embeds: [BooruEmbed.createImageEmbed(this, interaction, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(postURL),
                 BooruButton.createRepeatButton(tags),

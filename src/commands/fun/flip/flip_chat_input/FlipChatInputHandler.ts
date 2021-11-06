@@ -1,19 +1,15 @@
+import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
 import { FlipChatInputCommandData } from './FlipChatInputCommandData';
-import { HandlerReply } from '../../../../components/HandlerReply';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
+import { HandlerReply } from '../../../../helpers/HandlerReply';
 import { CommandInteraction, Util } from 'discord.js';
-import { BaseHandler } from '../../../BaseHandler';
 import { Flipper } from '../Flipper';
 
-export class FlipChatInputHandler extends BaseHandler {
+export class FlipChatInputHandler extends ChatInputHandler {
 
     constructor() {
-        super({
-            id: 'flip_chat_input',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: FlipChatInputCommandData
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: FlipChatInputCommandData });
     }
 
     public async execute(command: CommandInteraction): Promise<any> {
@@ -23,11 +19,11 @@ export class FlipChatInputHandler extends BaseHandler {
             case 'coin': {
                 const count = command.options.getInteger('count') || 1;
                 const heads = Math.round(this.random_bm() * count);
-                const embed = this.getEmbedTemplate(command)
+                const embed = new HandlerEmbed()
                     .setContextAuthor(command)
-                    .setTitle(`You flipped ${Util.formatCommas(count)} coin${count > 1 ? 's' : ''}`)
-                    .addField('Heads', Util.formatCommas(heads), true)
-                    .addField('Tails', Util.formatCommas(count - heads), true);
+                    .setTitle(`You flipped ${HandlerUtil.formatCommas(count)} coin${count > 1 ? 's' : ''}`)
+                    .addField('Heads', HandlerUtil.formatCommas(heads), true)
+                    .addField('Tails', HandlerUtil.formatCommas(count - heads), true);
                 return command.followUp(embed.toReplyOptions());
             }
             case 'text': {

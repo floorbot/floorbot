@@ -1,8 +1,7 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
+import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
 import { Rule34API, Rule34APIAutocomplete } from './Rule34API';
 import { Rule34CommandData } from './Rule34CommandData';
-import { HandlerContext } from '../../../discord/Util';
 import { BooruSelectMenu } from '../BooruSelectMenu';
 import { BooruHandler } from '../BooruHandler';
 import { BooruButton } from '../BooruButton';
@@ -35,20 +34,20 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
         return interaction.respond(options);
     }
 
-    public async generateResponse(context: HandlerContext, tags: string = String()): Promise<InteractionReplyOptions> {
+    public async generateResponse(interaction: Interaction, tags: string = String()): Promise<InteractionReplyOptions> {
         const post = await Rule34API.random(tags);
         if (!post) {
             const url404 = await Rule34API.get404();
             const autocomplete = await Rule34API.autocomplete(tags);
             const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total } });
             return {
-                embeds: [BooruEmbed.createSuggestionEmbed(this, context, { suggestions, tags, url404 })],
+                embeds: [BooruEmbed.createSuggestionEmbed(this, interaction, { suggestions, tags, url404 })],
                 components: suggestions.length ? [BooruSelectMenu.createSuggestionSelectMenu({ tags, suggestions, url404 }).toActionRow()] : []
             };
         }
         const postURL = `https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;
         return {
-            embeds: [BooruEmbed.createImageEmbed(this, context, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags })],
+            embeds: [BooruEmbed.createImageEmbed(this, interaction, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(postURL),
                 BooruButton.createRepeatButton(tags),

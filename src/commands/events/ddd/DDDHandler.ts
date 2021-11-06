@@ -1,25 +1,22 @@
 import { AutocompleteInteraction, CommandInteraction, Guild, GuildMember, Role, TextChannel } from 'discord.js';
-import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
-import { HandlerClient } from '../../../discord/HandlerClient';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
+import { HandlerClient } from '../../../discord/handler/HandlerClient';
 import { DDDCommandData } from './DDDCommandData';
-import { BaseHandler } from '../../BaseHandler';
 import { DDDDatabase } from './DDDDatabase';
 import { DateTime, IANAZone } from 'luxon';
 import { DDDEmbed } from './DDDEmbed';
 import * as tzdata from 'tzdata';
+import { Pool } from 'mariadb';
 
-export class DDDHandler extends BaseHandler implements Autocomplete {
+export class DDDHandler extends ChatInputHandler implements Autocomplete {
 
-    private static ZONES = Object.keys(tzdata.zones);
+    private static readonly ZONES = Object.keys(tzdata.zones);
+    private readonly database: DDDDatabase;
 
-    constructor() {
-        super({
-            id: 'ddd',
-            group: 'Event',
-            global: false,
-            nsfw: false,
-            data: DDDCommandData
-        })
+    constructor(pool: Pool) {
+        super({ group: 'Event', global: false, nsfw: false, data: DDDCommandData });
+        this.database = new DDDDatabase(pool);
     }
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partial = interaction.options.getString('timezone', true).toLowerCase();
@@ -39,21 +36,21 @@ export class DDDHandler extends BaseHandler implements Autocomplete {
                 const timezone = command.options.getString('timezone', true);
                 if (IANAZone.isValidZone(timezone)) {
                     const date = DateTime.now().setZone(timezone);
-                    await DDDDatabase.setMember(member, timezone);
-                    const settingsRow = await DDDDatabase.fetchSettings(guild);
+                    await this.database.setMember(member, timezone);
+                    const settingsRow = await this.database.fetchSettings(guild);
                     if (settingsRow.role_id) await member.roles.add(settingsRow.role_id).catch(() => { });
-                    const replyOptions = DDDEmbed.createConfirmRegisterEmbed(command, date).toReplyOptions(true);
+                    const replyOptions = DDDEmbed.createConfirmRegisterEmbed(command, date).toReplyOptions({ ephemeral: true });
                     return command.followUp(replyOptions)
                 } else {
-                    return command.followUp(DDDEmbed.createUnknownTimezoneEmbed(command, timezone).toReplyOptions(true));
+                    return command.followUp(DDDEmbed.createUnknownTimezoneEmbed(command, timezone).toReplyOptions({ ephemeral: true }));
                 }
             }
             case 'settings': {
                 await command.deferReply();
                 const channel = (command.options.getChannel('channel') || undefined) as TextChannel | undefined;
                 const role = (command.options.getRole('role') || undefined) as Role | undefined;
-                const settingsRow = await DDDDatabase.setSettings(guild, { channel, role });
-                const memberRows = await DDDDatabase.fetchAllMembers(guild);
+                const settingsRow = await this.database.setSettings(guild, { channel, role });
+                const memberRows = await this.database.fetchAllMembers(guild);
                 if (settingsRow.role_id) {
                     for (const memberRow of memberRows) {
                         const member = guild.members.cache.get(memberRow.user_id) as GuildMember;
@@ -66,9 +63,9 @@ export class DDDHandler extends BaseHandler implements Autocomplete {
             case 'nut': {
                 await command.deferReply({ ephemeral: true });
                 const description = command.options.getString('description') || undefined;
-                await DDDDatabase.setNut(member, command.createdTimestamp.toString(), description);
-                const memberRow = await DDDDatabase.fetchMember(member);
-                const allNutRows = await DDDDatabase.fetchAllNuts(member);
+                await this.database.setNut(member, command.createdTimestamp.toString(), description);
+                const memberRow = await this.database.fetchMember(member);
+                const allNutRows = await this.database.fetchAllNuts(member);
                 if (!memberRow) return command.followUp(DDDEmbed.createNoTimezoneEmbed(command, allNutRows).toReplyOptions());
                 const replyOptions = DDDEmbed.createNutEmbed(command, memberRow, allNutRows).toReplyOptions();
                 return command.followUp(replyOptions);
@@ -77,7 +74,6 @@ export class DDDHandler extends BaseHandler implements Autocomplete {
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
-        await super.setup(client);
-        await DDDDatabase.setup(client).then(() => true);
+        return super.setup(client).then(() => this.database.createTables()).then(() => true);
     }
 }

@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
-export const FlipChatInputCommandData: ApplicationCommandData = {
+export const FlipChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'flip',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Flip a coin (or text)',

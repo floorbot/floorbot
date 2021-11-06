@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export const E621CommandData: ApplicationCommandData = {
+export const E621CommandData: ChatInputApplicationCommandData = {
     name: 'e621',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Search for random e621 images',

@@ -1,5 +1,5 @@
+import { HandlerButton } from '../../../../discord/components/HandlerButton';
 import { MessageButton, MessageButtonOptions, Constants } from 'discord.js';
-import { HandlerButton } from '../../../../components/HandlerButton';
 
 const { MessageButtonStyles } = Constants;
 
@@ -14,6 +14,8 @@ export enum MarkovButtonType {
     MENTIONS_DISABLE = 'Disable Mentions',
     OWOIFY_ENABLE = 'Enable OwO',
     OWOIFY_DISABLE = 'Disable OwO',
+    QUOTING_ENABLE = 'Enable Quoting',
+    QUOTING_DISABLE = 'Disable Quoting',
     WIPE = 'Wipe Data',
     WIPE_CONFIRMED = 'Wipe Channel Data',
     PURGE_CONFIRMED = 'Purge All Guild Data',
@@ -43,7 +45,9 @@ export class MarkovButton extends HandlerButton {
             case MarkovButtonType.MENTIONS_ENABLE:
             case MarkovButtonType.MENTIONS_DISABLE:
             case MarkovButtonType.OWOIFY_ENABLE:
-            case MarkovButtonType.OWOIFY_DISABLE: {
+            case MarkovButtonType.OWOIFY_DISABLE:
+            case MarkovButtonType.QUOTING_ENABLE:
+            case MarkovButtonType.QUOTING_DISABLE: {
                 return button.setStyle(MessageButtonStyles.SECONDARY);
             }
             case MarkovButtonType.WIPE:

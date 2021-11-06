@@ -1,20 +1,13 @@
-import { HandlerReply } from '../../../../components/HandlerReply';
+import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler';
 import { FlipMessageCommandData } from './FlipMessageCommandData';
+import { HandlerReply } from '../../../../helpers/HandlerReply';
 import { ContextMenuInteraction, Util } from 'discord.js';
-import { BaseHandler } from '../../../BaseHandler';
 import { Flipper } from '../Flipper';
 
-export class FlipMessageHandler extends BaseHandler {
+export class FlipMessageHandler extends ContextMenuHandler {
 
     constructor() {
-        super({
-            id: 'flip_message',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: FlipMessageCommandData,
-            description: 'Flip the target message text'
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: FlipMessageCommandData });
     }
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {

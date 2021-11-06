@@ -1,54 +1,52 @@
-import { CommandInteraction, Message, Util, GuildMember, Guild } from 'discord.js';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
+import { CommandInteraction, Message } from 'discord.js';
 import { UtilsCommandData } from './UtilsCommandData';
-import { BaseHandler } from '../../BaseHandler';
 
 // @ts-ignore
 import * as DHMS from 'dhms.js';
 
-export class UtilsHandler extends BaseHandler {
+export class UtilsHandler extends ChatInputHandler {
 
     constructor() {
-        super({
-            id: 'utils',
-            group: 'Global',
-            global: true,
-            nsfw: false,
-            data: UtilsCommandData
-        })
+        super({ group: 'Global', global: true, nsfw: false, data: UtilsCommandData });
     }
 
-    public async execute(interaction: CommandInteraction): Promise<any> {
-        const { guild, member } = <{ guild: Guild, member: GuildMember }>interaction;
-        const subCommand = interaction.options.getSubcommand();
-        const clientUser = interaction.client.user!;
+    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+        const { guild, member } = command;
+        const subCommand = command.options.getSubcommand();
+        const clientUser = command.client.user!;
         switch (subCommand) {
             case 'ping': {
-                const pingingEmbed = this.getEmbedTemplate(interaction).setDescription('Pinging...');
-                await interaction.reply(pingingEmbed.toReplyOptions());
-                const reply = await interaction.fetchReply() as Message;
+                const pingingEmbed = new HandlerEmbed().setContextAuthor(command).setDescription('Pinging...');
+                await command.reply(pingingEmbed.toReplyOptions());
+                const reply = await command.fetchReply() as Message;
 
-                const pingEmbed = this.getEmbedTemplate(interaction)
+                const pingEmbed = new HandlerEmbed()
+                    .setContextAuthor(command)
                     .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
                     .setThumbnail(clientUser.displayAvatarURL())
                     .setTitle(clientUser.tag)
                     .setDescription(
-                        `Ping: **${DHMS.print(reply.createdTimestamp - interaction.createdTimestamp)}**\n` +
-                        (interaction.client.ws.ping ? `Heartbeat: **${DHMS.print(Math.round(interaction.client.ws.ping))}**\n` : '') +
-                        `Uptime: **${DHMS.print(interaction.client.uptime)}**`
+                        `Ping: **${DHMS.print(reply.createdTimestamp - command.createdTimestamp)}**\n` +
+                        (command.client.ws.ping ? `Heartbeat: **${DHMS.print(Math.round(command.client.ws.ping))}**\n` : '') +
+                        `Uptime: **${DHMS.print(command.client.uptime)}**`
                     );
                 return reply.edit(pingEmbed.toReplyOptions());
             }
             case 'guild': {
-                if (!guild) return interaction.reply(this.getEmbedTemplate(interaction).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
-                await interaction.deferReply();
+                if (!guild) return command.reply(new HandlerEmbed().setContextAuthor(command).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
+                await command.deferReply();
                 const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return null });
-                const embed = this.getEmbedTemplate(interaction)
+                const embed = new HandlerEmbed()
+                    .setContextAuthor(command)
                     .setTitle(`${guild.name} Stats!`)
                     .setDescription([
                         `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**`,
                         `Verified: **${guild.verified}**`,
                         `Partnered: **${guild.partnered}**`,
-                        `Premium Tier: **${Util.capitalizeString(guild.premiumTier).replace('_', ' ')}**`,
+                        `Premium Tier: **${HandlerUtil.capitalizeString(guild.premiumTier).replace('_', ' ')}**`,
                         `Description: **${guild.description || '*none*'}**`,
                         `Channels: **${guild.channels.cache.size}**`,
                         `Members: **${guild.memberCount}**`,
@@ -56,29 +54,30 @@ export class UtilsHandler extends BaseHandler {
                         `Emojis: **${guild.emojis.cache.filter(emoji => !emoji.animated).size}**`,
                         `Gif Emojis: **${guild.emojis.cache.filter(emoji => !!emoji.animated).size}**`,
                         `Stickers: **${guild.stickers.cache.size}**`,
-                        `NSFW Level: **${Util.capitalizeString(guild.nsfwLevel)}**`,
+                        `NSFW Level: **${HandlerUtil.capitalizeString(guild.nsfwLevel)}**`,
                         `Bans: **${bans ? bans.size : '*administrator permission*'}**`
                     ].join('\n'))
                 if (guild.icon) embed.setThumbnail(guild.iconURL({ dynamic: true })!);
                 if (guild.splash) embed.setImage(`${guild.splashURL({ size: 4096 })}`);
-                return interaction.followUp(embed.toReplyOptions());
+                return command.followUp(embed.toReplyOptions());
             }
             case 'invite': {
-                const embed = this.getEmbedTemplate(interaction)
+                const embed = new HandlerEmbed()
+                    .setContextAuthor(command)
                     .setURL(`https://discord.com/api/oauth2/authorize?client_id=${clientUser.id}&permissions=0&scope=applications.commands%20bot`)
                     .setThumbnail(clientUser.displayAvatarURL())
                     .setDescription(`Make sure you have permissions to invite!`)
                     .setTitle(`Invite ${clientUser.tag}`)
-                return interaction.reply(embed.toReplyOptions());
+                return command.reply(embed.toReplyOptions());
             }
             case 'screenshare': {
-                if (!member) return interaction.reply(this.getEmbedTemplate(interaction).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
-                await interaction.deferReply();
-                const channel = interaction.options.getChannel('channel') || member.voice.channel;
-                if (!channel) return interaction.followUp(this.getEmbedTemplate(interaction).setDescription('Sorry! Please provide or join a voice channel 😦').toReplyOptions());
-                return interaction.followUp(this.getEmbedTemplate(interaction).setDescription(`[Screenshare in ${channel}](${`https://discordapp.com/channels/${guild.id}/${channel.id}`})`).toReplyOptions());
+                if (!member) return command.reply(new HandlerEmbed().setContextAuthor(command).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
+                await command.deferReply();
+                const channel = command.options.getChannel('channel') || member.voice.channel;
+                if (!channel) return command.followUp(new HandlerEmbed().setContextAuthor(command).setDescription('Sorry! Please provide or join a voice channel 😦').toReplyOptions());
+                return command.followUp(new HandlerEmbed().setContextAuthor(command).setDescription(`[Screenshare in ${channel}](${`https://discordapp.com/channels/${guild.id}/${channel.id}`})`).toReplyOptions());
             }
-            default: throw interaction;
+            default: throw command;
         }
     }
 }

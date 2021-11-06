@@ -1,22 +1,17 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../components/HandlerButton';
+import { HandlerButton, HandlerButtonID } from '../../../discord/components/HandlerButton';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
 import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI';
-import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
-import { HandlerEmbed } from '../../../components/HandlerEmbed';
-import { HandlerReply } from '../../../components/HandlerReply';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
+import { HandlerReply } from '../../../helpers/HandlerReply';
 import { DefineCommandData } from './DefineCommandData';
-import { BaseHandler } from '../../BaseHandler';
 
-export class DefineHandler extends BaseHandler implements Autocomplete {
+export class DefineHandler extends ChatInputHandler implements Autocomplete {
 
     constructor() {
-        super({
-            id: 'define',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: DefineCommandData
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: DefineCommandData })
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -55,7 +50,7 @@ export class DefineHandler extends BaseHandler implements Autocomplete {
                 await component.editReply(replyOptions);
             } catch { }
         });
-        collector.on('end', this.createEnderFunction(message));
+        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
     private createDefinitionReply(interaction: CommandInteraction, definitions: UrbanDictionaryData[], page: number = 0): InteractionReplyOptions {

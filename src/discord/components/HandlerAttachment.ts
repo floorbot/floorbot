@@ -8,6 +8,6 @@ export class HandlerAttachment extends MessageAttachment {
     }
 
     public getEmbedUrl(): string {
-        return `attachment://${this.name}`
+        return `attachment://${this.name}`;
     }
 }

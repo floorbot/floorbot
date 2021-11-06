@@ -1,26 +1,25 @@
-import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel, Util } from 'discord.js';
+import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI';
 import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData';
 import { WeatherButton, WeatherButtonID } from './components/WeatherButton';
-import { WeatherDatabase, WeatherLinkSchema } from './WeatherDatabase';
-import { HandlerReply } from '../../../components/HandlerReply';
-import { HandlerClient } from '../../../discord/HandlerClient';
+import { HandlerClient } from '../../../discord/handler/HandlerClient';
+import { WeatherDatabase, WeatherLinkRow } from './WeatherDatabase';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
+import { HandlerReply } from '../../../helpers/HandlerReply';
 import { WeatherEmbed } from './components/WeatherEmbed';
-import { BaseHandler } from '../../BaseHandler';
+import { Pool } from 'mariadb';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
 
-export class WeatherHandler extends BaseHandler {
+export class WeatherHandler extends ChatInputHandler {
 
-    constructor() {
-        super({
-            id: 'weather',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: WeatherCommandData
-        });
+    private readonly database: WeatherDatabase;
+
+    constructor(pool: Pool) {
+        super({ group: 'Fun', global: false, nsfw: false, data: WeatherCommandData });
+        this.database = new WeatherDatabase(pool);
     }
 
     public async execute(command: CommandInteraction): Promise<any> {
@@ -43,13 +42,13 @@ export class WeatherHandler extends BaseHandler {
                 const message = await command.followUp(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
-                collector.on('end', Util.deleteComponentsOnEnd(message));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
             case WeatherSubCommandName.USER: {
                 await command.deferReply();
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                const link = await WeatherDatabase.fetchLink(member);
+                const link = await this.database.fetchLink(member);
                 if (!link) return command.followUp(WeatherEmbed.getMissingParamsEmbed(command, member).toReplyOptions());
                 const location: LocationData = {
                     city_name: link.name,
@@ -63,14 +62,14 @@ export class WeatherHandler extends BaseHandler {
                 const message = await command.followUp(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
-                collector.on('end', Util.deleteComponentsOnEnd(message));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
             case WeatherSubCommandName.SERVER_TEMPS: {
                 await command.deferReply();
                 const { channel, guild } = <{ channel: GuildChannel, guild: Guild }>command;
-                const links: [OneCallData, GuildMember, WeatherLinkSchema][] = new Array();
-                const allLinks = await WeatherDatabase.fetchAllLinks(guild);
+                const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
+                const allLinks = await this.database.fetchAllLinks(guild);
                 let loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, 0).toReplyOptions();
                 let lastUpdate = (await command.followUp(loadingReplyOptions) as Message).createdTimestamp;
                 for (const [i, link] of allLinks.entries()) {
@@ -98,12 +97,12 @@ export class WeatherHandler extends BaseHandler {
                     const replyOptions = this.createServerTempsResponse(component, links, viewData);
                     await component.editReply(replyOptions);
                 });
-                collector.on('end', Util.deleteComponentsOnEnd(message));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
             case WeatherSubCommandName.LINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!Util.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -116,7 +115,7 @@ export class WeatherHandler extends BaseHandler {
                 const weather = await this.fetchWeather(location);
                 if (!weather) return command.followUp(WeatherEmbed.getUnknownLocationEmbed(command, location).toReplyOptions());
                 if (OpenWeatherAPI.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
-                await WeatherDatabase.setLink(member, weather);
+                await this.database.setLink(member, weather);
                 const embed = WeatherEmbed.getLinkedEmbed(command, weather, member);
                 const actionRow: MessageActionRow = new MessageActionRow().addComponents([
                     WeatherButton.createWeatherButton(WeatherButtonID.CURRENT),
@@ -127,14 +126,14 @@ export class WeatherHandler extends BaseHandler {
                 const message = await command.followUp({ embeds: [embed], components: [actionRow] }) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', this.createCollectorFunction(weather));
-                collector.on('end', Util.deleteComponentsOnEnd(message));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
             case WeatherSubCommandName.UNLINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!Util.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
-                await WeatherDatabase.deleteLink(member);
+                await this.database.deleteLink(member);
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
                 return command.followUp({ embeds: [embed], components: [] });
             }
@@ -193,7 +192,7 @@ export class WeatherHandler extends BaseHandler {
         }
     }
 
-    private createServerTempsResponse(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkSchema][], viewData: { page: number, perPage: number, order: WeatherTempsOrder }): InteractionReplyOptions {
+    private createServerTempsResponse(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkRow][], viewData: { page: number, perPage: number, order: WeatherTempsOrder }): InteractionReplyOptions {
         if (viewData.order === WeatherTempsOrder.HOTTEST) links.sort((link1, link2) => { return link2[0].current.temp - link1[0].current.temp });
         else if (viewData.order === WeatherTempsOrder.COLDEST) links.sort((link1, link2) => { return link1[0].current.temp - link2[0].current.temp });
         else if (viewData.order === WeatherTempsOrder.HUMIDITY) links.sort((link1, link2) => { return link2[0].current.humidity - link1[0].current.humidity });
@@ -243,7 +242,6 @@ export class WeatherHandler extends BaseHandler {
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
-        await super.setup(client);
-        await WeatherDatabase.setup(client).then(() => true);
+        return super.setup(client).then(() => this.database.createTables()).then(() => true);
     }
 }

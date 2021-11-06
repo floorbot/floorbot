@@ -1,5 +1,4 @@
-import { MessageEmbed, MessageEmbedOptions, InteractionReplyOptions, Message, GuildMember } from 'discord.js'
-import { HandlerContext } from '../discord/Util';
+import { MessageEmbed, MessageEmbedOptions, InteractionReplyOptions, Message, GuildMember, Interaction } from 'discord.js'
 
 export class HandlerEmbed extends MessageEmbed {
 
@@ -7,7 +6,7 @@ export class HandlerEmbed extends MessageEmbed {
         super(data);
     }
 
-    public setContextAuthor(context: HandlerContext): this {
+    public setContextAuthor(context: Interaction | Message): this {
         const { member } = context;
         const user = context instanceof Message ? context.author : context.user;
         if (member && member instanceof GuildMember) {
@@ -30,7 +29,7 @@ export class HandlerEmbed extends MessageEmbed {
         return super.addField(name, value, inline);
     }
 
-    public toReplyOptions(ephemeral?: boolean): InteractionReplyOptions {
-        return { embeds: [this], ephemeral: ephemeral ?? false }
+    public toReplyOptions(replyOptions: InteractionReplyOptions = {}): InteractionReplyOptions {
+        return { ...replyOptions, embeds: [...(replyOptions.embeds || []), this] }
     }
 }

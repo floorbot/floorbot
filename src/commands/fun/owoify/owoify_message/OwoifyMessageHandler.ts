@@ -1,20 +1,13 @@
+import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler';
 import { OwoifyMessageCommandData } from './OwoifyMessageCommandData';
-import { HandlerReply } from '../../../../components/HandlerReply';
+import { HandlerReply } from '../../../../helpers/HandlerReply';
 import { ContextMenuInteraction, Util } from 'discord.js';
-import { BaseHandler } from '../../../BaseHandler';
 import * as owoify from 'owoify-js';
 
-export class OwoifyMessageHandler extends BaseHandler {
+export class OwoifyMessageHandler extends ContextMenuHandler {
 
     constructor() {
-        super({
-            id: 'owoify_message',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: OwoifyMessageCommandData,
-            description: `owo what's this?`
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: OwoifyMessageCommandData });
     }
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {

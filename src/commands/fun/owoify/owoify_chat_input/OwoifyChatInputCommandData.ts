@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export const OwoifyChatInputCommandData: ApplicationCommandData = {
+export const OwoifyChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'owoify',
     description: `owo what's this?`,
     type: ApplicationCommandTypes.CHAT_INPUT,

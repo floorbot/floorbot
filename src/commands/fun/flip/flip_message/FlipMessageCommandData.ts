@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { Constants, MessageApplicationCommandData } from 'discord.js';
 
 const { ApplicationCommandTypes } = Constants;
 
-export const FlipMessageCommandData: ApplicationCommandData = {
+export const FlipMessageCommandData: MessageApplicationCommandData = {
     name: 'flip',
     type: ApplicationCommandTypes.MESSAGE
 }

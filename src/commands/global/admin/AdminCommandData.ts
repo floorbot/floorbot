@@ -1,7 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
+
 const { ApplicationCommandOptionTypes } = Constants
 
-export const AdminCommandData: ApplicationCommandData = {
+export const AdminCommandData: ChatInputApplicationCommandData = {
     name: 'admin',
     description: '[ADMIN] Admin related commands for this bot',
     options: [{

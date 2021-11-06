@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
@@ -10,7 +10,7 @@ export enum WeatherSubCommandName {
     UNLINK = 'unlink'
 }
 
-export const WeatherCommandData: ApplicationCommandData = {
+export const WeatherCommandData: ChatInputApplicationCommandData = {
     name: 'weather',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Get weather, forecast or air pollution for places',

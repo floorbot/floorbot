@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { Constants, MessageApplicationCommandData } from 'discord.js';
 
 const { ApplicationCommandTypes } = Constants;
 
-export const OwoifyMessageCommandData: ApplicationCommandData = {
+export const OwoifyMessageCommandData: MessageApplicationCommandData = {
     name: 'owoify',
     type: ApplicationCommandTypes.MESSAGE
 }

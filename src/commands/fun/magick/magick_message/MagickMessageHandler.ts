@@ -1,30 +1,25 @@
-import { ContextMenuInteraction, InteractionReplyOptions, Message, SelectMenuInteraction } from 'discord.js';
+import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
+import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler';
 import { MagickMessageCommandData } from './MagickMessageCommandData';
-import { MagickAction, MagickProgress } from './MagickConstants';
-import { MagickAttachment } from './components/MagickAttachment';
-import { MagickSelectMenu } from './components/MagickSelectMenu';
-import { MagickEmbed } from './components/MagickEmbed';
-import { HandlerContext } from '../../../discord/Util';
-import { ImageMagick } from './tools/ImageMagick';
-import { BaseHandler } from '../../BaseHandler';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
+import { MagickAction, MagickProgress } from '../MagickConstants';
+import { MagickAttachment } from '../components/MagickAttachment';
+import { MagickSelectMenu } from '../components/MagickSelectMenu';
+import { HandlerReply } from '../../../../helpers/HandlerReply';
+import { MagickEmbed } from '../components/MagickEmbed';
+import { ImageMagick } from '../tools/ImageMagick';
 import { ProbeResult } from 'probe-image-size';
 import * as probe from 'probe-image-size';
 
-export class MagickMessageHandler extends BaseHandler {
+export class MagickMessageHandler extends ContextMenuHandler {
 
     constructor() {
-        super({
-            id: 'magick_message',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: MagickMessageCommandData
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: MagickMessageCommandData });
     }
 
-    public async execute(interaction: ContextMenuInteraction): Promise<any> {
-        await interaction.deferReply();
-        const targetMessage = interaction.options.getMessage('message', true) as Message;
+    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
+        await contextMenu.deferReply();
+        const targetMessage = contextMenu.options.getMessage('message', true) as Message;
         let metadata: ProbeResult | null = null;
         for (const embed of targetMessage.embeds) {
             if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
@@ -34,19 +29,18 @@ export class MagickMessageHandler extends BaseHandler {
             metadata = await probe(attachment.url).catch(() => null) || metadata;
         }
         if (!metadata) {
-            const embed = this.getEmbedTemplate(interaction)
+            const embed = new MagickEmbed(contextMenu)
                 .setDescription(`Sorry! I could not find a valid image in that message`);
-            return interaction.followUp(embed.toReplyOptions(true));
+            return contextMenu.followUp(embed.toReplyOptions({ ephemeral: true }));
         }
-        const response = await this.fetchMagickResponse(interaction, metadata);
-        let message = await interaction.followUp(response) as Message;
+        const response = await this.fetchMagickResponse(contextMenu, metadata);
+        let message = await contextMenu.followUp(response) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
-        collector.on('collect', async (component) => {
+        collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
             if (component.isSelectMenu()) {
-                if (interaction.user !== component.user) return component.reply({ content: 'Sorry! Only the original command user can use this select menu', ephemeral: true })
+                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(HandlerReply.createAdminOrOwnerReply(component));
                 await component.deferUpdate();
                 const action = MagickAction[component.values[0]!]!;
-
                 const metadata = (await probe(message.embeds[0]!.image!.url!).catch(() => null))!;
                 const embed = MagickEmbed.getProgressEmbed(component, metadata, action, {});
                 await message.edit({ embeds: [embed], components: [], files: [] });
@@ -55,10 +49,10 @@ export class MagickMessageHandler extends BaseHandler {
                 message = await message.edit(response);
             }
         });
-        collector.on('end', this.createEnderFunction(message))
+        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private async fetchMagickResponse(context: HandlerContext, metadata: probe.ProbeResult, action?: MagickAction): Promise<InteractionReplyOptions> {
+    private async fetchMagickResponse(interaction: Interaction, metadata: probe.ProbeResult, action?: MagickAction): Promise<InteractionReplyOptions> {
 
         // Need to convert SVG files since they dont embed
         if (metadata.type === 'svg') {
@@ -68,7 +62,7 @@ export class MagickMessageHandler extends BaseHandler {
 
         // Command first used and not SVG
         if (!action) {
-            const embed = MagickEmbed.getImageEmbed(context, metadata);
+            const embed = MagickEmbed.getImageEmbed(interaction, metadata);
             const actionRow = MagickSelectMenu.getMagickSelectMenu(action).toActionRow();
             return { embeds: [embed], components: [actionRow] };
         }
@@ -89,7 +83,7 @@ export class MagickMessageHandler extends BaseHandler {
                     case 'resize':
                     case 'encode':
                     case 'save':
-                        if (!(context instanceof SelectMenuInteraction)) break;
+                        if (!(interaction instanceof SelectMenuInteraction)) break;
                         if (!progress[part]) progress[part] = { percent: 0, counter: 0 }
                         const percent = Number(string.match(/(\d+)(?:%)/)![1]);
                         if (percent === 100) progress[part]!.counter = progress[part]!.counter + 1;
@@ -97,14 +91,14 @@ export class MagickMessageHandler extends BaseHandler {
                         const now = Date.now();
                         if ((updateTime + 1000) <= now) {
                             updateTime = now;
-                            const message = context.message as Message;
-                            const embed = MagickEmbed.getProgressEmbed(context, metadata, action!, progress);
+                            const message = interaction.message as Message;
+                            const embed = MagickEmbed.getProgressEmbed(interaction, metadata, action!, progress);
                             message.edit({ embeds: [embed], components: [] })
                         }
                         break;
                     default:
                         if (/^(?:\r\n|\r|\n)$/.test(string) || string.startsWith('mogrify')) break;
-                        context.client.emit('log', `[magick] Failed for an unknown reason: <${string}>`);
+                        interaction.client.emit('log', `[magick] Failed for an unknown reason: <${string}>`);
                         return reject(string);
                 }
             }
@@ -112,10 +106,10 @@ export class MagickMessageHandler extends BaseHandler {
             const newMetadata = probe.sync(buffer)!;
             const actionRow = MagickSelectMenu.getMagickSelectMenu(action).toActionRow();
             const attachment = MagickAttachment.getMagickAttachment(buffer, action!, newMetadata);
-            const embed = MagickEmbed.getImageEmbed(context, attachment);
+            const embed = MagickEmbed.getImageEmbed(interaction, attachment);
             return { embeds: [embed], components: [actionRow], files: [attachment] };
         }).catch((_reason) => {
-            const embed = MagickEmbed.getFailedEmbed(context, metadata, action!)
+            const embed = MagickEmbed.getFailedEmbed(interaction, metadata, action!)
             return { embeds: [embed], components: [] };
         });
     }

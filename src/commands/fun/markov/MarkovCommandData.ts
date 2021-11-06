@@ -1,9 +1,11 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
-const { ApplicationCommandOptionTypes } = Constants;
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
-export const MarkovCommandData: ApplicationCommandData = {
+const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
+
+export const MarkovCommandData: ChatInputApplicationCommandData = {
     name: 'markov',
     description: 'Generate messages from channel history',
+    type: ApplicationCommandTypes.CHAT_INPUT,
     options: [{
         name: 'settings',
         type: ApplicationCommandOptionTypes.SUB_COMMAND,

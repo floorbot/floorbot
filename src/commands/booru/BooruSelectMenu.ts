@@ -1,4 +1,4 @@
-import { HandlerSelectMenu, HandlerSelectMenuID } from '../../components/HandlerSelectMenu';
+import { HandlerSelectMenu, HandlerSelectMenuID } from '../../discord/components/HandlerSelectMenu';
 import { MessageSelectMenu, MessageSelectMenuOptions, Util } from 'discord.js';
 import { BooruSuggestionData } from './BooruHandler';
 

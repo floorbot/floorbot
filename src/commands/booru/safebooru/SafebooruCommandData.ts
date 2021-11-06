@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export const SafebooruCommandData: ApplicationCommandData = {
+export const SafebooruCommandData: ChatInputApplicationCommandData = {
     name: 'safebooru',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Search for random safebooru images',

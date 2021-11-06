@@ -1,12 +1,12 @@
-import { ApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Util } from 'discord.js';
-import { HandlerReply } from '../../components/HandlerReply';
+import { ChatInputApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
+import { ChatInputHandler } from '../../discord/handler/abstracts/ChatInputHandler';
+import { HandlerUtil } from '../../discord/handler/HandlerUtil';
+import { HandlerReply } from '../../helpers/HandlerReply';
 import { BooruSelectMenuID } from './BooruSelectMenu';
-import { HandlerContext } from '../../discord/Util';
-import { BaseHandler } from '../BaseHandler';
 import { BooruButtonID } from './BooruButton';
 
 export interface BooruHandlerOptions {
-    readonly data: ApplicationCommandData
+    readonly data: ChatInputApplicationCommandData
     readonly nsfw: boolean,
     readonly id: string,
     readonly apiName: string,
@@ -22,7 +22,7 @@ export interface BooruSuggestionData {
     readonly url404: string | null
 }
 
-export abstract class BooruHandler extends BaseHandler {
+export abstract class BooruHandler extends ChatInputHandler {
 
     public readonly apiName: string;
     public readonly apiIcon: string;
@@ -33,7 +33,7 @@ export abstract class BooruHandler extends BaseHandler {
         this.apiIcon = options.apiIcon;
     }
 
-    public abstract generateResponse(context: HandlerContext, query: string): Promise<InteractionReplyOptions>
+    public abstract generateResponse(interaction: Interaction, query: string): Promise<InteractionReplyOptions>
 
     public async execute(command: CommandInteraction): Promise<any> {
         await command.deferReply();
@@ -42,7 +42,7 @@ export abstract class BooruHandler extends BaseHandler {
         const message = await command.followUp(response) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', this.createCollectorFunction(query, command));
-        collector.on('end', Util.deleteComponentsOnEnd(message));
+        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
     private createCollectorFunction(query: string, source: Interaction) {
@@ -63,7 +63,7 @@ export abstract class BooruHandler extends BaseHandler {
                     switch (component.customId) {
                         case BooruButtonID.RECYCLE: {
                             const member = component.member as GuildMember;
-                            if (!Util.isAdminOrOwner(member, source)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
+                            if (!HandlerUtil.isAdminOrOwner(member, source)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
                             await component.deferUpdate();
                             const replyOptions = await this.generateResponse(component, query);
                             await component.editReply(replyOptions);
@@ -75,7 +75,7 @@ export abstract class BooruHandler extends BaseHandler {
                             const message = await component.followUp(replyOptions) as Message;
                             const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
                             collector.on('collect', this.createCollectorFunction(query, component));
-                            collector.on('end', Util.deleteComponentsOnEnd(message));
+                            collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                             break;
                         }
                     }

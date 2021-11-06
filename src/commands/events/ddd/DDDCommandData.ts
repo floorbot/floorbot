@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandOptionTypes, ChannelTypes } = Constants
 
-export const DDDCommandData: ApplicationCommandData = {
+export const DDDCommandData: ChatInputApplicationCommandData = {
     name: 'ddd',
     description: 'Best month of the year made competitive',
     options: [{

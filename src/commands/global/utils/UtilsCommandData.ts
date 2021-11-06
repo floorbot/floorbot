@@ -1,8 +1,8 @@
-import { ApplicationCommandData, Constants } from 'discord.js';
+import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandOptionTypes, ChannelTypes } = Constants;
 
-export const UtilsCommandData: ApplicationCommandData = {
+export const UtilsCommandData: ChatInputApplicationCommandData = {
     name: 'utils',
     description: 'Various tools and info for the bot or current guild',
     options: [{

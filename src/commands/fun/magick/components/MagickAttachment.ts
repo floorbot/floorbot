@@ -1,4 +1,4 @@
-import { HandlerAttachment } from '../../../../components/HandlerAttachment';
+import { HandlerAttachment } from '../../../../discord/components/HandlerAttachment';
 import { MagickAction } from '../MagickConstants';
 import { ProbeResult } from 'probe-image-size';
 import { BufferResolvable } from 'discord.js';

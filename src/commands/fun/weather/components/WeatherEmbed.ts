@@ -1,134 +1,124 @@
 import { GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../api/OpenWeatherAPI';
-import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions } from 'discord.js';
-import { HandlerEmbed } from '../../../../components/HandlerEmbed';
-import { HandlerContext } from '../../../../discord/Util';
-import { WeatherLinkSchema } from '../WeatherDatabase';
+import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
+import { WeatherLinkRow } from '../WeatherDatabase';
 import { OpenWeatherData } from '../WeatherHandler';
 import { WeatherEmojis } from '../WeatherEmojis';
+import { DateTime } from 'luxon';
 
 export class WeatherEmbed extends HandlerEmbed {
 
-    constructor(context: HandlerContext, data?: MessageEmbed | MessageEmbedOptions) {
+    constructor(interaction: Interaction, data?: MessageEmbed | MessageEmbedOptions) {
         super(data);
-        this.setContextAuthor(context);
+        this.setContextAuthor(interaction);
         this.setFooter('Powered by OpenWeatherMap', 'https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png');
     }
 
-    public static formatTiemzoneOffset(offset: number): string {
-        const now = new Date();
-        const time = now.getTime();
-        const appOffset = now.getTimezoneOffset();
-        const date = new Date(time + (appOffset * 60 * 1000) + (offset * 1000));
-        return Util.formatDate(date, { showTime: true, showDate: false, fullName: false });
+    public static formatTiemzone(timezone: string): string {
+        const date = DateTime.now().setZone(timezone);
+        return date.toLocaleString({
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h12'
+        });
     }
 
-    public static getLoadingEmbed(context: HandlerContext, total: number, current: number): HandlerEmbed {
+    public static getLoadingEmbed(interaction: Interaction, total: number, current: number): HandlerEmbed {
         const progressBar = new Array(11).fill('▬');
         progressBar[Math.floor(current / total * 10)] = '🟢';
-        return new WeatherEmbed(context)
+        return new WeatherEmbed(interaction)
             .setTitle(`Loading Weather!`)
             .setDescription(`Progress: ${progressBar.join('')} [${Math.round(current / total * 100)}%] ${current}/${total}`);
     }
 
-    public static getUnknownLocationEmbed(context: HandlerContext, location: LocationData): HandlerEmbed {
-        return new WeatherEmbed(context)
+    public static getUnknownLocationEmbed(interaction: Interaction, location: LocationData): HandlerEmbed {
+        return new WeatherEmbed(interaction)
             .setDescription(`Sorry! I could not find \`${OpenWeatherAPI.getLocationString(location, true)}\`\n*Please check the spelling or try another nearby location*`);
     }
 
-    public static getMissingAdminEmbed(context: HandlerContext): HandlerEmbed {
-        return new WeatherEmbed(context)
+    public static getMissingAdminEmbed(interaction: Interaction): HandlerEmbed {
+        return new WeatherEmbed(interaction)
             .setDescription(`Sorry! you must be an admin to force link or unlink locations from other people!`);
     }
 
-    public static getMissingParamsEmbed(context: HandlerContext, member: GuildMember): HandlerEmbed {
-        return new WeatherEmbed(context)
+    public static getMissingParamsEmbed(interaction: Interaction, member: GuildMember): HandlerEmbed {
+        return new WeatherEmbed(interaction)
             .setDescription(`Sorry! I do not have a saved location for ${member}. Please use \`/weather link\` to set one!`);
     }
 
-    public static getAPIErrorEmbed(context: HandlerContext, error: WeatherAPIError): HandlerEmbed {
-        return new WeatherEmbed(context).setDescription([
+    public static getAPIErrorEmbed(interaction: Interaction, error: WeatherAPIError): HandlerEmbed {
+        return new WeatherEmbed(interaction).setDescription([
             `Sorry I seem to have an API issue:`,
             `*${error.message}*`
         ].join('\n'));
     }
 
-    public static getNoLinkedMembersEmbed(context: HandlerContext, channel: GuildChannel): HandlerEmbed {
-        return new WeatherEmbed(context).setDescription([
+    public static getNoLinkedMembersEmbed(interaction: Interaction, channel: GuildChannel): HandlerEmbed {
+        return new WeatherEmbed(interaction).setDescription([
             `There are no members with saved locations in ${channel}`,
             'Please use \`/weather link\` to start the weather leaderboard!'
         ].join('\n'));
     }
 
-    public static getLinkedEmbed(context: HandlerContext, geocode: GeocodeData, member: GuildMember): HandlerEmbed {
-        return new WeatherEmbed(context)
+    public static getLinkedEmbed(interaction: Interaction, geocode: GeocodeData, member: GuildMember): HandlerEmbed {
+        return new WeatherEmbed(interaction)
             .setDescription(`Succesfully linked location \`${OpenWeatherAPI.getLocationString(geocode, true)}\` to ${member} 🥳`);
     }
 
-    public static getUnlinkedEmbed(context: HandlerContext, member: GuildMember): HandlerEmbed {
-        return new WeatherEmbed(context)
+    public static getUnlinkedEmbed(interaction: Interaction, member: GuildMember): HandlerEmbed {
+        return new WeatherEmbed(interaction)
             .setDescription(`Succesfully unlinked any saved location from ${member} 🤠`);
     }
 
-    public static getServerTempsEmbed(context: HandlerContext, links: [OneCallData, GuildMember, WeatherLinkSchema][]): WeatherEmbed {
-        const embed = new WeatherEmbed(context);
-        embed.setAuthor(`Temps for ${context.guild!.name}`, context.guild!.iconURL()!);
+    public static getServerTempsEmbed(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkRow][]): WeatherEmbed {
+        const embed = new WeatherEmbed(interaction);
+        embed.setAuthor(`Temps for ${interaction.guild!.name}`, interaction.guild!.iconURL()!);
         embed.setDescription(links.map(([weather, member, link]) => {
-            const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
-            const localeEmoji = Util.localeToEmoji(link.country);
-            const weatherEmoji = WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon);
+            const timeString = WeatherEmbed.formatTiemzone(weather.timezone);
+            const localeEmoji = HandlerUtil.localeToEmoji(link.country);
+            const weatherEmoji = WeatherEmojis.getWeatherEmoji(interaction.client, weather.current.weather[0].icon);
             const tempString = `${weather.current.temp.toFixed(2)}°C`.padEnd(8); // -99.99°C
-            const tempStringF = `(${Util.toFahrenheit(weather.current.temp)}°F)`.padEnd(7); // 999°F
+            const tempStringF = `(${HandlerUtil.toFahrenheit(weather.current.temp)}°F)`.padEnd(7); // 999°F
             const humidityString = `${weather.current.humidity}%`.padEnd(3);
             return `${localeEmoji} \`${timeString}\` ${weatherEmoji} \`${tempString} ${tempStringF} ${humidityString}\` ${member}`;
         }));
-        // embed.addField('Location/Person', (
-        //     links.map(([weather, member, link]) => {
-        //         const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
-        //         const localeEmoji = Util.localeToEmoji(link.country);
-        //         return `${localeEmoji} ${timeString} ${member}`
-        //     }).join('\n')
-        // ), true);
-        // embed.addField('Temp/Humidity', (
-        //     links.map(([weather, _member]) => {
-        //         return `${WeatherEmojis.getWeatherEmoji(context.client, weather.current.weather[0].icon)} ${weather.current.temp.toFixed(2)}°C (${Util.toFahrenheit(weather.current.temp)}°F) ${weather.current.humidity}%`
-        //     }).join('\n')
-        // ), true);
         return embed;
     }
 
-    public static getCurrentEmbed(context: HandlerContext, weather: OpenWeatherData): WeatherEmbed {
-        const embed = new WeatherEmbed(context);
+    public static getCurrentEmbed(interaction: Interaction, weather: OpenWeatherData): WeatherEmbed {
+        const embed = new WeatherEmbed(interaction);
         const locationString: string = OpenWeatherAPI.getLocationString(weather, true);
-        const dateString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset)
-        const localeEmoji = Util.localeToEmoji(weather.country);
+        const dateString = WeatherEmbed.formatTiemzone(weather.timezone);
+        const localeEmoji = HandlerUtil.localeToEmoji(weather.country);
         embed.setURL(OpenWeatherAPI.getGoogleMapsLink(weather));
         embed.setTitle(`${localeEmoji} Weather for ${locationString} (${dateString})`);
         embed.setThumbnail(`http://openweathermap.org/img/wn/${weather.current.weather[0].icon}@2x.png`);
         embed.addField(`**Temperature**`, (
-            `Current: **${weather.current.temp.toFixed(1)}°C** (**${Util.toFahrenheit(weather.current.temp)}°F**)\n` +
-            `Min: **${weather.daily[0]!.temp.min.toFixed(1)}°C** (**${Util.toFahrenheit(weather.daily[0]!.temp.min)}°F**)\n` +
-            `Max: **${weather.daily[0]!.temp.max.toFixed(1)}°C** (**${Util.toFahrenheit(weather.daily[0]!.temp.max)}°F**)\n` +
-            `Dew Point: **${weather.current.dew_point.toFixed(1)}°C** (**${Util.toFahrenheit(weather.current.dew_point)}°F**)\n` +
+            `Current: **${weather.current.temp.toFixed(1)}°C** (**${HandlerUtil.toFahrenheit(weather.current.temp)}°F**)\n` +
+            `Min: **${weather.daily[0]!.temp.min.toFixed(1)}°C** (**${HandlerUtil.toFahrenheit(weather.daily[0]!.temp.min)}°F**)\n` +
+            `Max: **${weather.daily[0]!.temp.max.toFixed(1)}°C** (**${HandlerUtil.toFahrenheit(weather.daily[0]!.temp.max)}°F**)\n` +
+            `Dew Point: **${weather.current.dew_point.toFixed(1)}°C** (**${HandlerUtil.toFahrenheit(weather.current.dew_point)}°F**)\n` +
             `Humidity: **${weather.current.humidity}%**\n` +
-            `Pressure: **${Util.formatCommas(weather.current.pressure)}hPa**`
+            `Pressure: **${HandlerUtil.formatCommas(weather.current.pressure)}hPa**`
         ), true);
         embed.addField(`**Weather**`, (
-            `**${Util.capitalizeString(weather.current.weather[0].description)}**\n` +
+            `**${HandlerUtil.capitalizeString(weather.current.weather[0].description)}**\n` +
             `Clouds: **${weather.current.clouds}%**\n` +
             `Wind Speed: **${weather.current.wind_speed}km/h**\n` +
             `Wind Deg: **${weather.current.wind_deg}°**\n` +
-            `Visibility: **${Util.formatCommas(weather.current.visibility)}m**\n` +
+            `Visibility: **${HandlerUtil.formatCommas(weather.current.visibility)}m**\n` +
             `UV Index: **${weather.current.uvi}**`
         ), true);
 
         return embed;
     }
 
-    public static getForecastEmbed(context: HandlerContext, weather: OpenWeatherData): WeatherEmbed {
-        const embed = new WeatherEmbed(context);
+    public static getForecastEmbed(interaction: Interaction, weather: OpenWeatherData): WeatherEmbed {
+        const embed = new WeatherEmbed(interaction);
         const locationString: string = OpenWeatherAPI.getLocationString(weather, true);
-        const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset)
-        const localeEmoji = Util.localeToEmoji(weather.country);
+        const timeString = WeatherEmbed.formatTiemzone(weather.timezone);
+        const localeEmoji = HandlerUtil.localeToEmoji(weather.country);
         embed.setTitle(`${localeEmoji} Forecast for ${locationString}`);
         embed.setURL(OpenWeatherAPI.getGoogleMapsLink(weather));
         embed.setDescription(
@@ -140,22 +130,22 @@ export class WeatherEmbed extends HandlerEmbed {
             `Lat/Lon: **${weather.lat}, ${weather.lon}**\n`
         );
         weather.daily.slice(0, 6).forEach(day => {
-            const emoji = WeatherEmojis.getWeatherEmoji(context.client, day.weather[0].icon);
+            const emoji = WeatherEmojis.getWeatherEmoji(interaction.client, day.weather[0].icon);
             embed.addField(`<t:${day.dt}:D>`, (
-                `**${Util.capitalizeString(day.weather[0].description)}** ${emoji}\n` +
-                `Min: **${day.temp.min}°C** (**${Util.toFahrenheit(day.temp.min)}°F**)\n` +
-                `Max: **${day.temp.max}°C** (**${Util.toFahrenheit(day.temp.max)}°F**)\n` +
+                `**${HandlerUtil.capitalizeString(day.weather[0].description)}** ${emoji}\n` +
+                `Min: **${day.temp.min}°C** (**${HandlerUtil.toFahrenheit(day.temp.min)}°F**)\n` +
+                `Max: **${day.temp.max}°C** (**${HandlerUtil.toFahrenheit(day.temp.max)}°F**)\n` +
                 `Humidity: **${day.humidity}%**\n`
             ), true);
         });
         return embed;
     }
 
-    public static getAirPullutionEmbed(context: HandlerContext, weather: OpenWeatherData): WeatherEmbed {
-        const embed = new WeatherEmbed(context);
+    public static getAirPullutionEmbed(interaction: Interaction, weather: OpenWeatherData): WeatherEmbed {
+        const embed = new WeatherEmbed(interaction);
         const locationString = OpenWeatherAPI.getLocationString(weather, true);
         const aqiString = embed.getAQIString(weather.list[0]!.main.aqi);
-        const localeEmoji = Util.localeToEmoji(weather.country);
+        const localeEmoji = HandlerUtil.localeToEmoji(weather.country);
         embed.setTitle(`${localeEmoji} Air Quality for ${locationString} (${aqiString})`);
         embed.setURL(OpenWeatherAPI.getGoogleMapsLink(weather));
         embed.addField('Name', (
@@ -170,23 +160,23 @@ export class WeatherEmbed extends HandlerEmbed {
         ), true);
         const components = weather.list[0]!.components;
         embed.addField('Quantity', (
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getCO(components.co))} ${components.co} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getNO(components.no))} ${components.no} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getNO2(components.no2))} ${components.no2} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getO3(components.o3))} ${components.o3} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getSO2(components.so2))} ${components.so2} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
-            `${WeatherEmojis.getQualityEmoji(context.client, embed.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getCO(components.co))} ${components.co} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getNO(components.no))} ${components.no} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getNO2(components.no2))} ${components.no2} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getO3(components.o3))} ${components.o3} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getSO2(components.so2))} ${components.so2} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
+            `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
         ), true)
         return embed;
     }
 
-    public static getAlertEmbed(context: HandlerContext, weather: OpenWeatherData): WeatherEmbed {
-        const embed = new WeatherEmbed(context);
+    public static getAlertEmbed(interaction: Interaction, weather: OpenWeatherData): WeatherEmbed {
+        const embed = new WeatherEmbed(interaction);
         const locationString: string = OpenWeatherAPI.getLocationString(weather, true);
-        const timeString = WeatherEmbed.formatTiemzoneOffset(weather.timezone_offset);
-        const localeEmoji = Util.localeToEmoji(weather.country);
+        const timeString = WeatherEmbed.formatTiemzone(weather.timezone);
+        const localeEmoji = HandlerUtil.localeToEmoji(weather.country);
         embed.setURL(OpenWeatherAPI.getGoogleMapsLink(weather));
         if (weather.alerts && weather.alerts.length) {
             const alert = weather.alerts[0]!;

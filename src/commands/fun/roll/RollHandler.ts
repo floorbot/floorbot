@@ -1,24 +1,20 @@
-import { RollCommandData } from './RollCommandData';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
 import { CommandInteraction, Util } from 'discord.js';
-import { BaseHandler } from '../../BaseHandler';
+import { RollCommandData } from './RollCommandData';
 
-export class RollHandler extends BaseHandler {
+export class RollHandler extends ChatInputHandler {
 
     constructor() {
-        super({
-            id: 'roll',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: RollCommandData
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: RollCommandData });
     }
 
     public async execute(interaction: CommandInteraction): Promise<any> {
         await interaction.deferReply();
         const query = interaction.options.getString('dice') || '1d6';
 
-        const embed = this.getEmbedTemplate(interaction)
+        const embed = new HandlerEmbed()
             .setContextAuthor(interaction)
             .setTitle('Dice Rolls');
 
@@ -35,10 +31,10 @@ export class RollHandler extends BaseHandler {
             let total = 0;
             for (let i = 0; i < Math.min((Number(matches[1]) || 1), 10000); i++) {
                 const value = Math.ceil(Math.random() * Math.ceil(Number(matches[2])));
-                values.push(Util.formatCommas(value));
+                values.push(HandlerUtil.formatCommas(value));
                 total += value;
             }
-            const totalString = Util.formatCommas(total);
+            const totalString = HandlerUtil.formatCommas(total);
             roll = (matches[1] || 1) > 10000 ? `${roll} (max 10,000 rolls)` : roll;
             const text = Util.splitMessage(values.join(', '), {
                 maxLength: 1024 - 10 - totalString.length,

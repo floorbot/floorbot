@@ -1,7 +1,6 @@
-import { MessageEmbed, MessageEmbedOptions, Util } from 'discord.js';
+import { Interaction, MessageEmbed, MessageEmbedOptions, Util } from 'discord.js';
+import { HandlerEmbed } from '../../discord/components/HandlerEmbed';
 import { BooruHandler, BooruSuggestionData } from './BooruHandler';
-import { HandlerEmbed } from '../../components/HandlerEmbed';
-import { HandlerContext } from '../../discord/Util';
 
 export interface BooruImageData {
     tags: string | null,
@@ -12,15 +11,15 @@ export interface BooruImageData {
 
 export class BooruEmbed extends HandlerEmbed {
 
-    constructor(handler: BooruHandler, context: HandlerContext, data?: MessageEmbed | MessageEmbedOptions) {
+    constructor(handler: BooruHandler, interaction: Interaction, data?: MessageEmbed | MessageEmbedOptions) {
         super(data);
-        this.setContextAuthor(context);
+        this.setContextAuthor(interaction);
         this.setFooter(`Powered by ${handler.apiName}`, handler.apiIcon);
     }
 
-    public static createImageEmbed(handler: BooruHandler, context: HandlerContext, data: BooruImageData): BooruEmbed {
+    public static createImageEmbed(handler: BooruHandler, interaction: Interaction, data: BooruImageData): BooruEmbed {
         const escapedTags = data.tags ? Util.escapeMarkdown(data.tags).replace(/\+/g, ' ') : String();
-        return new BooruEmbed(handler, context)
+        return new BooruEmbed(handler, interaction)
             .setImage(data.imageURL)
             .setDescription(
                 (data.tags ? `**[${escapedTags}](${data.postURL})** ` : '') + `\`score: ${data.score ?? 0}\`` +
@@ -29,9 +28,9 @@ export class BooruEmbed extends HandlerEmbed {
             );
     }
 
-    public static createSuggestionEmbed(handler: BooruHandler, context: HandlerContext, data: BooruSuggestionData): BooruEmbed {
+    public static createSuggestionEmbed(handler: BooruHandler, interaction: Interaction, data: BooruSuggestionData): BooruEmbed {
         const suggestionString = data.suggestions.map(tag => `${Util.escapeMarkdown(tag.name)} \`${tag.count} posts\``).join('\n');
-        const embed = new BooruEmbed(handler, context);
+        const embed = new BooruEmbed(handler, interaction);
         if (data.url404 && data.suggestions.length) embed.setThumbnail(data.url404);
         if (data.url404 && !data.suggestions.length) embed.setImage(data.url404);
         embed.setDescription(`No posts found for \`${data.tags}\`` +
@@ -40,18 +39,18 @@ export class BooruEmbed extends HandlerEmbed {
         return embed;
     }
 
-    public static createRestrictedTagEmbed(handler: BooruHandler, context: HandlerContext, tag: string): BooruEmbed {
-        return new BooruEmbed(handler, context)
+    public static createRestrictedTagEmbed(handler: BooruHandler, interaction: Interaction, tag: string): BooruEmbed {
+        return new BooruEmbed(handler, interaction)
             .setDescription(`Sorry! The tag \`${tag}\` is censored and requires a Gold+ account to view`);
     }
 
-    public static createTagLimitEmbed(handler: BooruHandler, context: HandlerContext, accountType: string, maxTags: string): BooruEmbed {
-        return new BooruEmbed(handler, context)
+    public static createTagLimitEmbed(handler: BooruHandler, interaction: Interaction, accountType: string, maxTags: string): BooruEmbed {
+        return new BooruEmbed(handler, interaction)
             .setDescription(`Sorry! You can only search up to \`${maxTags}\` tags with a \`${accountType}\` account 😦`);
     }
 
-    public static createTimeoutEmbed(handler: BooruHandler, context: HandlerContext, tags: string | null): BooruEmbed {
-        return new BooruEmbed(handler, context)
+    public static createTimeoutEmbed(handler: BooruHandler, interaction: Interaction, tags: string | null): BooruEmbed {
+        return new BooruEmbed(handler, interaction)
             .setDescription(`Sorry! The database timed out running the query \`${tags}\` 😭`);
     }
 }

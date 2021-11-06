@@ -1,19 +1,12 @@
+import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler';
 import { OwoifyChatInputCommandData } from './OwoifyChatInputCommandData';
 import { CommandInteraction, Util } from 'discord.js';
-import { BaseHandler } from '../../../BaseHandler';
 import * as owoify from 'owoify-js';
 
-export class OwoifyChatInputHandler extends BaseHandler {
+export class OwoifyChatInputHandler extends ChatInputHandler {
 
     constructor() {
-        super({
-            id: 'owoify_chat_input',
-            group: 'Fun',
-            global: false,
-            nsfw: false,
-            data: OwoifyChatInputCommandData,
-            description: `owo what's this?`
-        })
+        super({ group: 'Fun', global: false, nsfw: false, data: OwoifyChatInputCommandData });
     }
 
     public async execute(command: CommandInteraction): Promise<any> {

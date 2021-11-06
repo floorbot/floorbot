@@ -1,13 +1,12 @@
-import { HandlerAttachment } from './HandlerAttachment';
-import { InteractionReplyOptions } from 'discord.js';
-import { HandlerContext } from '../discord/Util';
-import { HandlerEmbed } from './HandlerEmbed';
-import { Handler } from '../discord/Handler';
+import { HandlerAttachment } from '../discord/components/HandlerAttachment';
+import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
+import { HandlerEmbed } from '../discord/components/HandlerEmbed';
+import { Handler } from '../discord/handler/Handler';
 import * as fs from 'fs';
 
 export class HandlerReply {
 
-    public static createMessageContentReply(context: HandlerContext, action: string): InteractionReplyOptions {
+    public static createMessageContentReply(context: Interaction | Message, action: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -20,7 +19,7 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment], ephemeral: true }
     }
 
-    public static createInvalidInputReply(context: HandlerContext, message: string): InteractionReplyOptions {
+    public static createInvalidInputReply(context: Interaction | Message, message: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -33,7 +32,7 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment], ephemeral: true }
     }
 
-    public static createAdminOrOwnerReply(context: HandlerContext): InteractionReplyOptions {
+    public static createAdminOrOwnerReply(context: Interaction | Message): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-5.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -46,7 +45,7 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment], ephemeral: true }
     }
 
-    public static createNotFoundReply(context: HandlerContext, query: string, message?: string): InteractionReplyOptions {
+    public static createNotFoundReply(context: Interaction | Message, query: string, message?: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-3.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -59,7 +58,7 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment] }
     }
 
-    public static createUnexpectedErrorReply(context: HandlerContext, handler: Handler, message?: string): InteractionReplyOptions {
+    public static createUnexpectedErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -72,7 +71,7 @@ export class HandlerReply {
         return { embeds: [embed], files: [attachment] }
     }
 
-    public static createAPIErrorReply(context: HandlerContext, handler: Handler, message?: string): InteractionReplyOptions {
+    public static createAPIErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()

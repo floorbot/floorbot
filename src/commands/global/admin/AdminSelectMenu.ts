@@ -1,5 +1,5 @@
 import { MessageSelectMenu, MessageSelectMenuOptions, SelectMenuInteraction } from 'discord.js';
-import { HandlerSelectMenu } from '../../../components/HandlerSelectMenu';
+import { HandlerSelectMenu } from '../../../discord/components/HandlerSelectMenu';
 import { GroupHandlerMap } from './AdminHandler';
 
 export class AdminSelectMenu extends HandlerSelectMenu {
@@ -24,16 +24,17 @@ export class AdminSelectMenu extends HandlerSelectMenu {
 
     public static createHandlerSelectMenu(groupHandlerMap: GroupHandlerMap, groupComponent: SelectMenuInteraction, commandsComponent?: SelectMenuInteraction): AdminSelectMenu {
         const group = groupComponent.values[0]!;
+        const handlers = [...groupHandlerMap.get(group)!.keys()];
         const selectMenu = new AdminSelectMenu()
             .setCustomId('commands')
-            .setPlaceholder(`Select ${group.toLowerCase()} commands`)
-        for (const { handler } of groupHandlerMap.get(group)!.values()) {
-            const prefix = (handler.data.type === 'MESSAGE' || handler.data.type === 'USER') ? '☰ ' : '/'
+            .setPlaceholder(`Select ${group.toLowerCase()} commands`);
+        for (const [index, handler] of handlers.entries()) {
+            const description = 'description' in handler.data ? handler.data.description : '*No Description*';
             selectMenu.addOptions({
-                label: `${prefix}${handler.data.name}`,
-                value: handler.id,
-                description: handler.description,
-                default: commandsComponent && commandsComponent.values.includes(handler.id)
+                label: handler.toString(),
+                value: index.toString(),
+                description: description,
+                default: commandsComponent && commandsComponent.values.includes(index.toString())
             });
         }
         selectMenu.setMaxValues(selectMenu.options.length);

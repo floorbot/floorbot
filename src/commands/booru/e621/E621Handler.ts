@@ -1,6 +1,5 @@
-import { AutocompleteInteraction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/interfaces/Autocomplete';
-import { HandlerContext } from '../../../discord/Util';
+import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
 import { BooruSelectMenu } from '../BooruSelectMenu';
 import { E621CommandData } from './E621CommandData';
 import { BooruHandler } from '../BooruHandler';
@@ -35,20 +34,20 @@ export class E621Handler extends BooruHandler implements Autocomplete {
         return interaction.respond(options);
     }
 
-    public async generateResponse(context: HandlerContext, tags: string = String()): Promise<InteractionReplyOptions> {
+    public async generateResponse(interaction: Interaction, tags: string = String()): Promise<InteractionReplyOptions> {
         const post = await E621API.random(tags);
         if (!('file' in post)) {
             const url404 = await E621API.get404();
             const autocomplete = await E621API.autocomplete(tags);
             const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count } });
             return {
-                embeds: [BooruEmbed.createSuggestionEmbed(this, context, { suggestions, tags, url404 })],
+                embeds: [BooruEmbed.createSuggestionEmbed(this, interaction, { suggestions, tags, url404 })],
                 components: suggestions.length ? [BooruSelectMenu.createSuggestionSelectMenu({ tags, suggestions, url404 }).toActionRow()] : []
             };
         }
         const postURL = `https://e621.net/posts/${post.id}`;
         return {
-            embeds: [BooruEmbed.createImageEmbed(this, context, { imageURL: post.file.url, score: post.score.total, postURL: postURL, tags: tags })],
+            embeds: [BooruEmbed.createImageEmbed(this, interaction, { imageURL: post.file.url, score: post.score.total, postURL: postURL, tags: tags })],
             components: [new MessageActionRow().addComponents([
                 BooruButton.createViewOnlineButton(postURL),
                 BooruButton.createRepeatButton(tags),

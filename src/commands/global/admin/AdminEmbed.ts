@@ -1,44 +1,24 @@
-import { HandlerEmbed } from '../../../components/HandlerEmbed';
-import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
-import { HandlerContext } from '../../../discord/Util';
+import { Interaction, MessageEmbed, MessageEmbedOptions } from 'discord.js';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
 import { GroupHandlerMap } from './AdminHandler';
 
 export class AdminEmbed extends HandlerEmbed {
 
-    constructor(context: HandlerContext, data?: MessageEmbed | MessageEmbedOptions) {
+    constructor(interaction: Interaction, data?: MessageEmbed | MessageEmbedOptions) {
         super(data);
-        this.setContextAuthor(context);
+        this.setContextAuthor(interaction);
     }
 
-    public static createCommandsEmbed(context: HandlerContext, groupHandlerMap: GroupHandlerMap): AdminEmbed {
-        const embed = new AdminEmbed(context).setTitle(`Commands for ${context.guild!.name}`);
+    public static createCommandsEmbed(interaction: Interaction<'cached'>, groupHandlerMap: GroupHandlerMap): AdminEmbed {
+        const embed = new AdminEmbed(interaction).setTitle(`Commands for ${interaction.guild.name}`);
         groupHandlerMap.forEach((handlerMap, group) => {
             const lines: string[] = [];
-            // lines.push(`__${group} Commands__`)
-            handlerMap.forEach(({ handler, appCommand }) => {
-                // const prefix = (handler.data.type === 'MESSAGE' || handler.data.type === 'USER') ? '☰ ' : '/'
-                lines.push(`${appCommand ? '🟢' : '🔴'} \`${handler.toString()}${handler.nsfw ? '\*' : ''}\` - *${handler.description}*`);
-                // lines.push(`${appCommand ? '🟢' : '🔴'} \`${prefix}${handler.data.name}${handler.nsfw ? '\*' : ''}\``);
+            handlerMap.forEach((appCommand, handler) => {
+                const description = 'description' in handler.data ? handler.data.description : '*No Description*';
+                lines.push(`${appCommand ? '🟢' : '🔴'} \`${handler.toString()}${handler.nsfw ? '\*' : ''}\` - *${description}*`);
             });
             embed.addField(`${group} Commands`, lines.join('\n'), false)
         })
-
         return embed;
     }
-
-    // public static createCommandsEmbed(context: HandlerContext, groupHandlerMap: GroupHandlerMap): AdminEmbed {
-    //     const lines: string[] = [];
-    //     groupHandlerMap.forEach((handlerMap, group) => {
-    //         lines.push(`__${group} Commands__`)
-    //         handlerMap.forEach(({ handler, appCommand }) => {
-    //             const prefix = (handler.data.type === 'MESSAGE' || handler.data.type === 'USER') ? '☰ ' : '/'
-    //             // lines.push(`${appCommand ? '🟢' : '🔴'} \`${prefix}${handler.data.name}${handler.nsfw ? '\*' : ''}\` - *${handler.description}*`);
-    //             lines.push(`${appCommand ? '🟢' : '🔴'} \`${prefix}${handler.data.name}${handler.nsfw ? '\*' : ''}\``);
-    //         })
-    //     })
-    //
-    //     return new AdminEmbed(context)
-    //         .setTitle(`Commands for ${context.guild!.name}`)
-    //         .setDescription(lines.join('\n'));
-    // }
 }

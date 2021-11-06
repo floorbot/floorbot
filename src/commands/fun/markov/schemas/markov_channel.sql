@@ -8,5 +8,6 @@ CREATE TABLE markov_channel (
     links BOOLEAN NOT NULL,
     mentions BOOLEAN NOT NULL,
     owoify BOOLEAN NOT NULL,
+    quoting BOOLEAN NOT NULL,
     CONSTRAINT id PRIMARY KEY (guild_id, channel_id)
 );
