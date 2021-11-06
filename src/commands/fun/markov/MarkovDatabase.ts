@@ -65,7 +65,7 @@ export class MarkovDatabase {
 
     public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean, owoify?: boolean, quoting?: boolean }): Promise<MarkovChannelRow> {
         const existing = await this.fetchChannel(channel);
-        const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions, :owoify)';
+        const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions, :owoify, :quoting)';
         const data = {
             guild_id: channel.guild.id,
             channel_id: channel.id,
@@ -76,7 +76,7 @@ export class MarkovDatabase {
             links: options.links ?? existing.links,
             mentions: options.mentions ?? existing.mentions,
             owoify: options.owoify ?? existing.owoify,
-            quoting: options.owoify ?? existing.quoting
+            quoting: options.quoting ?? existing.quoting
         }
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;
