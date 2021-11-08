@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
+import { AutocompleteInteraction, Collection, CommandInteraction, GuildMember, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
 import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
 import { DDDDatabase, DDDMemberRow, DDDSettingsRow } from './DDDDatabase';
@@ -15,12 +15,34 @@ import { Pool } from 'mariadb';
 export class DDDHandler extends ChatInputHandler implements Autocomplete {
 
     private static readonly ZONES = Object.keys(tzdata.zones);
+    private readonly timeouts: Collection<string, Map<string, NodeJS.Timeout>> = new Collection();
     private readonly database: DDDDatabase;
 
     constructor(pool: Pool) {
         super({ group: 'Event', global: false, nsfw: false, data: DDDCommandData });
         this.database = new DDDDatabase(pool);
     }
+
+    private setMemberTimeout(memberRow: DDDMemberRow) {
+        const { timezone, season, guild_id, user_id } = memberRow;
+        if (!this.timeouts.has(guild_id)) this.timeouts.set(guild_id, new Map());
+        const guildMap = this.timeouts.get(guild_id)!;
+        if (guildMap.has(user_id)) clearTimeout(guildMap.get(user_id)!);
+        const time = DDDUtil.isDecember(timezone) ? DDDUtil.getNextMidnight(timezone) : DDDUtil.getStartDate(season, timezone).plus({ days: 1 });
+        console.log(`setTimeout for ${time.toLocaleString({ day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hourCycle: 'h23' })}`)
+        guildMap.set(user_id, setTimeout(async () => {
+            try {
+                const seasonDetails = DDDUtil.getSeasonDetails();
+                const memberZoneDetail = DDDUtil.getZoneDetails(timezone);
+                const settingsRow = await this.database.fetchSettings(guild_id);
+                const allNutRows = await this.database.fetchAllNuts(memberRow, season);
+                const nutMonth = DDDUtil.getNutsMonth(memberZoneDetail, allNutRows);
+            } catch{ } finally {
+                this.setMemberTimeout(memberRow);
+            }
+        }, time.diffNow().toMillis()));
+    }
+
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partial = interaction.options.getString('timezone', true).toLowerCase();
         const suggestions = DDDHandler.ZONES.filter(zone => zone.toLowerCase().includes(partial));
@@ -39,7 +61,7 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
                 await command.deferReply();
                 const timezone = command.options.getString('timezone', true);
                 const zoneDetails = IANAZone.isValidZone(timezone) ? DDDUtil.getZoneDetails(timezone) : null;
-                const memberRow = await this.database.fetchMember(member, seasonDetails.season);
+                let memberRow = await this.database.fetchMember(member, seasonDetails.season);
                 const memberZoneDetails = memberRow ? DDDUtil.getZoneDetails(memberRow.timezone) : null;
                 const allNutRows = await this.database.fetchAllNuts(member, seasonDetails.season);
                 if (
@@ -47,7 +69,8 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
                     (!zoneDetails || zoneDetails.isDecemberish) ||              // New zone is invalid or has already begun DDD
                     (memberZoneDetails && memberZoneDetails.isDecemberish)      // Existing zone has already begun DDD
                 ) { return command.followUp(DDDEmbed.createJoinFailEmbed(command, timezone, seasonDetails, memberZoneDetails, zoneDetails, allNutRows).toReplyOptions()); }
-                await this.database.setMember(member, seasonDetails.season, timezone);
+                memberRow = await this.database.setMember(member, seasonDetails.season, timezone);
+                this.setMemberTimeout(memberRow);
                 const settingsRow = await this.database.fetchSettings(guild);
                 if (settingsRow.role_id) await member.roles.add(settingsRow.role_id).catch(() => { });
                 const replyOptions = DDDEmbed.createJoinEmbed(command, zoneDetails, seasonDetails).toReplyOptions();
@@ -63,6 +86,7 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
                     (!memberZoneDetails || memberZoneDetails.isDecemberish)     // Existing Zone has already begun DDD or not joined
                 ) { return command.followUp(DDDEmbed.createLeaveFailEmbed(command, seasonDetails, memberZoneDetails, allNutRows).toReplyOptions()); }
                 await this.database.deleteMember(member);
+                clearTimeout(this.timeouts.get(memberRow!.guild_id) ?.get(memberRow!.user_id)! || 0);
                 const replyOptions = DDDEmbed.createLeaveEmbed(command, memberZoneDetails, seasonDetails).toReplyOptions({ ephemeral: true });
                 return command.followUp(replyOptions);
             }
@@ -147,6 +171,11 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
-        return super.setup(client).then(() => this.database.createTables()).then(() => true);
+        await super.setup(client);
+        await this.database.createTables();
+        const seasonDetails = DDDUtil.getSeasonDetails();
+        const allMemberRows = await this.database.fetchAllMembers(seasonDetails.season);
+        for (const memberRow of allMemberRows) this.setMemberTimeout(memberRow);
+        return true;
     }
 }

@@ -43,9 +43,9 @@ export class DDDDatabase {
         return data;
     }
 
-    public async fetchSettings(guild: Guild): Promise<DDDSettingsRow> {
+    public async fetchSettings(guild: Guild | string): Promise<DDDSettingsRow> {
         const sql = 'SELECT * FROM ddd_settings WHERE guild_id = :guild_id LIMIT 1;';
-        const data = { guild_id: guild.id };
+        const data = { guild_id: guild instanceof Guild ? guild.id : guild };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return rows.length ? rows[0] : { ...data, channel_id: null, role_id: null }
     }
@@ -70,9 +70,12 @@ export class DDDDatabase {
         return rows.length ? rows[0] : null;
     }
 
-    public async fetchAllMembers(guild: Guild): Promise<DDDMemberRow[]> {
-        const sql = 'SELECT * FROM ddd_member WHERE guild_id = :guild_id;';
-        const data = { guild_id: guild.id };
+    public async fetchAllMembers(scope: Guild | number): Promise<DDDMemberRow[]> {
+        const sql = (scope instanceof Guild ?
+            'SELECT * FROM ddd_member WHERE guild_id = :guild_id;' :
+            'SELECT * FROM ddd_member WHERE season = :season;'
+        );
+        const data = { guild_id: scope instanceof Guild ? scope.id : null, season: scope };
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
@@ -83,14 +86,14 @@ export class DDDDatabase {
         return data;
     }
 
-    public async fetchAllNuts(scope: Guild | GuildMember, season: number): Promise<DDDNutRow[]> {
-        const guild = scope instanceof Guild ? scope : scope.guild;
-        const member = scope instanceof GuildMember ? scope : null;
+    public async fetchAllNuts(scope: Guild | GuildMember | DDDMemberRow, season: number): Promise<DDDNutRow[]> {
+        const guild_id = scope instanceof Guild ? scope.id : scope instanceof GuildMember ? scope.guild.id : scope.guild_id;
+        const user_id = scope instanceof GuildMember ? scope.id : scope instanceof Guild ? null : scope.user_id;
         const sql = (scope instanceof Guild ?
             'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND season = :season;' :
             'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND user_id = :user_id AND season = :season;'
         );
-        const data = { guild_id: guild.id, user_id: member ? member.id : null, season: season };
+        const data = { guild_id: guild_id, user_id: user_id, season: season };
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 

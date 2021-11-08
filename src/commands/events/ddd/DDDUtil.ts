@@ -27,7 +27,7 @@ export class DDDUtil {
     public static getSeasonDetails(season?: number): DDDSeasonDetails {
         season = season ?? DDDUtil.getCurrentSeason();
         const guaranteedDate = DDDUtil.getGuaranteedDate(season);
-        const startDate = DDDUtil.geStartDate(season);
+        const startDate = DDDUtil.getStartDate(season);
         const stopDate = DDDUtil.getStopDate(season);
         return {
             now: DateTime.now().setZone(DDDUtil.LAST_ZONE),
@@ -45,7 +45,7 @@ export class DDDUtil {
     public static getZoneDetails(zone: string, season?: number): DDDZoneDetails {
         season = season ?? DDDUtil.getCurrentSeason();
         const guaranteedDate = DDDUtil.getGuaranteedDate(season);
-        const startDate = DDDUtil.geStartDate(season, zone);
+        const startDate = DDDUtil.getStartDate(season, zone);
         const stopDate = DDDUtil.getStopDate(season, zone);
         return {
             zone: zone,
@@ -81,7 +81,7 @@ export class DDDUtil {
         return DateTime.fromObject({ year: year, month: DDDUtil.MONTH, day: 2, hour: 0, minute: 0 }, { zone: DDDUtil.FIRST_ZONE });
     }
 
-    public static geStartDate(year: number, zone?: string): DateTime {
+    public static getStartDate(year: number, zone?: string): DateTime {
         return DateTime.fromObject({ year: year, month: DDDUtil.MONTH, day: 1, hour: 0, minute: 0 }, { zone: zone ?? DDDUtil.FIRST_ZONE });
     }
 
@@ -91,7 +91,7 @@ export class DDDUtil {
 
     public static getNextMidnight(zone: string): DateTime {
         const now = DateTime.now().setZone(zone);
-        return DateTime.fromObject({ year: now.year, month: now.month, day: now.day + 1, hour: 0, minute: 0 }, { zone: zone });
+        return DateTime.fromObject({ year: now.year, month: now.month, day: now.day, hour: 0, minute: 0 }, { zone: zone }).plus({ days: 1 });
     }
 
     public static getNutsMonth(memberZoneDetails: DDDZoneDetails, allNutRows: DDDNutRow[]): DateTime[][] {
