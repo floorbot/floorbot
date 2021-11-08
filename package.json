@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "@types/async-exit-hook": "^2.0.0",
+        "@types/humanize-duration": "^3.27.0",
         "@types/luxon": "^2.0.5",
         "@types/nconf": "^0.10.0",
         "@types/node-fetch": "^2.5.10",
@@ -32,6 +33,7 @@
         "cache-map.js": "github:floorbot/cache-map.js",
         "dhms.js": "github:floorbot/dhms.js",
         "discord.js": "^13.3.0",
+        "humanize-duration": "^3.27.0",
         "luxon": "^2.0.2",
         "mariadb": "^2.5.4",
         "markov-strings": "^3.0.1",

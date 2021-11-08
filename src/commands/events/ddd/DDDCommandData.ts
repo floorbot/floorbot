@@ -1,13 +1,13 @@
 import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
-const { ApplicationCommandOptionTypes, ChannelTypes } = Constants
+const { ApplicationCommandOptionTypes } = Constants
 
 export const DDDCommandData: ChatInputApplicationCommandData = {
     name: 'ddd',
     description: 'Best month of the year made competitive',
     options: [{
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: 'register',
+        name: 'join',
         description: 'Join DDD and see how you compare!',
         options: [{
             name: 'timezone',
@@ -18,20 +18,12 @@ export const DDDCommandData: ChatInputApplicationCommandData = {
         }]
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        name: 'leave',
+        description: 'Leave the upcoming DDD...'
+    }, {
+        type: ApplicationCommandOptionTypes.SUB_COMMAND,
         name: 'settings',
-        description: '[ADMIN] Set setting to use for DDD',
-        options: [{
-            name: 'channel',
-            required: false,
-            type: ApplicationCommandOptionTypes.CHANNEL,
-            description: 'The channel to post DDD updates and info to',
-            channelTypes: [ChannelTypes.GUILD_TEXT]
-        }, {
-            name: 'role',
-            required: false,
-            type: ApplicationCommandOptionTypes.ROLE,
-            description: 'The role each participant should be given'
-        }]
+        description: '[ADMIN] Open DDD control panel to change/view event settings'
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
         name: 'nut',

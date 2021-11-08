@@ -4,13 +4,14 @@ import * as fs from 'fs';
 
 export interface DDDSettingsRow {
     readonly guild_id: string,
-    readonly channel_id?: string,
-    readonly role_id?: string
+    readonly channel_id: string | null,
+    readonly role_id: string | null
 }
 
 export interface DDDMemberRow {
     readonly guild_id: string,
     readonly user_id: string,
+    readonly season: number,
     readonly timezone: string
 }
 
@@ -18,7 +19,8 @@ export interface DDDNutRow {
     readonly guild_id: string,
     readonly user_id: string,
     readonly epoch: string,
-    readonly description?: string
+    readonly season: number,
+    readonly description?: string | null
 }
 
 export class DDDDatabase {
@@ -34,8 +36,8 @@ export class DDDDatabase {
         const sql = 'REPLACE INTO ddd_settings VALUES (:guild_id, :channel_id, :role_id)';
         const data = {
             guild_id: guild.id,
-            channel_id: options.channel ? options.channel.id : existing.channel_id,
-            role_id: options.role ? options.role.id : existing.role_id,
+            channel_id: options.channel ? options.channel.id : ('channel' in options ? null : existing.channel_id),
+            role_id: options.role ? options.role.id : ('role' in options ? null : existing.role_id),
         };
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;
@@ -48,16 +50,22 @@ export class DDDDatabase {
         return rows.length ? rows[0] : { ...data, channel_id: null, role_id: null }
     }
 
-    public async setMember(member: GuildMember, timezone: string): Promise<DDDMemberRow> {
-        const sql = 'REPLACE INTO ddd_member VALUES (:guild_id, :user_id, :timezone)';
-        const data = { guild_id: member.guild.id, user_id: member.id, timezone: timezone };
+    public async setMember(member: GuildMember, season: number, timezone: string): Promise<DDDMemberRow> {
+        const sql = 'REPLACE INTO ddd_member VALUES (:guild_id, :user_id, :season, :timezone)';
+        const data = { guild_id: member.guild.id, user_id: member.id, season: season, timezone: timezone };
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;
     }
 
-    public async fetchMember(member: GuildMember): Promise<DDDMemberRow | null> {
-        const sql = 'SELECT * FROM ddd_member WHERE guild_id = :guild_id AND user_id = :user_id LIMIT 1;';
+    public async deleteMember(member: GuildMember): Promise<void> {
+        const sql = 'DELETE FROM ddd_member WHERE guild_id = :guild_id AND user_id = :user_id;';
         const data = { guild_id: member.guild.id, user_id: member.id };
+        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+    }
+
+    public async fetchMember(member: GuildMember, season: number): Promise<DDDMemberRow | null> {
+        const sql = 'SELECT * FROM ddd_member WHERE guild_id = :guild_id AND user_id = :user_id AND season = :season LIMIT 1;';
+        const data = { guild_id: member.guild.id, user_id: member.id, season: season };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return rows.length ? rows[0] : null;
     }
@@ -68,21 +76,21 @@ export class DDDDatabase {
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
-    public async setNut(member: GuildMember, epoch: string, description?: string): Promise<DDDNutRow> {
-        const sql = 'REPLACE INTO ddd_nut VALUES (:guild_id, :user_id, :epoch, :description)';
-        const data = { guild_id: member.guild.id, user_id: member.id, epoch: epoch, description: description };
+    public async setNut(member: GuildMember, epoch: string, season: number, description?: string): Promise<DDDNutRow> {
+        const sql = 'REPLACE INTO ddd_nut VALUES (:guild_id, :user_id, :epoch, :season, :description)';
+        const data = { guild_id: member.guild.id, user_id: member.id, epoch: epoch, season: season, description: description || null };
         await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
         return data;
     }
 
-    public async fetchAllNuts(scope: Guild | GuildMember): Promise<DDDNutRow[]> {
+    public async fetchAllNuts(scope: Guild | GuildMember, season: number): Promise<DDDNutRow[]> {
         const guild = scope instanceof Guild ? scope : scope.guild;
         const member = scope instanceof GuildMember ? scope : null;
         const sql = (scope instanceof Guild ?
-            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id;' :
-            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND user_id = :user_id;'
+            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND season = :season;' :
+            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND user_id = :user_id AND season = :season;'
         );
-        const data = { guild_id: guild.id, user_id: member ? member.id : null };
+        const data = { guild_id: guild.id, user_id: member ? member.id : null, season: season };
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
