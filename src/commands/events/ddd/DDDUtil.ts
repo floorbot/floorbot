@@ -1,103 +1,110 @@
-import { DateTime, Duration } from 'luxon';
-import { DDDNutRow } from './DDDDatabase';
+import { DateTime, IANAZone } from 'luxon';
+import { DDDNutRow, DDDParticipantRow } from './DDDDatabase';
 
-export interface DDDSeasonDetails {
-    readonly now: DateTime,
-    readonly season: number,
-    readonly isDecember: boolean,
-    readonly guaranteed_date: DateTime,
-    readonly start_date: DateTime,
-    readonly stop_date: DateTime,
-    readonly guaranteed_in: Duration,
-    readonly starts_in: Duration,
-    readonly stops_in: Duration
-}
-
-export interface DDDZoneDetails extends DDDSeasonDetails {
-    readonly zone: string,
-    readonly isDecemberish: boolean,
+export interface DDDParticipantStats {
+    eventDetails: DDDEventDetails,
+    zoneDetails: DDDZoneDetails,
+    participantRow: DDDParticipantRow,
+    allNutRows: DDDNutRow[],
+    nutMonth: number[][],
+    day: number,
+    dayFailed: number
 }
 
 export class DDDUtil {
+
+    public static getEventDetails(year?: number): DDDEventDetails {
+        return DDDEventDetails.getEventDetails(year);
+    }
+
+    public static getZoneDetails(event: DDDEventDetails, zone: string): DDDZoneDetails | null {
+        return DDDZoneDetails.getZoneDetails(event, zone);
+    }
+
+    public static getParticipantStats(participantRow: DDDParticipantRow, allNutRows: DDDNutRow[]): DDDParticipantStats {
+        const eventDetails = DDDUtil.getEventDetails(participantRow.year);
+        const zoneDetails = DDDUtil.getZoneDetails(eventDetails, participantRow.zone)!;
+        const nutDates = allNutRows.map(nutRow => DateTime.fromMillis(Number(nutRow.epoch), { zone: zoneDetails.zone }));
+        const nutMonth = Array.from(Array(31), () => new Array())
+        for (const nutDate of nutDates) { nutMonth[nutDate.day - 1]!.push(nutDate) }
+        const dayFailed = nutMonth.findIndex((nutDay, index) => nutDay.length < index + 1) + 1;
+        const day = zoneDetails.now.day;
+
+        return {
+            eventDetails: eventDetails,
+            zoneDetails: zoneDetails,
+            participantRow: participantRow,
+            allNutRows: allNutRows,
+            nutMonth: nutMonth,
+            day: day,
+            dayFailed: dayFailed && dayFailed < day ? dayFailed : 0
+        }
+    }
+}
+
+export class DDDEventDetails {
 
     public static readonly FIRST_ZONE = 'ETC/GMT-14';
     public static readonly LAST_ZONE = 'ETC/GMT+12';
     public static readonly MONTH = 12; // This is for testing
 
-    public static getSeasonDetails(season?: number): DDDSeasonDetails {
-        season = season ?? DDDUtil.getCurrentSeason();
-        const guaranteedDate = DDDUtil.getGuaranteedDate(season);
-        const startDate = DDDUtil.getStartDate(season);
-        const stopDate = DDDUtil.getStopDate(season);
-        return {
-            now: DateTime.now().setZone(DDDUtil.LAST_ZONE),
-            season: season,
-            isDecember: DDDUtil.isDecember(),
-            guaranteed_date: guaranteedDate,
-            start_date: startDate,
-            stop_date: stopDate,
-            guaranteed_in: guaranteedDate.diffNow(),
-            starts_in: stopDate.diffNow(),
-            stops_in: stopDate.diffNow(),
-        }
+    public readonly year: number;
+    public readonly stopDate: DateTime;
+    public readonly startDate: DateTime;
+    public readonly guaranteedDate: DateTime;
+
+    protected constructor(year: number) {
+        this.year = year;
+        this.stopDate = DateTime.fromObject({ year: year + 1, month: (DDDEventDetails.MONTH + 1) % 12 || 12, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.LAST_ZONE });
+        this.startDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.FIRST_ZONE });
+        this.guaranteedDate = this.startDate.plus({ days: 1 });
     }
 
-    public static getZoneDetails(zone: string, season?: number): DDDZoneDetails {
-        season = season ?? DDDUtil.getCurrentSeason();
-        const guaranteedDate = DDDUtil.getGuaranteedDate(season);
-        const startDate = DDDUtil.getStartDate(season, zone);
-        const stopDate = DDDUtil.getStopDate(season, zone);
-        return {
-            zone: zone,
-            now: DateTime.now().setZone(zone),
-            season: season,
-            isDecemberish: DDDUtil.isDecemberish(zone),
-            isDecember: DDDUtil.isDecember(zone),
-            guaranteed_date: guaranteedDate,
-            start_date: startDate,
-            stop_date: stopDate,
-            guaranteed_in: guaranteedDate.diffNow(),
-            starts_in: stopDate.diffNow(),
-            stops_in: stopDate.diffNow()
-        }
+    public getZoneDetails(zone: string): DDDZoneDetails | null {
+        return DDDZoneDetails.getZoneDetails(this, zone);
     }
 
-    public static getCurrentSeason(): number {
-        return DateTime.now().setZone(DDDUtil.LAST_ZONE).year;
+    public static getEventDetails(year?: number): DDDEventDetails {
+        year = year ?? DateTime.now().setZone(DDDEventDetails.LAST_ZONE).year;
+        return new DDDEventDetails(year);
+    }
+}
+
+export class DDDZoneDetails {
+
+    public readonly event: DDDEventDetails;
+    public readonly zone: string;
+    public readonly now: DateTime;
+    public readonly stopDate: DateTime;
+    public readonly startDate: DateTime;
+    public readonly cutoffDate: DateTime;
+
+    protected constructor(event: DDDEventDetails, zone: string) {
+        this.event = event;
+        this.zone = zone;
+        this.now = DateTime.now().setZone(this.zone);
+        this.stopDate = DateTime.fromObject({ year: event.year + 1, month: (DDDEventDetails.MONTH + 1) % 12 || 12, day: 1, hour: 0, minute: 0 }, { zone: zone });
+        this.startDate = DateTime.fromObject({ year: event.year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: zone });
+        this.cutoffDate = this.startDate.plus({ days: 1 });
     }
 
-    public static isDecember(zone?: string): boolean {
-        const first = DateTime.now().setZone(zone ?? DDDUtil.FIRST_ZONE);
-        const last = DateTime.now().setZone(zone ?? DDDUtil.LAST_ZONE);
-        return first.month === DDDUtil.MONTH || last.month === DDDUtil.MONTH;
+    public get isDecember(): boolean {
+        const first = DateTime.now().setZone(this.zone);
+        const last = DateTime.now().setZone(this.zone);
+        return first.month === DDDEventDetails.MONTH || last.month === DDDEventDetails.MONTH;
     }
 
-    public static isDecemberish(zone: string): boolean {
-        const date = DateTime.now().setZone(zone);
-        return date.month === DDDUtil.MONTH && date.day !== 1;
+    public get isDecemberish(): boolean {
+        return this.now.month === DDDEventDetails.MONTH && this.now.day !== 1;
     }
 
-    public static getGuaranteedDate(year: number): DateTime {
-        return DateTime.fromObject({ year: year, month: DDDUtil.MONTH, day: 2, hour: 0, minute: 0 }, { zone: DDDUtil.FIRST_ZONE });
+    public get nextMidnight(): DateTime {
+        if (!this.isDecember) return this.startDate.plus({ days: 1 });
+        else return DateTime.fromObject({ year: this.now.year, month: this.now.month, day: this.now.day, hour: 0, minute: 0 }, { zone: this.zone }).plus({ days: 1 });
     }
 
-    public static getStartDate(year: number, zone?: string): DateTime {
-        return DateTime.fromObject({ year: year, month: DDDUtil.MONTH, day: 1, hour: 0, minute: 0 }, { zone: zone ?? DDDUtil.FIRST_ZONE });
-    }
-
-    public static getStopDate(year: number, zone?: string): DateTime {
-        return DateTime.fromObject({ year: year + 1, month: (DDDUtil.MONTH + 1) % 12 || 12, day: 1, hour: 0, minute: 0 }, { zone: zone ?? DDDUtil.LAST_ZONE });
-    }
-
-    public static getNextMidnight(zone: string): DateTime {
-        const now = DateTime.now().setZone(zone);
-        return DateTime.fromObject({ year: now.year, month: now.month, day: now.day, hour: 0, minute: 0 }, { zone: zone }).plus({ days: 1 });
-    }
-
-    public static getNutsMonth(memberZoneDetails: DDDZoneDetails, allNutRows: DDDNutRow[]): DateTime[][] {
-        const nutDates = allNutRows.map(nutRow => DateTime.fromMillis(Number(nutRow.epoch), { zone: memberZoneDetails.zone }));
-        const nutCalender = Array.from(Array(31), () => new Array())
-        for (const nutDate of nutDates) { nutCalender[nutDate.day - 1]!.push(nutDate) }
-        return nutCalender;
+    public static getZoneDetails(event: DDDEventDetails, zone: string): DDDZoneDetails | null {
+        if (!IANAZone.isValidZone(zone)) return null;
+        return new DDDZoneDetails(event, zone);
     }
 }

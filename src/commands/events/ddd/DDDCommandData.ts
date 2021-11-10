@@ -10,7 +10,7 @@ export const DDDCommandData: ChatInputApplicationCommandData = {
         name: 'join',
         description: 'Join DDD and see how you compare!',
         options: [{
-            name: 'timezone',
+            name: 'zone',
             required: true,
             autocomplete: true,
             type: ApplicationCommandOptionTypes.STRING,

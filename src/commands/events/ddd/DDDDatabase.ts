@@ -1,26 +1,34 @@
-import { Guild, Role, GuildMember, TextChannel } from 'discord.js';
 import { Pool } from 'mariadb';
 import * as fs from 'fs';
 
+export type DDDOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
+export type DDDPartialSettingsRow = DDDOptional<DDDSettingsRow, 'channel_id' | 'event_role_id' | 'passing_role_id' | 'failed_role_id'>;
 export interface DDDSettingsRow {
     readonly guild_id: string,
+    readonly year: number,
     readonly channel_id: string | null,
-    readonly role_id: string | null
+    readonly event_role_id: string | null,
+    readonly passing_role_id: string | null,
+    readonly failed_role_id: string | null
 }
 
-export interface DDDMemberRow {
+export type DDDPartialParticipantRow = DDDOptional<DDDParticipantRow, 'zone' | 'failed'>;
+export interface DDDParticipantRow {
     readonly guild_id: string,
+    readonly year: number,
     readonly user_id: string,
-    readonly season: number,
-    readonly timezone: string
+    readonly zone: string,
+    readonly failed: number
 }
 
+export type DDDPartialNutRow = DDDOptional<DDDNutRow, 'epoch' | 'description'>;
 export interface DDDNutRow {
     readonly guild_id: string,
+    readonly year: number,
     readonly user_id: string,
     readonly epoch: string,
-    readonly season: number,
-    readonly description?: string | null
+    readonly description: string | null
 }
 
 export class DDDDatabase {
@@ -31,76 +39,75 @@ export class DDDDatabase {
         this.pool = pool;
     }
 
-    public async setSettings(guild: Guild, options: { channel?: TextChannel, role?: Role }): Promise<DDDSettingsRow> {
-        const existing = await this.fetchSettings(guild);
-        const sql = 'REPLACE INTO ddd_settings VALUES (:guild_id, :channel_id, :role_id)';
-        const data = {
-            guild_id: guild.id,
-            channel_id: options.channel ? options.channel.id : ('channel' in options ? null : existing.channel_id),
-            role_id: options.role ? options.role.id : ('role' in options ? null : existing.role_id),
+    /** --- Settings Functions --- **/
+
+    public async updateSettings(partial: DDDPartialSettingsRow): Promise<DDDSettingsRow> {
+        const existing = await this.fetchSettings(partial);
+        const sql = 'REPLACE INTO ddd_settings VALUES (:guild_id, :year, :channel_id, :event_role_id, :passing_role_id, :failed_role_id)';
+        const settingsRow = {
+            ...partial,
+            channel_id: partial.channel_id ?? ('channel_id' in partial ? null : existing.channel_id),
+            event_role_id: partial.event_role_id ?? ('event_role_id' in partial ? null : existing.event_role_id),
+            passing_role_id: partial.passing_role_id ?? ('passing_role_id' in partial ? null : existing.passing_role_id),
+            failed_role_id: partial.failed_role_id ?? ('failed_role_id' in partial ? null : existing.failed_role_id),
         };
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
-        return data;
+        await this.pool.query({ namedPlaceholders: true, sql: sql }, settingsRow);
+        return settingsRow;
     }
 
-    public async fetchSettings(guild: Guild | string): Promise<DDDSettingsRow> {
-        const sql = 'SELECT * FROM ddd_settings WHERE guild_id = :guild_id LIMIT 1;';
-        const data = { guild_id: guild instanceof Guild ? guild.id : guild };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
-        return rows.length ? rows[0] : { ...data, channel_id: null, role_id: null }
+    public async fetchSettings(partial: DDDPartialSettingsRow): Promise<DDDSettingsRow> {
+        const sql = 'SELECT * FROM ddd_settings WHERE guild_id = :guild_id AND year = :year LIMIT 1';
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
+        return rows.length ? rows[0] : { ...partial, channel_id: null, event_role_id: null, passing_role_id: null, failed_role_id: null }
     }
 
-    public async setMember(member: GuildMember, season: number, timezone: string): Promise<DDDMemberRow> {
-        const sql = 'REPLACE INTO ddd_member VALUES (:guild_id, :user_id, :season, :timezone)';
-        const data = { guild_id: member.guild.id, user_id: member.id, season: season, timezone: timezone };
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
-        return data;
+    /** --- Participant Functions --- **/
+
+    public async setParticipant(participantRow: DDDParticipantRow): Promise<DDDParticipantRow> {
+        const sql = 'REPLACE INTO ddd_participant VALUES (:guild_id, :year, :user_id, :zone, :failed)';
+        await this.pool.query({ namedPlaceholders: true, sql: sql }, participantRow);
+        return participantRow;
     }
 
-    public async deleteMember(member: GuildMember): Promise<void> {
-        const sql = 'DELETE FROM ddd_member WHERE guild_id = :guild_id AND user_id = :user_id;';
-        const data = { guild_id: member.guild.id, user_id: member.id };
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+    public async deleteParticipant(partial: DDDPartialParticipantRow): Promise<void> {
+        const sql = 'DELETE FROM ddd_participant WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id';
+        await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
     }
 
-    public async fetchMember(member: GuildMember, season: number): Promise<DDDMemberRow | null> {
-        const sql = 'SELECT * FROM ddd_member WHERE guild_id = :guild_id AND user_id = :user_id AND season = :season LIMIT 1;';
-        const data = { guild_id: member.guild.id, user_id: member.id, season: season };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+    public async fetchParticipant(partial: DDDPartialParticipantRow): Promise<DDDParticipantRow | null> {
+        const sql = 'SELECT * FROM ddd_participant WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id LIMIT 1';
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
         return rows.length ? rows[0] : null;
     }
 
-    public async fetchAllMembers(scope: Guild | number): Promise<DDDMemberRow[]> {
-        const sql = (scope instanceof Guild ?
-            'SELECT * FROM ddd_member WHERE guild_id = :guild_id;' :
-            'SELECT * FROM ddd_member WHERE season = :season;'
+    public async fetchAllParticipants(scope: DDDPartialSettingsRow | number): Promise<DDDParticipantRow[]> {
+        const sql = (typeof scope === 'number' ?
+            'SELECT * FROM ddd_participant WHERE year = :year' :
+            'SELECT * FROM ddd_participant WHERE guild_id = :guild_id AND year = :year'
         );
-        const data = { guild_id: scope instanceof Guild ? scope.id : null, season: scope };
+        const data = typeof scope === 'number' ? { year: scope } : scope;
         return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
-    public async setNut(member: GuildMember, epoch: string, season: number, description?: string): Promise<DDDNutRow> {
-        const sql = 'REPLACE INTO ddd_nut VALUES (:guild_id, :user_id, :epoch, :season, :description)';
-        const data = { guild_id: member.guild.id, user_id: member.id, epoch: epoch, season: season, description: description || null };
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
-        return data;
+    /** --- Nut Functions --- **/
+
+    public async setNut(nutRow: DDDNutRow): Promise<DDDNutRow> {
+        const sql = 'REPLACE INTO ddd_nut VALUES (:guild_id, :year, :user_id, :epoch, :description)';
+        await this.pool.query({ namedPlaceholders: true, sql: sql }, nutRow);
+        return nutRow;
     }
 
-    public async fetchAllNuts(scope: Guild | GuildMember | DDDMemberRow, season: number): Promise<DDDNutRow[]> {
-        const guild_id = scope instanceof Guild ? scope.id : scope instanceof GuildMember ? scope.guild.id : scope.guild_id;
-        const user_id = scope instanceof GuildMember ? scope.id : scope instanceof Guild ? null : scope.user_id;
-        const sql = (scope instanceof Guild ?
-            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND season = :season;' :
-            'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND user_id = :user_id AND season = :season;'
-        );
-        const data = { guild_id: guild_id, user_id: user_id, season: season };
-        return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+    public async fetchAllNuts(partial: DDDPartialParticipantRow): Promise<DDDNutRow[]> {
+        const sql = 'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id';
+        return await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
     }
+
+    /** --- Create Database Tables --- **/
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
+            this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_participant.sql`, 'utf8')),
             this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_settings.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_member.sql`, 'utf8')),
             this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_nut.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
