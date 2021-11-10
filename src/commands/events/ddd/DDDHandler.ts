@@ -1,6 +1,4 @@
-import { AutocompleteInteraction, Client, Collection, CommandInteraction, GuildMember, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
+import { Client, Collection, CommandInteraction, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
 import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase';
 import { HandlerClient } from '../../../discord/handler/HandlerClient';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
@@ -8,18 +6,17 @@ import { DDDButton, DDDButtonID } from './components/DDDButton';
 import { DDDEventDetails, DDDUtil } from './DDDUtil';
 import { DDDCommandData } from './DDDCommandData';
 import { DDDEmbed } from './components/DDDEmbed';
+import { EventHandler } from '../EventHandler';
 import * as Schedule from 'node-schedule';
-import * as tzdata from 'tzdata';
 import { Pool } from 'mariadb';
 
-export class DDDHandler extends ChatInputHandler implements Autocomplete {
+export class DDDHandler extends EventHandler {
 
-    private static readonly ZONES = Object.keys(tzdata.zones);
     private readonly jobs: Map<string, Schedule.Job> = new Collection();
     private readonly database: DDDDatabase;
 
     constructor(pool: Pool) {
-        super({ group: 'Event', global: false, nsfw: false, data: DDDCommandData });
+        super({ eventName: 'Destroy Dick December', pool: pool, data: DDDCommandData });
         this.database = new DDDDatabase(pool);
     }
 
@@ -29,25 +26,33 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
 
         const allNutRows = await this.database.fetchAllNuts(participantRow);
         const participantStats = DDDUtil.getParticipantStats(participantRow, allNutRows);
+        const settingsRow = await this.database.fetchSettings(participantRow);
+        const guild = client.guilds.cache.get(settingsRow.guild_id);
+        const member = guild ? guild.members.cache.get(participantRow.user_id) : null;
+        const channel = guild && settingsRow.channel_id ? (guild.channels.cache.get(settingsRow.channel_id) as TextChannel | null) : null;
+
         if (participantRow.failed === -1) {
+            if (guild && member) {
+                if (channel) {
+                    const content = settingsRow.event_role_id ? `<@&${settingsRow.event_role_id}>` : 'Hey Everyone!';
+                    const replyOptions = DDDEmbed.createParticipantPassedEmbed(participantStats).toReplyOptions({ content: content });
+                    await channel.send(replyOptions).catch(() => { });
+                }
+                if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
+                if (settingsRow.failed_role_id) await member.roles.add(settingsRow.failed_role_id).catch(() => { });
+            }
             // wait that means he did the pass right? since no fails were found?
         } else if (!participantRow.failed) {
             if (participantStats.dayFailed) {
-                const settingsRow = await this.database.fetchSettings(participantRow);
-                const guild = client.guilds.cache.get(settingsRow.guild_id);
-                console.log(client.guilds)
-                if (guild) {
-                    const member = guild.members.cache.get(participantRow.user_id);
-                    if (member) {
-                        const channel = (settingsRow.channel_id ? await guild.channels.fetch(settingsRow.channel_id).catch(() => null) : null) as TextChannel | null;
-                        if (channel) {
-                            const pings = [`Hey Everyone!`, ...(settingsRow.event_role_id ? [`<@&${settingsRow.event_role_id}>`] : []), ...(settingsRow.passing_role_id ? [`<@&${settingsRow.passing_role_id}>`] : []), ...(settingsRow.failed_role_id ? [`<@&${settingsRow.failed_role_id}>`] : [])]
-                            const replyOptions = DDDEmbed.createParticipantFailedEmbed(participantStats).toReplyOptions({ content: pings.join('') });
-                            await channel.send(replyOptions).catch(() => { });
-                        }
-                        if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
-                        if (settingsRow.failed_role_id) await member.roles.add(settingsRow.failed_role_id).catch(() => { });
+                participantRow = await this.database.setParticipant({ ...participantRow, failed: participantStats.dayFailed });
+                if (guild && member) {
+                    if (channel) {
+                        const content = settingsRow.event_role_id ? `<@&${settingsRow.event_role_id}>` : 'Hey Everyone!';
+                        const replyOptions = DDDEmbed.createParticipantFailedEmbed(participantStats).toReplyOptions({ content: content });
+                        await channel.send(replyOptions).catch(() => { });
                     }
+                    if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
+                    if (settingsRow.failed_role_id) await member.roles.add(settingsRow.failed_role_id).catch(() => { });
                 }
             } else {
                 const midnight = participantStats.zoneDetails.nextMidnight;
@@ -65,15 +70,6 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
             this.jobs.delete(jobKey);
             job.cancel();
         }
-    }
-
-    public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
-        const partial = interaction.options.getString('zone', true).toLowerCase();
-        const suggestions = DDDHandler.ZONES.filter(zone => zone.toLowerCase().includes(partial));
-        const options = suggestions.slice(0, 25).map(suggestion => {
-            return { name: suggestion, value: suggestion }
-        });
-        return interaction.respond(options);
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
@@ -129,96 +125,77 @@ export class DDDHandler extends ChatInputHandler implements Autocomplete {
                 const replyOptions = this.createControlPanelReplyOptions(command, eventDetails, settingsRow, participantRows);
                 const message = await command.followUp(replyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
-                collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
-                    try {
-                        if (component.isButton()) {
-                            await component.deferUpdate();
-                            switch (component.customId) {
-                                case DDDButtonID.SET_EVENT_CHANNEL: {
-                                    settingsRow = await this.database.updateSettings({ ...partialSettingsRow, channel_id: channel.id });
-                                    break;
-                                }
-                                case DDDButtonID.CLEAR_EVENT_CHANNEL: {
-                                    settingsRow = await this.database.updateSettings({ ...partialSettingsRow, channel_id: null });
-                                    break;
-                                }
-                                case DDDButtonID.CREATE_EVENT_ROLE: {
-                                    if (!settingsRow.event_role_id) {
-                                        const role = await guild.roles.create({ name: 'DDD Participant', mentionable: true, reason: `Created by ${component.user.tag}` }).catch(() => null);
-                                        if (role) {
-                                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, event_role_id: role.id });
-                                            for (const memberRow of participantRows) {
-                                                const member = guild.members.cache.get(memberRow.user_id.toString()) as GuildMember;
-                                                await member.roles.add(settingsRow.event_role_id!).catch((err) => { console.log(err) });
-                                            }
-                                        }
-                                    }
-                                    break;
-                                }
-                                case DDDButtonID.DELETE_EVENT_ROLE: {
-                                    if (settingsRow.event_role_id) {
-                                        const role = await guild.roles.fetch(settingsRow.event_role_id.toString());
-                                        if (role) await role.delete(`Deleted by ${component.user.tag}`);
-                                        settingsRow = await this.database.updateSettings({ ...partialSettingsRow, event_role_id: null });
-                                    }
-                                    break;
-                                }
-                                case DDDButtonID.CREATE_PASSING_ROLE: {
-                                    if (!settingsRow.passing_role_id) {
-                                        const role = await guild.roles.create({ name: 'DDD Participant Passing', mentionable: true, reason: `Created by ${component.user.tag}` }).catch(() => null);
-                                        if (role) {
-                                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, passing_role_id: role.id });
-                                            for (const participantRow of participantRows) {
-                                                const member = guild.members.cache.get(participantRow.user_id.toString()) as GuildMember;
-                                                const allNutRows = await this.database.fetchAllNuts(participantRow);
-                                                const participantStats = DDDUtil.getParticipantStats(participantRow, allNutRows)
-                                                if (!participantStats.dayFailed) await member.roles.add(settingsRow.passing_role_id!).catch((err) => { console.log(err) });
-                                            }
-                                        }
-                                    }
-                                    break;
-                                }
-                                case DDDButtonID.DELETE_PASSING_ROLE: {
-                                    if (settingsRow.passing_role_id) {
-                                        const role = await guild.roles.fetch(settingsRow.passing_role_id.toString());
-                                        if (role) await role.delete(`Deleted by ${component.user.tag}`);
-                                        settingsRow = await this.database.updateSettings({ ...partialSettingsRow, passing_role_id: null });
-                                    }
-                                    break;
-                                }
-                                case DDDButtonID.CREATE_FAILED_ROLE: {
-                                    if (!settingsRow.failed_role_id) {
-                                        const role = await guild.roles.create({ name: 'DDD Participant Failed', mentionable: true, reason: `Created by ${component.user.tag}` }).catch(() => null);
-                                        if (role) {
-                                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, failed_role_id: role.id });
-                                            for (const participantRow of participantRows) {
-                                                const member = guild.members.cache.get(participantRow.user_id.toString()) as GuildMember;
-                                                const allNutRows = await this.database.fetchAllNuts(participantRow);
-                                                const participantStats = DDDUtil.getParticipantStats(participantRow, allNutRows)
-                                                if (participantStats.dayFailed) await member.roles.add(settingsRow.failed_role_id!).catch((err) => { console.log(err) });
-                                            }
-                                        }
-                                    }
-                                    break;
-                                }
-                                case DDDButtonID.DELETE_FAILED_ROLE: {
-                                    if (settingsRow.failed_role_id) {
-                                        const role = await guild.roles.fetch(settingsRow.failed_role_id.toString());
-                                        if (role) await role.delete(`Deleted by ${component.user.tag}`);
-                                        settingsRow = await this.database.updateSettings({ ...partialSettingsRow, failed_role_id: null });
-                                    }
-                                    break;
-                                }
-                            }
-                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                            const replyOptions = this.createControlPanelReplyOptions(command, eventDetails, settingsRow, participantRows);
-                            await component.editReply(replyOptions);
+                collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
+                    if (!component.isButton()) { throw component }
+                    await component.deferUpdate();
+                    switch (component.customId) {
+                        case DDDButtonID.SET_EVENT_CHANNEL: {
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, channel_id: channel.id });
+                            break;
                         }
-                    } catch{ }
-                });
+                        case DDDButtonID.CLEAR_EVENT_CHANNEL: {
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, channel_id: null });
+                            break;
+                        }
+                        case DDDButtonID.CREATE_EVENT_ROLE: {
+                            if (settingsRow.event_role_id) return null;
+                            const role = await guild.roles.create({ name: 'DDD Participant', mentionable: true, reason: `Created by ${component.user.tag}` });
+                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, event_role_id: role.id });
+                            for (const memberRow of participantRows) {
+                                const member = guild.members.cache.get(memberRow.user_id);
+                                if (member) await member.roles.add(settingsRow.event_role_id!);
+                            }
+                            break;
+                        }
+                        case DDDButtonID.DELETE_EVENT_ROLE: {
+                            if (!settingsRow.event_role_id) break;
+                            const role = await guild.roles.fetch(settingsRow.event_role_id);
+                            if (role) await role.delete(`Deleted by ${component.user.tag}`);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, event_role_id: null });
+                            break;
+                        }
+                        case DDDButtonID.CREATE_PASSING_ROLE: {
+                            if (settingsRow.passing_role_id) break;
+                            const role = await guild.roles.create({ name: 'Passing DDD', mentionable: true, reason: `Created by ${component.user.tag}`, color: 3342130 });
+                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, passing_role_id: role.id });
+                            for (const participantRow of participantRows) {
+                                const member = guild.members.cache.get(participantRow.user_id);
+                                if (member && !participantRow.failed) await member.roles.add(settingsRow.passing_role_id!);
+                            }
+                            break;
+                        }
+                        case DDDButtonID.DELETE_PASSING_ROLE: {
+                            if (!settingsRow.passing_role_id) break;
+                            const role = await guild.roles.fetch(settingsRow.passing_role_id);
+                            if (role) await role.delete(`Deleted by ${component.user.tag}`);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, passing_role_id: null });
+                            break;
+                        }
+                        case DDDButtonID.CREATE_FAILED_ROLE: {
+                            if (settingsRow.failed_role_id) break;
+                            const role = await guild.roles.create({ name: 'Failed DDD', mentionable: true, reason: `Created by ${component.user.tag}`, color: 16724530 });
+                            participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, failed_role_id: role.id });
+                            for (const participantRow of participantRows) {
+                                const member = guild.members.cache.get(participantRow.user_id);
+                                if (member && participantRow.failed) await member.roles.add(settingsRow.failed_role_id!);
+                            }
+                            break;
+                        }
+                        case DDDButtonID.DELETE_FAILED_ROLE: {
+                            if (!settingsRow.failed_role_id) break;
+                            const role = await guild.roles.fetch(settingsRow.failed_role_id);
+                            if (role) await role.delete(`Deleted by ${component.user.tag}`);
+                            settingsRow = await this.database.updateSettings({ ...partialSettingsRow, failed_role_id: null });
+                            break;
+                        }
+                    }
+                    participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
+                    const replyOptions = this.createControlPanelReplyOptions(command, eventDetails, settingsRow, participantRows);
+                    return await component.editReply(replyOptions);
+                }));
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 return message;
             }

@@ -26,6 +26,19 @@ export class DDDEmbed extends HandlerEmbed {
             ]);
     }
 
+    public static createParticipantPassedEmbed(participantStats: DDDParticipantStats): DDDEmbed {
+        const { day, eventDetails, participantRow, nutMonth, dayFailed, allNutRows } = participantStats;
+        return new DDDEmbed(eventDetails)
+            .setDescription([
+                `<@${participantRow.user_id}> has passed DDD!`,
+                `Here are their stats for day ${day}`,
+                '',
+                `Total Nuts: **${allNutRows.length}/${(day) * (day + 1) / 2}**`,
+                `Daily Nuts: **${nutMonth[day - 1]!.length}/${day}**`,
+                `Failed: **${dayFailed ? `Day ${dayFailed}` : '*Never!*'} **`,
+            ]);
+    }
+
     public static createNotTextChannelEmbed(command: CommandInteraction, eventDetails: DDDEventDetails): DDDEmbed {
         return new DDDEmbed(eventDetails, command)
             .setDescription(`Sorry! You can only view the control panel in TextChannels...`);

@@ -1,4 +1,4 @@
-import { Channel, Client, DMChannel, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, Permissions, Role, TextChannel, User } from 'discord.js';
+import { Channel, Client, DMChannel, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerClient } from './HandlerClient';
 import * as twemoji from 'twemoji';
 
@@ -9,6 +9,10 @@ export class HandlerUtil {
         if (member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return true;
         if (interaction) return member.user === interaction.user;
         return false;
+    }
+
+    public static handleCollectorErrors(listener: (interaction: MessageComponentInteraction<any>) => Promise<any>): (interaction: MessageComponentInteraction) => Promise<void> {
+        return (interaction: MessageComponentInteraction) => listener(interaction).catch(error => console.error(error));
     }
 
     public static deleteComponentsOnEnd(message: Message): () => Promise<void> {
