@@ -46,7 +46,7 @@ export class DDDEventDetails {
 
     public static readonly FIRST_ZONE = 'ETC/GMT-14';
     public static readonly LAST_ZONE = 'ETC/GMT+12';
-    public static readonly MONTH = 11; // This is for testing
+    public static readonly MONTH = 12; // This is for testing
 
     public readonly year: number;
     public readonly stopDate: DateTime;
