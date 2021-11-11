@@ -27,10 +27,10 @@ import { DefineHandler } from './src/commands/fun/define/DefineHandler';
 import { UtilsHandler } from './src/commands/global/utils/UtilsHandler';
 import { AdminHandler } from './src/commands/global/admin/AdminHandler';
 import { MarkovHandler } from './src/commands/fun/markov/MarkovHandler';
+import { DDDHandler } from './src/commands/events/event_ddd/DDDHandler';
 import { E621Handler } from './src/commands/booru/e621/E621Handler';
 import { LostHandler } from './src/commands/temp/lost/LostHandler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
-import { DDDHandler } from './src/commands/events/ddd/DDDHandler';
 import { ClientLogger } from './src/automations/ClientLogger';
 
 const poolConfig: PoolConfig = {
