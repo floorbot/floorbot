@@ -3,6 +3,7 @@ import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase';
 import { HandlerClient } from '../../../discord/handler/HandlerClient';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
 import { DDDButton, DDDButtonID } from './components/DDDButton';
+import { HandlerReply } from '../../../helpers/HandlerReply';
 import { DDDEventDetails, DDDUtil } from './DDDUtil';
 import { DDDCommandData } from './DDDCommandData';
 import { DDDEmbed } from './components/DDDEmbed';
@@ -21,6 +22,9 @@ export class DDDHandler extends EventHandler {
     }
 
     private async createSchedule(client: Client, participantRow: DDDParticipantRow) {
+        const updated = await this.database.fetchParticipant(participantRow);
+        if (!updated) return;
+        participantRow = updated;
         const jobKey = `${participantRow.guild_id}-${participantRow.user_id}-${participantRow.year}`
         if (this.jobs.has(jobKey)) { this.deleteSchedule(participantRow) }
 
@@ -56,7 +60,7 @@ export class DDDHandler extends EventHandler {
                 }
             } else {
                 const midnight = participantStats.zoneDetails.nextMidnight;
-                this.jobs.set(jobKey, Schedule.scheduleJob(midnight, () => {
+                this.jobs.set(jobKey, Schedule.scheduleJob(midnight.toJSDate(), () => {
                     this.createSchedule(client, participantRow);
                 }));
             }
@@ -126,6 +130,7 @@ export class DDDHandler extends EventHandler {
                 const message = await command.followUp(replyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
+                    if (!HandlerUtil.isAdminOrOwner(component.member)) return component.reply(HandlerReply.createAdminOrOwnerReply(command));
                     if (!component.isButton()) { throw component }
                     await component.deferUpdate();
                     switch (component.customId) {

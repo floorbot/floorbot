@@ -28,7 +28,7 @@ export class DDDUtil {
         const nutMonth = Array.from(Array(31), () => new Array())
         for (const nutDate of nutDates) { nutMonth[nutDate.day - 1]!.push(nutDate) }
         const dayFailed = nutMonth.findIndex((nutDay, index) => nutDay.length < index + 1) + 1;
-        const day = zoneDetails.now.day;
+        const day = zoneDetails.isDecember ? zoneDetails.now.day : 0;
 
         return {
             eventDetails: eventDetails,
@@ -46,7 +46,7 @@ export class DDDEventDetails {
 
     public static readonly FIRST_ZONE = 'ETC/GMT-14';
     public static readonly LAST_ZONE = 'ETC/GMT+12';
-    public static readonly MONTH = 12; // This is for testing
+    public static readonly MONTH = 11; // This is for testing
 
     public readonly year: number;
     public readonly stopDate: DateTime;
@@ -55,7 +55,7 @@ export class DDDEventDetails {
 
     protected constructor(year: number) {
         this.year = year;
-        this.stopDate = DateTime.fromObject({ year: year + 1, month: (DDDEventDetails.MONTH + 1) % 12 || 12, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.LAST_ZONE });
+        this.stopDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.FIRST_ZONE }).plus({ months: 1 });
         this.startDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.FIRST_ZONE });
         this.guaranteedDate = this.startDate.plus({ days: 1 });
     }
@@ -83,7 +83,7 @@ export class DDDZoneDetails {
         this.event = event;
         this.zone = zone;
         this.now = DateTime.now().setZone(this.zone);
-        this.stopDate = DateTime.fromObject({ year: event.year + 1, month: (DDDEventDetails.MONTH + 1) % 12 || 12, day: 1, hour: 0, minute: 0 }, { zone: zone });
+        this.stopDate = DateTime.fromObject({ year: event.year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: zone }).plus({ months: 1 });
         this.startDate = DateTime.fromObject({ year: event.year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: zone });
         this.cutoffDate = this.startDate.plus({ days: 1 });
     }
