@@ -102,7 +102,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.LINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member as GuildMember)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -131,7 +131,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.UNLINK: {
                 const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member as GuildMember)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 await this.database.deleteLink(member);
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
