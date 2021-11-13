@@ -10,6 +10,7 @@ nconf.required(['OWNERS']);
 
 // Internal tasks
 import { PresenceController } from './src/automations/PresenceController';
+import { MessageReaction } from './src/automations/MessageReaction';
 
 // Commands
 import { OwoifyChatInputHandler } from './src/commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler';
@@ -32,6 +33,7 @@ import { E621Handler } from './src/commands/booru/e621/E621Handler';
 import { LostHandler } from './src/commands/temp/lost/LostHandler';
 import { RollHandler } from './src/commands/fun/roll/RollHandler';
 import { ClientLogger } from './src/automations/ClientLogger';
+
 
 const poolConfig: PoolConfig = {
     host: nconf.get('DATABASE:HOST'),
@@ -72,5 +74,6 @@ const client = new HandlerClient({
 });
 
 ClientLogger.setup(client);
-client.once('login', () => { PresenceController.setup(client); })
+client.once('ready', () => { PresenceController.setup(client); })
 client.login(nconf.get('DISCORD_TOKEN'));
+MessageReaction(client);

@@ -8,7 +8,7 @@ export class PresenceController {
     };
 
     private static ACTIVITIES: Array<ActivitiesOptions> = [
-        { type: "COMPETING", name: "in NNN 😄" },
+        { type: "COMPETING", name: " NNN 😄" },
         // { type: "LISTENING", name: "japan asmr" },
         // { type: "LISTENING", name: "soft loli breathing" },
         // { type: "LISTENING", name: "the rain" },
