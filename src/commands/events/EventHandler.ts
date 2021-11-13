@@ -1,8 +1,8 @@
-import { ChatInputHandler, ChatInputHandlerOptions } from '../../discord/handler/abstracts/ChatInputHandler';
-import { Autocomplete } from '../../discord/handler/interfaces/Autocomplete';
+import { ChatInputHandler, ChatInputHandlerOptions } from '../../discord/handler/abstracts/ChatInputHandler.js';
+import { Autocomplete } from '../../discord/handler/interfaces/Autocomplete.js';
 import { AutocompleteInteraction } from 'discord.js';
-import * as tzdata from 'tzdata';
 import { Pool } from 'mariadb';
+import tzdata from 'tzdata';
 
 export interface EventHandlerOptions extends Omit<ChatInputHandlerOptions, 'group'> {
     readonly eventName: string,
@@ -12,8 +12,8 @@ export interface EventHandlerOptions extends Omit<ChatInputHandlerOptions, 'grou
 export abstract class EventHandler extends ChatInputHandler implements Autocomplete {
 
     private static readonly ZONES = Object.keys(tzdata.zones);
-    private readonly eventName: string;
-    private readonly pool: Pool;
+    readonly eventName: string; // temp public for ts
+    readonly pool: Pool; // temp public for ts
     // private readonly abbr: string;
 
     constructor(options: EventHandlerOptions) {

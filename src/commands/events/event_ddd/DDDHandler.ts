@@ -1,13 +1,13 @@
 import { Client, Collection, CommandInteraction, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase';
-import { HandlerClient } from '../../../discord/handler/HandlerClient';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
-import { DDDButton, DDDButtonID } from './components/DDDButton';
-import { HandlerReply } from '../../../helpers/HandlerReply';
-import { DDDEventDetails, DDDUtil } from './DDDUtil';
-import { DDDCommandData } from './DDDCommandData';
-import { DDDEmbed } from './components/DDDEmbed';
-import { EventHandler } from '../EventHandler';
+import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase.js';
+import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { DDDButton, DDDButtonID } from './components/DDDButton.js';
+import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { DDDEventDetails, DDDUtil } from './DDDUtil.js';
+import { DDDCommandData } from './DDDCommandData.js';
+import { DDDEmbed } from './components/DDDEmbed.js';
+import { EventHandler } from '../EventHandler.js';
 import * as Schedule from 'node-schedule';
 import { Pool } from 'mariadb';
 

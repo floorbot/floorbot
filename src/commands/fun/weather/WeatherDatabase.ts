@@ -1,7 +1,8 @@
 import { Guild, GuildMember, User } from 'discord.js';
-import { GeocodeData } from './api/OpenWeatherAPI';
+import { GeocodeData } from './api/OpenWeatherAPI.js';
 import { Pool } from 'mariadb';
 import * as fs from 'fs';
+import path from 'path';
 
 export interface WeatherLinkRow {
     readonly user_id: string,
@@ -48,7 +49,7 @@ export class WeatherDatabase {
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/weather_link.sql`, 'utf8'))
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/weather_link.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

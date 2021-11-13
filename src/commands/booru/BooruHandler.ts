@@ -1,9 +1,9 @@
 import { ChatInputApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
-import { ChatInputHandler } from '../../discord/handler/abstracts/ChatInputHandler';
-import { HandlerUtil } from '../../discord/handler/HandlerUtil';
-import { HandlerReply } from '../../helpers/HandlerReply';
-import { BooruSelectMenuID } from './BooruSelectMenu';
-import { BooruButtonID } from './BooruButton';
+import { ChatInputHandler } from '../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerUtil } from '../../discord/handler/HandlerUtil.js';
+import { HandlerReply } from '../../helpers/HandlerReply.js';
+import { BooruSelectMenuID } from './BooruSelectMenu.js';
+import { BooruButtonID } from './BooruButton.js';
 
 export interface BooruHandlerOptions {
     readonly data: ChatInputApplicationCommandData

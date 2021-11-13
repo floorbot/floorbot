@@ -1,14 +1,14 @@
 import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
-import { AirPollutionData, GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI';
-import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData';
-import { WeatherButton, WeatherButtonID } from './components/WeatherButton';
-import { HandlerClient } from '../../../discord/handler/HandlerClient';
-import { WeatherDatabase, WeatherLinkRow } from './WeatherDatabase';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
-import { HandlerReply } from '../../../helpers/HandlerReply';
-import { WeatherEmbed } from './components/WeatherEmbed';
+import { AirPollutionData, GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
+import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu.js';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
+import { WeatherButton, WeatherButtonID } from './components/WeatherButton.js';
+import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
+import { WeatherDatabase, WeatherLinkRow } from './WeatherDatabase.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { WeatherEmbed } from './components/WeatherEmbed.js';
 import { Pool } from 'mariadb';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
@@ -22,7 +22,7 @@ export class WeatherHandler extends ChatInputHandler {
         this.database = new WeatherDatabase(pool);
     }
 
-    public async execute(command: CommandInteraction): Promise<any> {
+    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
         const subCommand = command.options.getSubcommand();
         switch (subCommand) {
             case WeatherSubCommandName.LOCATION: {
@@ -47,7 +47,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.USER: {
                 await command.deferReply();
-                const member = (command.options.getMember('user') || command.member) as GuildMember;
+                const member = (command.options.getMember('user') || command.member);
                 const link = await this.database.fetchLink(member);
                 if (!link) return command.followUp(WeatherEmbed.getMissingParamsEmbed(command, member).toReplyOptions());
                 const location: LocationData = {
@@ -101,8 +101,8 @@ export class WeatherHandler extends ChatInputHandler {
                 break;
             }
             case WeatherSubCommandName.LINK: {
-                const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member as GuildMember)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                const member = (command.options.getMember('user') || command.member);
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -130,8 +130,8 @@ export class WeatherHandler extends ChatInputHandler {
                 break;
             }
             case WeatherSubCommandName.UNLINK: {
-                const member = (command.options.getMember('user') || command.member) as GuildMember;
-                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member as GuildMember)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                const member = (command.options.getMember('user') || command.member);
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 await this.database.deleteLink(member);
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)

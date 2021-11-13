@@ -1,11 +1,9 @@
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { CommandInteraction, Message } from 'discord.js';
-import { UtilsCommandData } from './UtilsCommandData';
-
-// @ts-ignore
-import * as DHMS from 'dhms.js';
+import { UtilsCommandData } from './UtilsCommandData.js';
+import humanizeDuration from 'humanize-duration';
 
 export class UtilsHandler extends ChatInputHandler {
 
@@ -29,9 +27,9 @@ export class UtilsHandler extends ChatInputHandler {
                     .setThumbnail(clientUser.displayAvatarURL())
                     .setTitle(clientUser.tag)
                     .setDescription(
-                        `Ping: **${DHMS.print(reply.createdTimestamp - command.createdTimestamp)}**\n` +
-                        (command.client.ws.ping ? `Heartbeat: **${DHMS.print(Math.round(command.client.ws.ping))}**\n` : '') +
-                        `Uptime: **${DHMS.print(command.client.uptime)}**`
+                        `Ping: **${humanizeDuration(reply.createdTimestamp - command.createdTimestamp, { units: ['s', 'ms'], round: true })}**\n` +
+                        (command.client.ws.ping ? `Heartbeat: **${humanizeDuration(Math.round(command.client.ws.ping), { units: ['s', 'ms'], round: true })}**\n` : '') +
+                        `Uptime: **${humanizeDuration(command.client.uptime || 0, { largest: 2, round: true })}**`
                     );
                 return reply.edit(pingEmbed.toReplyOptions());
             }

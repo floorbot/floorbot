@@ -1,6 +1,6 @@
 import { MessageSelectMenu, MessageSelectMenuOptions, SelectMenuInteraction } from 'discord.js';
-import { HandlerSelectMenu } from '../../../discord/components/HandlerSelectMenu';
-import { GroupHandlerMap } from './AdminHandler';
+import { HandlerSelectMenu } from '../../../discord/components/HandlerSelectMenu.js';
+import { GroupHandlerMap } from './AdminHandler.js';
 
 export class AdminSelectMenu extends HandlerSelectMenu {
 

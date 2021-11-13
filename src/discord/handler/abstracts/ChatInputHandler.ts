@@ -1,5 +1,5 @@
 import { ChatInputApplicationCommandData, CommandInteraction } from 'discord.js';
-import { Handler, HandlerOptions } from '../Handler';
+import { Handler, HandlerOptions } from '../Handler.js';
 
 export interface ChatInputHandlerOptions extends Omit<HandlerOptions, 'type'> {
     readonly data: ChatInputApplicationCommandData

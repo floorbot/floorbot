@@ -1,6 +1,6 @@
-import { HandlerButton, HandlerButtonID } from '../../../../discord/components/HandlerButton';
+import { HandlerButton, HandlerButtonID } from '../../../../discord/components/HandlerButton.js';
 import { Constants, MessageButton, MessageButtonOptions } from 'discord.js';
-import { LatLonData, OpenWeatherAPI } from '../api/OpenWeatherAPI';
+import { LatLonData, OpenWeatherAPI } from '../api/OpenWeatherAPI.js';
 
 const { MessageButtonStyles } = Constants;
 

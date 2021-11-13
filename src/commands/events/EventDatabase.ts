@@ -1,5 +1,6 @@
 import { Pool } from 'mariadb';
 import * as fs from 'fs';
+import path from 'path';
 
 export type EventOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 
@@ -103,9 +104,9 @@ export class EventDatabase {
 
     public static async createTables(pool: Pool): Promise<void> {
         return Promise.allSettled([
-            pool.query(fs.readFileSync(`${__dirname}/schemas/event_participant.sql`, 'utf8')),
-            pool.query(fs.readFileSync(`${__dirname}/schemas/event_settings.sql`, 'utf8')),
-            pool.query(fs.readFileSync(`${__dirname}/schemas/event_nut.sql`, 'utf8'))
+            pool.query(fs.readFileSync(`${path.resolve()}/schemas/event_participant.sql`, 'utf8')),
+            pool.query(fs.readFileSync(`${path.resolve()}/schemas/event_settings.sql`, 'utf8')),
+            pool.query(fs.readFileSync(`${path.resolve()}/schemas/event_nut.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

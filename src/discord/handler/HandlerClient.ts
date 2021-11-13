@@ -1,6 +1,6 @@
 import { Client, ClientOptions, Constants, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../components/HandlerEmbed';
-import * as exitHook from 'async-exit-hook';
+import { HandlerEmbed } from '../components/HandlerEmbed.js';
+import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
 
 const { Events, ApplicationCommandTypes } = Constants;

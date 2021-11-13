@@ -1,5 +1,6 @@
 import { Pool } from 'mariadb';
 import * as fs from 'fs';
+import path from 'path';
 
 export type DDDOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 
@@ -106,9 +107,9 @@ export class DDDDatabase {
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_participant.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_settings.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/ddd_nut.sql`, 'utf8'))
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_participant.sql`, 'utf8')),
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_settings.sql`, 'utf8')),
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_nut.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

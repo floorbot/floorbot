@@ -1,8 +1,8 @@
 import { CommandInteraction, Guild, MessageEmbed, MessageEmbedOptions } from 'discord.js';
-import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from '../DDDUtil';
-import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from '../DDDDatabase';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
+import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from '../DDDUtil.js';
+import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from '../DDDDatabase.js';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
 import { DateTime } from 'luxon';
 
 export class DDDEmbed extends HandlerEmbed {

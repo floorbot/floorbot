@@ -1,9 +1,9 @@
 import { Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { PregchanCommandData } from './PregchanCommandData';
-import { BooruButton } from '../BooruButton';
-import { BooruEmbed } from '../BooruEmbed';
-import { BooruHandler } from '../BooruHandler';
-import { PregchanAPI } from './PregchanAPI';
+import { PregchanCommandData } from './PregchanCommandData.js';
+import { BooruButton } from '../BooruButton.js';
+import { BooruEmbed } from '../BooruEmbed.js';
+import { BooruHandler } from '../BooruHandler.js';
+import { PregchanAPI } from './PregchanAPI.js';
 
 export class PregchanHandler extends BooruHandler {
 

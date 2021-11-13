@@ -1,5 +1,5 @@
 import { ContextMenuInteraction, MessageApplicationCommandData, UserApplicationCommandData } from 'discord.js';
-import { Handler, HandlerOptions } from '../Handler';
+import { Handler, HandlerOptions } from '../Handler.js';
 
 export interface ContextMenuHandlerOptions extends Omit<HandlerOptions, 'type'> {
     readonly data: MessageApplicationCommandData | UserApplicationCommandData

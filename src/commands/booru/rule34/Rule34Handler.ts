@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
-import { Rule34API, Rule34APIAutocomplete } from './Rule34API';
-import { Rule34CommandData } from './Rule34CommandData';
-import { BooruSelectMenu } from '../BooruSelectMenu';
-import { BooruHandler } from '../BooruHandler';
-import { BooruButton } from '../BooruButton';
-import { BooruEmbed } from '../BooruEmbed';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { Rule34API, Rule34APIAutocomplete } from './Rule34API.js';
+import { Rule34CommandData } from './Rule34CommandData.js';
+import { BooruSelectMenu } from '../BooruSelectMenu.js';
+import { BooruHandler } from '../BooruHandler.js';
+import { BooruButton } from '../BooruButton.js';
+import { BooruEmbed } from '../BooruEmbed.js';
 
 export class Rule34Handler extends BooruHandler implements Autocomplete {
 

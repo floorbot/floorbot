@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
-import { SafebooruCommandData } from './SafebooruCommandData';
-import { BooruSelectMenu } from '../BooruSelectMenu';
-import { BooruHandler } from '../BooruHandler';
-import { BooruButton } from '../BooruButton';
-import { SafebooruAPI } from './SafebooruAPI';
-import { BooruEmbed } from '../BooruEmbed';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { SafebooruCommandData } from './SafebooruCommandData.js';
+import { BooruSelectMenu } from '../BooruSelectMenu.js';
+import { BooruHandler } from '../BooruHandler.js';
+import { BooruButton } from '../BooruButton.js';
+import { SafebooruAPI } from './SafebooruAPI.js';
+import { BooruEmbed } from '../BooruEmbed.js';
 
 export class SafebooruHandler extends BooruHandler implements Autocomplete {
 

@@ -1,6 +1,6 @@
 import { ApplicationCommandData, BaseCommandInteraction, BitFieldResolvable, IntentsString } from 'discord.js';
-import { Autocomplete } from './interfaces/Autocomplete';
-import { HandlerClient } from './HandlerClient';
+import { Autocomplete } from './interfaces/Autocomplete.js';
+import { HandlerClient } from './HandlerClient.js';
 
 export interface HandlerOptions {
     readonly intents?: BitFieldResolvable<IntentsString, number>;

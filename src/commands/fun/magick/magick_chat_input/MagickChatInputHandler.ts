@@ -1,14 +1,14 @@
 import { CommandInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler';
-import { MagickChatInputCommandData } from './MagickChatInputCommandData';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
-import { MagickAction, MagickProgress } from '../MagickConstants';
-import { MagickSelectMenu } from '../components/MagickSelectMenu';
-import { MagickAttachment } from '../components/MagickAttachment';
-import { HandlerReply } from '../../../../helpers/HandlerReply';
-import { MagickEmbed } from '../components/MagickEmbed';
-import { ImageMagick } from '../tools/ImageMagick';
-import * as probe from 'probe-image-size';
+import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler.js';
+import { MagickChatInputCommandData } from './MagickChatInputCommandData.js';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { MagickAction, MagickProgress } from '../MagickConstants.js';
+import { MagickSelectMenu } from '../components/MagickSelectMenu.js';
+import { MagickAttachment } from '../components/MagickAttachment.js';
+import { HandlerReply } from '../../../../helpers/HandlerReply.js';
+import { MagickEmbed } from '../components/MagickEmbed.js';
+import { ImageMagick } from '../tools/ImageMagick.js';
+import probe from 'probe-image-size';
 
 export class MagickChatInputHandler extends ChatInputHandler {
 

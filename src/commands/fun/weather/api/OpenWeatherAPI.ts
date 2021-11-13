@@ -1,9 +1,9 @@
 import { AirPollutionData } from './interfaces/AirPollutionData';
 import { OneCallData } from './interfaces/OneCallData';
 import { GeocodeData } from './interfaces/GeocodeData';
-import CacheMap from 'cache-map.js';
-import * as nconf from 'nconf';
+import CacheMap from 'cache-map';
 import fetch from 'node-fetch';
+import nconf from 'nconf';
 
 export { AirPollutionData, GeocodeData, OneCallData };
 

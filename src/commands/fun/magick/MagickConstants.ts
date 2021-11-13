@@ -1,4 +1,4 @@
-import * as probe from 'probe-image-size';
+import probe from 'probe-image-size';
 
 export interface MagickAction {
     readonly label: string;

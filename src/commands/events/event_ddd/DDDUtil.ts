@@ -1,5 +1,5 @@
+import { DDDNutRow, DDDParticipantRow } from './DDDDatabase.js';
 import { DateTime, IANAZone } from 'luxon';
-import { DDDNutRow, DDDParticipantRow } from './DDDDatabase';
 
 export interface DDDParticipantStats {
     eventDetails: DDDEventDetails,

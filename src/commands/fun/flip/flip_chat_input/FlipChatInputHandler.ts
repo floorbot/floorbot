@@ -1,10 +1,10 @@
-import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
-import { FlipChatInputCommandData } from './FlipChatInputCommandData';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
-import { HandlerReply } from '../../../../helpers/HandlerReply';
+import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
+import { FlipChatInputCommandData } from './FlipChatInputCommandData.js';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { HandlerReply } from '../../../../helpers/HandlerReply.js';
 import { CommandInteraction, Util } from 'discord.js';
-import { Flipper } from '../Flipper';
+import { Flipper } from '../Flipper.js';
 
 export class FlipChatInputHandler extends ChatInputHandler {
 

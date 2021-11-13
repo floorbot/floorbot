@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
-import { BooruSelectMenu } from '../BooruSelectMenu';
-import { E621CommandData } from './E621CommandData';
-import { BooruHandler } from '../BooruHandler';
-import { BooruButton } from '../BooruButton';
-import { BooruEmbed } from '../BooruEmbed';
-import { E621API } from './E621API';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { BooruSelectMenu } from '../BooruSelectMenu.js';
+import { E621CommandData } from './E621CommandData.js';
+import { BooruHandler } from '../BooruHandler.js';
+import { BooruButton } from '../BooruButton.js';
+import { BooruEmbed } from '../BooruEmbed.js';
+import { E621API } from './E621API.js';
 
 export class E621Handler extends BooruHandler implements Autocomplete {
 

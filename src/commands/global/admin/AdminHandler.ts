@@ -1,12 +1,12 @@
 import { CommandInteraction, Guild, Message, MessageActionRow, MessageButton, Constants, InteractionReplyOptions, SelectMenuInteraction, ApplicationCommand, Interaction } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { HandlerClient } from '../../../discord/handler/HandlerClient';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
-import { HandlerReply } from '../../../helpers/HandlerReply';
-import { Handler } from '../../../discord/handler/Handler';
-import { AdminCommandData } from './AdminCommandData';
-import { AdminSelectMenu } from './AdminSelectMenu';
-import { AdminEmbed } from './AdminEmbed';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { Handler } from '../../../discord/handler/Handler.js';
+import { AdminCommandData } from './AdminCommandData.js';
+import { AdminSelectMenu } from './AdminSelectMenu.js';
+import { AdminEmbed } from './AdminEmbed.js';
 
 const { MessageButtonStyles, ApplicationCommandTypes } = Constants;
 

@@ -1,6 +1,6 @@
 import { Interaction, MessageEmbed, MessageEmbedOptions, Util } from 'discord.js';
-import { HandlerEmbed } from '../../discord/components/HandlerEmbed';
-import { BooruHandler, BooruSuggestionData } from './BooruHandler';
+import { HandlerEmbed } from '../../discord/components/HandlerEmbed.js';
+import { BooruHandler, BooruSuggestionData } from './BooruHandler.js';
 
 export interface BooruImageData {
     tags: string | null,

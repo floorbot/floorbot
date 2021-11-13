@@ -1,6 +1,6 @@
 import { Interaction, MessageEmbed, MessageEmbedOptions } from 'discord.js';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
-import { GroupHandlerMap } from './AdminHandler';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { GroupHandlerMap } from './AdminHandler.js';
 
 export class AdminEmbed extends HandlerEmbed {
 

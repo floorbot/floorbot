@@ -1,6 +1,7 @@
 import { GuildChannel, User, Message, Guild } from 'discord.js';
 import { Pool } from 'mariadb';
 import * as fs from 'fs';
+import path from 'path';
 
 export interface MarkovChannelRow {
     readonly guild_id: string,
@@ -162,8 +163,8 @@ export class MarkovDatabase {
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/markov_channel.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${__dirname}/schemas/markov_string.sql`, 'utf8')),
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/markov_channel.sql`, 'utf8')),
+            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/markov_string.sql`, 'utf8')),
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

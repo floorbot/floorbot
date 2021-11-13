@@ -1,15 +1,15 @@
 import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler';
-import { MagickMessageCommandData } from './MagickMessageCommandData';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
-import { MagickAction, MagickProgress } from '../MagickConstants';
-import { MagickAttachment } from '../components/MagickAttachment';
-import { MagickSelectMenu } from '../components/MagickSelectMenu';
-import { HandlerReply } from '../../../../helpers/HandlerReply';
-import { MagickEmbed } from '../components/MagickEmbed';
-import { ImageMagick } from '../tools/ImageMagick';
+import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler.js';
+import { MagickMessageCommandData } from './MagickMessageCommandData.js';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { MagickAction, MagickProgress } from '../MagickConstants.js';
+import { MagickAttachment } from '../components/MagickAttachment.js';
+import { MagickSelectMenu } from '../components/MagickSelectMenu.js';
+import { HandlerReply } from '../../../../helpers/HandlerReply.js';
+import { MagickEmbed } from '../components/MagickEmbed.js';
+import { ImageMagick } from '../tools/ImageMagick.js';
 import { ProbeResult } from 'probe-image-size';
-import * as probe from 'probe-image-size';
+import probe from 'probe-image-size';
 
 export class MagickMessageHandler extends ContextMenuHandler {
 

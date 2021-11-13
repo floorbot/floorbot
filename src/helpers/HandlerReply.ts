@@ -1,7 +1,7 @@
-import { HandlerAttachment } from '../discord/components/HandlerAttachment';
+import { HandlerAttachment } from '../discord/components/HandlerAttachment.js';
 import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
-import { HandlerEmbed } from '../discord/components/HandlerEmbed';
-import { Handler } from '../discord/handler/Handler';
+import { HandlerEmbed } from '../discord/components/HandlerEmbed.js';
+import { Handler } from '../discord/handler/Handler.js';
 import * as fs from 'fs';
 
 export class HandlerReply {

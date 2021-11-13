@@ -1,8 +1,8 @@
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { CommandInteraction, Util } from 'discord.js';
-import { RollCommandData } from './RollCommandData';
+import { RollCommandData } from './RollCommandData.js';
 
 export class RollHandler extends ChatInputHandler {
 

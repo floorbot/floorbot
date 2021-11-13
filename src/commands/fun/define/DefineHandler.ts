@@ -1,12 +1,12 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../discord/components/HandlerButton';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete';
-import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil';
-import { HandlerReply } from '../../../helpers/HandlerReply';
-import { DefineCommandData } from './DefineCommandData';
+import { HandlerButton, HandlerButtonID } from '../../../discord/components/HandlerButton.js';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI.js';
+import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { DefineCommandData } from './DefineCommandData.js';
 
 export class DefineHandler extends ChatInputHandler implements Autocomplete {
 

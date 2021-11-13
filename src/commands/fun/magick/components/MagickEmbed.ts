@@ -1,12 +1,10 @@
 import { MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil';
-import { MagickAction, MagickProgress } from '../MagickConstants';
-import { MagickAttachment } from './MagickAttachment';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { MagickAction, MagickProgress } from '../MagickConstants.js';
+import { MagickAttachment } from './MagickAttachment.js';
 import { ProbeResult } from 'probe-image-size';
-
-// @ts-ignore
-import * as DHMS from 'dhms.js';
+import humanizeDuration from 'humanize-duration';
 
 export class MagickEmbed extends HandlerEmbed {
 
@@ -17,7 +15,7 @@ export class MagickEmbed extends HandlerEmbed {
     }
 
     public static getImageEmbed(interaction: Interaction, data: ProbeResult | MagickAttachment): HandlerEmbed {
-        const timeString = DHMS.print(Date.now() - interaction.createdTimestamp, { limit: 1, fullname: true });
+        const timeString = humanizeDuration(Date.now() - interaction.createdTimestamp, { largest: 1 })
         const embed = new MagickEmbed(interaction)
         if (data instanceof MagickAttachment) {
             const { metadata } = data;

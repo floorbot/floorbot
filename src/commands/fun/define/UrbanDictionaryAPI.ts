@@ -1,4 +1,4 @@
-import CacheMap from 'cache-map.js';
+import CacheMap from 'cache-map';
 import fetch from 'node-fetch';
 
 export class UrbanDictionaryAPI {
