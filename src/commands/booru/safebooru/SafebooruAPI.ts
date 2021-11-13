@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import * as nconf from 'nconf';
+import nconf from 'nconf';
 
 export class SafebooruAPI {
 
