@@ -8,7 +8,7 @@ import { DDDEventDetails, DDDUtil } from './DDDUtil.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDEmbed } from './components/DDDEmbed.js';
 import { EventHandler } from '../EventHandler.js';
-import * as Schedule from 'node-schedule';
+import Schedule from 'node-schedule';
 import { Pool } from 'mariadb';
 
 export class DDDHandler extends EventHandler {

@@ -8,8 +8,8 @@ import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
 import Markov from 'markov-strings';
-import * as owoify from 'owoify-js';
 import { Pool } from 'mariadb';
+import owoify from 'owoify-js';
 
 export class MarkovHandler extends ChatInputHandler {
 
@@ -83,7 +83,7 @@ export class MarkovHandler extends ChatInputHandler {
         if (!MarkovHandler.CORPUSES.has(channel.id)) {
             const rows = await this.database.fetchStrings(channel, user ? user : undefined);
             if (!rows.length) return null;
-            const markov = new Markov({ stateSize: rows.length < 1000 ? 1 : 2 });
+            const markov = new (<any>Markov).default({ stateSize: rows.length < 1000 ? 1 : 2 }) as Markov;
             markov.addData(rows.map(row => row.content));
             MarkovHandler.CORPUSES.set(channel.id, markov);
         }
@@ -102,7 +102,7 @@ export class MarkovHandler extends ChatInputHandler {
             });
             return resolve(res);
         }).then((res: any) => {
-            const content = channelData.owoify ? owoify.default(res.string) : res.string;
+            const content = channelData.owoify ? owoify(res.string) : res.string;
             return { content: content, ...(!channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;

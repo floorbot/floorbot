@@ -1,6 +1,6 @@
 import { Pool } from 'mariadb';
-import * as fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
 export type EventOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 

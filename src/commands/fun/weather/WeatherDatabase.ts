@@ -1,8 +1,8 @@
 import { Guild, GuildMember, User } from 'discord.js';
 import { GeocodeData } from './api/OpenWeatherAPI.js';
 import { Pool } from 'mariadb';
-import * as fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
 export interface WeatherLinkRow {
     readonly user_id: string,

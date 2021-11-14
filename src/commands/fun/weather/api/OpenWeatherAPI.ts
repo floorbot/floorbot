@@ -4,6 +4,8 @@ import { GeocodeData } from './interfaces/GeocodeData';
 import CacheMap from 'cache-map';
 import fetch from 'node-fetch';
 import nconf from 'nconf';
+import path from 'path';
+nconf.file({ file: `${path.resolve()}/config.json` });
 
 export { AirPollutionData, GeocodeData, OneCallData };
 

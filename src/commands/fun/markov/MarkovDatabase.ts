@@ -1,7 +1,7 @@
 import { GuildChannel, User, Message, Guild } from 'discord.js';
 import { Pool } from 'mariadb';
-import * as fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
 export interface MarkovChannelRow {
     readonly guild_id: string,

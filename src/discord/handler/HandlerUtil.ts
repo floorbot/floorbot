@@ -1,6 +1,6 @@
 import { Channel, Client, DMChannel, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerClient } from './HandlerClient.js';
-import * as twemoji from 'twemoji';
+import twemoji from 'twemoji';
 
 export class HandlerUtil {
 

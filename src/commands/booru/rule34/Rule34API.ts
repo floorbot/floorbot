@@ -1,6 +1,6 @@
 import { Response } from 'node-fetch';
-import * as xml2js from 'xml2js';
 import fetch from 'node-fetch';
+import xml2js from 'xml2js';
 
 export class Rule34API {
 
