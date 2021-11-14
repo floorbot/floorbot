@@ -14,7 +14,7 @@ export class OwoifyMessageHandler extends ContextMenuHandler {
         const text = contextMenu.options.getMessage('message', true).content;
         if (!text.length) return contextMenu.reply(HandlerReply.createMessageContentReply(contextMenu, 'owoify'));
         await contextMenu.deferReply();
-        const owo = owoify(text);
+        const owo = (<any>owoify).default(text);
         const split = Util.splitMessage(owo, { maxLength: 2000 })[0]!
         return contextMenu.followUp({ content: split, allowedMentions: { parse: [] } });
     }

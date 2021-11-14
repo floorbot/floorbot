@@ -102,7 +102,7 @@ export class MarkovHandler extends ChatInputHandler {
             });
             return resolve(res);
         }).then((res: any) => {
-            const content = channelData.owoify ? owoify(res.string) : res.string;
+            const content = channelData.owoify ? (<any>owoify).default(res.string) : res.string;
             return { content: content, ...(!channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;

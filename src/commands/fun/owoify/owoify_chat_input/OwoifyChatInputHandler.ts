@@ -12,7 +12,7 @@ export class OwoifyChatInputHandler extends ChatInputHandler {
     public async execute(command: CommandInteraction): Promise<any> {
         const text = command.options.getString('text', true);
         await command.deferReply();
-        const owo = owoify(text);
+        const owo = (<any>owoify).default(text);
         const split = Util.splitMessage(owo, { maxLength: 2000 })[0]!
         return command.followUp({ content: split, allowedMentions: { parse: [] } });
     }
