@@ -1,4 +1,4 @@
-import { GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../api/OpenWeatherAPI.js';
+import { GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../api/OpenWeatherAPI.js';
 import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
 import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
@@ -32,7 +32,7 @@ export class WeatherEmbed extends HandlerEmbed {
             .setDescription(`Progress: ${progressBar.join('')} [${Math.round(current / total * 100)}%] ${current}/${total}`);
     }
 
-    public static getUnknownLocationEmbed(interaction: Interaction, location: LocationData): HandlerEmbed {
+    public static getUnknownLocationEmbed(interaction: Interaction, location: LocationQuery): HandlerEmbed {
         return new WeatherEmbed(interaction)
             .setDescription(`Sorry! I could not find \`${OpenWeatherAPI.getLocationString(location, true)}\`\n*Please check the spelling or try another nearby location*`);
     }

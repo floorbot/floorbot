@@ -57,7 +57,7 @@ const client = new HandlerClient({
         new OwoifyMessageHandler(),
         new DDDHandler(pool),
         new MarkovHandler(pool),
-        new WeatherHandler(pool),
+        new WeatherHandler(pool, process.env['OPEN_WEATHER_API_KEY']!),
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),

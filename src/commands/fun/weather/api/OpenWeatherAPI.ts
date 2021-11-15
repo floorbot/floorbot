@@ -1,79 +1,132 @@
 import { AirPollutionData } from './interfaces/AirPollutionData';
 import { OneCallData } from './interfaces/OneCallData';
 import { GeocodeData } from './interfaces/GeocodeData';
+import fetch, { Headers } from 'node-fetch';
+import Bottleneck from 'bottleneck';
 import CacheMap from 'cache-map';
-import fetch from 'node-fetch';
 
 export { AirPollutionData, GeocodeData, OneCallData };
 
-export interface LocationData {
+export interface OpenWeatherRateLimit {
+    perMonth: number,
+    perMinute: number,
+    dailyOneCall: number
+}
+
+export interface LocationQuery {
     readonly city_name: string,
     readonly state_code?: string,
     readonly country_code?: string
 }
-
-export interface LatLonData {
-    readonly lat: number,
-    readonly lon: number
-}
-
-export type RequestParams = Map<string, string | number>;
 
 export interface WeatherAPIError {
     readonly cod: number,
     readonly message: string
 }
 
+export type LatLonData = Pick<GeocodeData, 'lat' | 'lon'>
+
 export class OpenWeatherAPI {
 
-    private static readonly reqCache: CacheMap<string, string> = new CacheMap({ ttl: 1000 * 60, maxKeys: 60 });
-    private static readonly resCache: CacheMap<string, any> = new CacheMap({ ttl: 1000 * 60 * 10 });
-    private static readonly apiKey: string = process.env['OPEN_WEATHER_API_KEY']!;
+    private readonly airPollutionCache: CacheMap<string, AirPollutionData> = new CacheMap({ ttl: 1000 * 60 * 10 }); // 10 minute cache (api spec)
+    private readonly geocodingCache: CacheMap<string, GeocodeData[]> = new CacheMap({ ttl: 1000 * 60 * 10 }); // 10 minute cache (api spec)
+    private readonly onecallCache: CacheMap<string, OneCallData> = new CacheMap({ ttl: 1000 * 60 * 10 }); // 10 minute cache (api spec)
+    private readonly minutelyLimit: Bottleneck;
+    private readonly onecallLimit: Bottleneck;
+    private readonly apiKey: string;
 
-    private static async request(endpoint: string, params: RequestParams): Promise<any | WeatherAPIError> {
-        params.set('appid', OpenWeatherAPI.apiKey);
-        const paramString = Array.from(params).map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
-        const url: string = `https://api.openweathermap.org/${endpoint}?${paramString}`.toLowerCase();
 
-        // Cache Checking
-        const resCached = OpenWeatherAPI.resCache.get(paramString);
-        if (resCached) return resCached;
+    constructor(apiKey: string, apiLimits: OpenWeatherRateLimit = { perMonth: 1000000, perMinute: 60, dailyOneCall: 1000 }) {
+        this.apiKey = apiKey;
 
-        // *Rate Limit* Checking
-        const isSet = OpenWeatherAPI.reqCache.set(paramString, paramString);
-        if (!isSet) return { cod: 429, message: `We have hit the documented API limit...` }
+        // Creates a monthly (31 day) limit of specified requests (api limits)
+        const monthlyLimit = new Bottleneck({
+            id: `openweather-month-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            reservoir: Math.floor(apiLimits.perMonth / 31),
+            reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31,
+            reservoirRefreshAmount: Math.floor(apiLimits.perMonth / 31)
+        });
 
-        // API Request
-        return fetch(url, { method: 'GET' }).then((res: any) => res.json()).then(json => {
-            if (!(json.cod && json.cod === 429)) {
-                OpenWeatherAPI.resCache.set(paramString, json);
+        // Creates a minutely (60 second) limit of specified requests (api limits)
+        this.minutelyLimit = new Bottleneck({
+            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            reservoir: apiLimits.perMinute,
+            reservoirRefreshInterval: 1000 * 60,
+            reservoirRefreshAmount: apiLimits.perMinute
+        });
+
+        // Creates a daily (24 hour) limit of specified one call requests (api limits)
+        this.onecallLimit = new Bottleneck({
+            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            reservoir: apiLimits.dailyOneCall,
+            reservoirRefreshInterval: 1000 * 60 * 60 * 24,
+            reservoirRefreshAmount: apiLimits.dailyOneCall
+        });
+
+        this.minutelyLimit.chain(monthlyLimit);
+        this.onecallLimit.chain(this.minutelyLimit);
+    }
+
+    private async request(endpoint: string, params: [string, string | number][], headers?: Headers): Promise<any> {
+        params.push(['appid', this.apiKey]);
+        const paramString = params.map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
+        const url = `https://api.openweathermap.org/${endpoint}?${paramString}`;
+        const options = { method: 'GET', headers: headers || new Headers() };
+        return fetch(url, options).then((res: any) => res.json());
+    }
+
+    public async geocoding(location: LocationQuery): Promise<GeocodeData[] | WeatherAPIError> {
+        const locationString = OpenWeatherAPI.getLocationString(location);
+        const existing = this.geocodingCache.get(locationString);
+        if (existing) return existing;
+        return this.minutelyLimit.schedule(async () => {
+            const params: [string, string | number][] = [['q', locationString], ['units', 'metric']];
+            const geocoding = await this.request('geo/1.0/direct', params);
+            if (!this.isError(geocoding)) {
+                geocoding.forEach((geocode: any) => {
+                    if (geocode.name.toLowerCase() === 'antarctica')
+                        geocode.country = 'AQ';
+                });
             }
-            return json;
+            this.geocodingCache.set(locationString, geocoding);
+            return geocoding;
         });
     }
 
-    public static async geocoding(location: LocationData): Promise<Array<GeocodeData> | WeatherAPIError> {
-        const params = new Map([['q', OpenWeatherAPI.getLocationString(location)], ['units', 'metric']]);
-        const geocoding = await OpenWeatherAPI.request('geo/1.0/direct', params);
-        if (!OpenWeatherAPI.isError(geocoding)) {
-            geocoding.forEach((geocode: any) => {
-                if (geocode.name.toLowerCase() === 'antarctica') geocode.country = 'AQ';
-            });
-        }
-        return geocoding;
+    public async oneCall(latlon: LatLonData): Promise<OneCallData | WeatherAPIError> {
+        const cacheKey = `${latlon.lat}-${latlon.lon}`;
+        const existing = this.onecallCache.get(cacheKey);
+        if (existing) return existing;
+        return this.onecallLimit.schedule(async () => {
+            const params: [string, string | number][] = [
+                ['lat', latlon.lat.toString()],
+                ['lon', latlon.lon.toString()],
+                ['exclude', 'minutely,hourly'],
+                ['units', 'metric']
+            ];
+            const onecall = await this.request('data/2.5/onecall', params);
+            this.onecallCache.set(cacheKey, onecall);
+            return onecall;
+        });
     }
 
-    public static async oneCall(latlon: LatLonData): Promise<OneCallData | WeatherAPIError> {
-        const params = new Map([['lat', latlon.lat.toString()], ['lon', latlon.lon.toString()], ['exclude', 'minutely,hourly'], ['units', 'metric']]);
-        return OpenWeatherAPI.request('data/2.5/onecall', params);
+    public async airPollution(latlon: LatLonData): Promise<AirPollutionData | WeatherAPIError> {
+        const cacheKey = `${latlon.lat}-${latlon.lon}`;
+        const existing = this.airPollutionCache.get(cacheKey);
+        if (existing) return existing;
+        return this.minutelyLimit.schedule(async () => {
+            const params: [string, string | number][] = [
+                ['lat', latlon.lat.toString()],
+                ['lon', latlon.lon.toString()],
+                ['units', 'metric']
+            ];
+            const airPollution = await this.request('data/2.5/air_pollution', params);
+            this.airPollutionCache.set(cacheKey, airPollution);
+            return airPollution;
+        });
     }
 
-    public static async airPollution(location: LatLonData): Promise<AirPollutionData | WeatherAPIError> {
-        const params = new Map([['lat', location.lat.toString()], ['lon', location.lon.toString()], ['units', 'metric']]);
-        return OpenWeatherAPI.request('data/2.5/air_pollution', params);
-    }
-
-    public static getLocationString(scope: LocationData | GeocodeData | { name: string, state?: string, country?: string }, space?: boolean): string {
+    public static getLocationString(scope: LocationQuery | GeocodeData | { name: string, state?: string, country?: string }, space?: boolean): string {
         if ('name' in scope) {
             const countryCode = (scope.country && scope.country.toUpperCase() === 'ANTARCTICA') ? 'AQ' : scope.country;
             const stateCode = (scope.country && scope.country.toUpperCase() === 'ANTARCTICA') ? null : scope.state;
@@ -85,11 +138,11 @@ export class OpenWeatherAPI {
         }
     }
 
-    public static getGoogleMapsLink(location: LatLonData): string {
-        return `https://www.google.com/maps/@${location.lat},${location.lon},13z`;
+    public static getGoogleMapsLink(latlon: LatLonData): string {
+        return `https://www.google.com/maps/@${latlon.lat},${latlon.lon},13z`;
     }
 
-    public static isError(data: any): data is WeatherAPIError {
+    public isError(data: any): data is WeatherAPIError {
         return ('cod' in data && data.cod >= 400);
     }
 }

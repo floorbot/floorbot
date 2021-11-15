@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
-import { AirPollutionData, GeocodeData, LocationData, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
+import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
 import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu.js';
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
@@ -16,10 +16,12 @@ export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
 export class WeatherHandler extends ChatInputHandler {
 
     private readonly database: WeatherDatabase;
+    private readonly openweather: OpenWeatherAPI;
 
-    constructor(pool: Pool) {
+    constructor(pool: Pool, apiKey: string) {
         super({ group: 'Fun', global: false, nsfw: false, data: WeatherCommandData });
         this.database = new WeatherDatabase(pool);
+        this.openweather = new OpenWeatherAPI(apiKey);
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
@@ -30,14 +32,14 @@ export class WeatherHandler extends ChatInputHandler {
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
                 const country_code = command.options.getString('country_code');
-                const location: LocationData = {
+                const location: LocationQuery = {
                     city_name: city_name.trim(),
                     ...(state_code && { state_code: state_code.trim() }),
                     ...(country_code && { country_code: country_code.trim() })
                 };
                 const weather = await this.fetchWeather(location);
                 if (!weather) return command.followUp(WeatherEmbed.getUnknownLocationEmbed(command, location).toReplyOptions());
-                if (OpenWeatherAPI.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
+                if (this.openweather.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
                 const replyOptions = this.createCurrentResponse(command, weather);
                 const message = await command.followUp(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
@@ -50,14 +52,14 @@ export class WeatherHandler extends ChatInputHandler {
                 const member = (command.options.getMember('user') || command.member);
                 const link = await this.database.fetchLink(member);
                 if (!link) return command.followUp(WeatherEmbed.getMissingParamsEmbed(command, member).toReplyOptions());
-                const location: LocationData = {
+                const location: LocationQuery = {
                     city_name: link.name,
                     ...(link.state && { state_code: link.state }),
                     ...(link.country && { country_code: link.country })
                 };
                 const weather = await this.fetchWeather(location);
                 if (!weather) return command.followUp(WeatherEmbed.getUnknownLocationEmbed(command, location).toReplyOptions());
-                if (OpenWeatherAPI.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
+                if (this.openweather.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
                 const replyOptions = this.createCurrentResponse(command, weather);
                 const message = await command.followUp(replyOptions) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
@@ -75,8 +77,8 @@ export class WeatherHandler extends ChatInputHandler {
                 for (const [i, link] of allLinks.entries()) {
                     const member = channel.members.get(link.user_id.toString());
                     if (member) {
-                        const onecall = await OpenWeatherAPI.oneCall(link);
-                        if (OpenWeatherAPI.isError(onecall)) continue;
+                        const onecall = await this.openweather.oneCall(link);
+                        if (this.openweather.isError(onecall)) continue;
                         links.push([onecall, member, link]);
                     }
                     if (Date.now() - lastUpdate >= 1000) {
@@ -107,14 +109,14 @@ export class WeatherHandler extends ChatInputHandler {
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
                 const country_code = command.options.getString('country_code');
-                const location: LocationData = {
+                const location: LocationQuery = {
                     city_name: city_name.trim(),
                     ...(state_code && { state_code: state_code.trim() }),
                     ...(country_code && { country_code: country_code.trim() })
                 };
                 const weather = await this.fetchWeather(location);
                 if (!weather) return command.followUp(WeatherEmbed.getUnknownLocationEmbed(command, location).toReplyOptions());
-                if (OpenWeatherAPI.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
+                if (this.openweather.isError(weather)) return command.followUp(WeatherEmbed.getAPIErrorEmbed(command, weather).toReplyOptions());
                 await this.database.setLink(member, weather);
                 const embed = WeatherEmbed.getLinkedEmbed(command, weather, member);
                 const actionRow: MessageActionRow = new MessageActionRow().addComponents([
@@ -140,14 +142,14 @@ export class WeatherHandler extends ChatInputHandler {
         }
     }
 
-    private async fetchWeather(location: LocationData): Promise<OpenWeatherData | WeatherAPIError | null> {
-        const geocoding = await OpenWeatherAPI.geocoding(location);
-        if (OpenWeatherAPI.isError(geocoding)) return geocoding;
+    private async fetchWeather(location: LocationQuery): Promise<OpenWeatherData | WeatherAPIError | null> {
+        const geocoding = await this.openweather.geocoding(location);
+        if (this.openweather.isError(geocoding)) return geocoding;
         if (!geocoding.length) return null;
-        const onecall = await OpenWeatherAPI.oneCall(geocoding[0]!);
-        if (OpenWeatherAPI.isError(onecall)) return onecall;
-        const air = await OpenWeatherAPI.airPollution(geocoding[0]!);
-        if (OpenWeatherAPI.isError(air)) return air;
+        const onecall = await this.openweather.oneCall(geocoding[0]!);
+        if (this.openweather.isError(onecall)) return onecall;
+        const air = await this.openweather.airPollution(geocoding[0]!);
+        if (this.openweather.isError(air)) return air;
         return { ...geocoding[0]!, ...onecall, ...air };
     }
 
