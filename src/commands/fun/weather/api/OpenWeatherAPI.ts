@@ -33,10 +33,12 @@ export class OpenWeatherAPI {
     private readonly onecallCache: CacheMap<string, OneCallData> = new CacheMap({ ttl: 1000 * 60 * 10 }); // 10 minute cache (api spec)
     private readonly minutelyLimit: Bottleneck;
     private readonly onecallLimit: Bottleneck;
+    private readonly expiration: number;
     private readonly apiKey: string;
 
 
     constructor(apiKey: string, apiLimits: OpenWeatherRateLimit = { perMonth: 1000000, perMinute: 60, dailyOneCall: 1000 }) {
+        this.expiration = 1000 * 60; // 60 second queue expiration
         this.apiKey = apiKey;
 
         // Creates a monthly (31 day) limit of specified requests (api limits)
@@ -79,7 +81,7 @@ export class OpenWeatherAPI {
         const locationString = OpenWeatherAPI.getLocationString(location);
         const existing = this.geocodingCache.get(locationString);
         if (existing) return existing;
-        return this.minutelyLimit.schedule(async () => {
+        return this.minutelyLimit.schedule({ expiration: this.expiration }, async () => {
             const params: [string, string | number][] = [['q', locationString], ['units', 'metric']];
             const geocoding = await this.request('geo/1.0/direct', params);
             if (!this.isError(geocoding)) {
@@ -97,7 +99,7 @@ export class OpenWeatherAPI {
         const cacheKey = `${latlon.lat}-${latlon.lon}`;
         const existing = this.onecallCache.get(cacheKey);
         if (existing) return existing;
-        return this.onecallLimit.schedule(async () => {
+        return this.onecallLimit.schedule({ expiration: this.expiration }, async () => {
             const params: [string, string | number][] = [
                 ['lat', latlon.lat.toString()],
                 ['lon', latlon.lon.toString()],
@@ -114,7 +116,7 @@ export class OpenWeatherAPI {
         const cacheKey = `${latlon.lat}-${latlon.lon}`;
         const existing = this.airPollutionCache.get(cacheKey);
         if (existing) return existing;
-        return this.minutelyLimit.schedule(async () => {
+        return this.minutelyLimit.schedule({ expiration: this.expiration }, async () => {
             const params: [string, string | number][] = [
                 ['lat', latlon.lat.toString()],
                 ['lon', latlon.lon.toString()],
