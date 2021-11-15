@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import nconf from 'nconf';
 
 export class SafebooruAPI {
 
@@ -7,8 +6,8 @@ export class SafebooruAPI {
         options = Object.assign({ method: 'GET' }, options)
         if (!options.headers || !options.headers.Authorization) {
             options.headers = options.headers || {};
-            const username = nconf.get('DANBOORU:USERNAME');
-            const apiKey = nconf.get('DANBOORU:API_KEY');
+            const username = process.env['SAFEBOORU_USERNAME'];
+            const apiKey = process.env['SAFEBOORU_API_KEY'];
             if (username && apiKey) {
                 options.headers.Authorization = `Basic ${Buffer.from(`${username}:${apiKey}`).toString('base64')}`;
             }

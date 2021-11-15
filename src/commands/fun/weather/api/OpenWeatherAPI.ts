@@ -3,9 +3,6 @@ import { OneCallData } from './interfaces/OneCallData';
 import { GeocodeData } from './interfaces/GeocodeData';
 import CacheMap from 'cache-map';
 import fetch from 'node-fetch';
-import nconf from 'nconf';
-import path from 'path';
-nconf.file({ file: `${path.resolve()}/config.json` });
 
 export { AirPollutionData, GeocodeData, OneCallData };
 
@@ -31,7 +28,7 @@ export class OpenWeatherAPI {
 
     private static readonly reqCache: CacheMap<string, string> = new CacheMap({ ttl: 1000 * 60, maxKeys: 60 });
     private static readonly resCache: CacheMap<string, any> = new CacheMap({ ttl: 1000 * 60 * 10 });
-    private static readonly apiKey: string = nconf.get('OPEN_WEATHER_API_KEY');
+    private static readonly apiKey: string = process.env['OPEN_WEATHER_API_KEY']!;
 
     private static async request(endpoint: string, params: RequestParams): Promise<any | WeatherAPIError> {
         params.set('appid', OpenWeatherAPI.apiKey);

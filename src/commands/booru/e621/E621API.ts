@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import nconf from 'nconf';
 
 export class E621API {
 
@@ -7,9 +6,9 @@ export class E621API {
         options = Object.assign({ method: 'GET' }, options)
         if (!options.headers || !options.headers.Authorization) {
             options.headers = options.headers || {};
-            options.headers['User-Agent'] = nconf.get('E621:USER_AGENT') || 'nodejs app';
-            const username = nconf.get('E621:USERNAME');
-            const apiKey = nconf.get('E621:API_KEY');
+            options.headers['User-Agent'] = process.env['E621_USER_AGENT'] || 'nodejs app';
+            const username = process.env['E621_USERNAME'];
+            const apiKey = process.env['E621_API_KEY'];
             if (username && apiKey) {
                 options.headers['Authorization'] = `Basic ${Buffer.from(`${username}:${apiKey}`).toString('base64')}`;
             }

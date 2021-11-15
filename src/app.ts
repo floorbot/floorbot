@@ -1,12 +1,9 @@
+(await import('dotenv-safe')).config();
+
 import { HandlerClient } from './discord/handler/HandlerClient.js';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import MariaDB from 'mariadb';
-import nconf from 'nconf';
-
-nconf.argv().env().file({ file: './config.json' }).required(['DISCORD_TOKEN']);
-nconf.required(['DATABASE:HOST', 'DATABASE:NAME', 'DATABASE:USERNAME', 'DATABASE:PASSWORD', 'DATABASE:CONNECTION_LIMIT']);
-nconf.required(['OWNERS']);
 
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
@@ -34,13 +31,12 @@ import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
 
-
 const poolConfig: PoolConfig = {
-    host: nconf.get('DATABASE:HOST'),
-    database: nconf.get('DATABASE:NAME'),
-    user: nconf.get('DATABASE:USERNAME'),
-    password: nconf.get('DATABASE:PASSWORD'),
-    connectionLimit: nconf.get('DATABASE:CONNECTION_LIMIT'),
+    host: process.env['DB_HOST'],
+    database: process.env['DB_NAME'],
+    user: process.env['DB_USERNAME'],
+    password: process.env['DB_PASSWORD'],
+    connectionLimit: parseInt(process.env['DB_CONNECTION_LIMIT'] || '10'),
     supportBigInt: true
 };
 
@@ -49,7 +45,7 @@ const pool = MariaDB.createPool(poolConfig);
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
-    ownerIds: nconf.get('OWNERS'),
+    ownerIds: (process.env['OWNERS'] || '').split(' '),
     handlers: [
         new AdminHandler(),
         new UtilsHandler(),
@@ -75,5 +71,5 @@ const client = new HandlerClient({
 
 ClientLogger.setup(client);
 client.once('ready', () => { PresenceController.setup(client); })
-client.login(nconf.get('DISCORD_TOKEN'));
+client.login(process.env['DISCORD_TOKEN']);
 MessageReaction(client);
