@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Constants, Interaction } from 'discord.js';
+import { Client, ClientOptions, Constants, Interaction, PresenceData } from 'discord.js';
 import { HandlerEmbed } from '../components/HandlerEmbed.js';
 import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
@@ -12,13 +12,15 @@ export interface HandlerClientOptions extends ClientOptions {
 
 export class HandlerClient extends Client {
 
+    private readonly presenceData?: PresenceData;
     public readonly handlers: Handler<any>[];
     public readonly ownerIds: string[];
 
     constructor(options: HandlerClientOptions) {
         const handlerIntents = options.handlers.map(handler => handler.intents);
-        super({ ...options, intents: [options.intents, ...handlerIntents] });
+        super({ ...options, intents: [options.intents, ...handlerIntents], presence: { status: 'invisible' } });
         this.ownerIds = options.ownerIds || [];
+        this.presenceData = options.presence;
         this.handlers = options.handlers;
     }
 
@@ -31,6 +33,7 @@ export class HandlerClient extends Client {
         this.on(Events.SHARD_ERROR, async (_error, _id) => { for (const handler of this.handlers.values()) await handler.finalise(this); });
         this.on(Events.INTERACTION_CREATE, this.onInteractionCreate);
         exitHook((done) => this.onExitHook(done));
+        if (this.user) this.user.setPresence(this.presenceData || { status: 'online' });
         this.emit('log', `[login] Logged in as <${this.user!.tag}>`);
         return string;
     }
