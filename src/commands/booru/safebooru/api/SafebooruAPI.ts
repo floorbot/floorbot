@@ -1,4 +1,4 @@
-import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../helpers/HandlerAPI';
+import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../helpers/HandlerAPI.js';
 import SafebooruAPIAutocomplete from './interfaces/SafebooruAPIAutocomplete';
 import SafebooruAPIError from './interfaces/SafebooruAPIError';
 import SafebooruAPICount from './interfaces/SafebooruAPICount';
