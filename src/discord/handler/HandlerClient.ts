@@ -79,11 +79,14 @@ export class HandlerClient extends Client {
                                 default: return this.emit('log', `[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
                             }
                         }
-                        return handler.execute(interaction).catch(error => {
+                        return handler.execute(interaction).catch(async error => {
                             this.emit('error', error);
-                            return interaction.followUp(new HandlerEmbed().setDescription([
+                            const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
+                            return interaction[method](new HandlerEmbed().setDescription([
                                 `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
-                                `*The error has been reported and will be fixed in the future!*`
+                                `*The error has been reported and will be fixed in the future!*`,
+                                '',
+                                ...(error && error.message ? [`Message: \`${error.message}\``] : [])
                             ]).toReplyOptions({ ephemeral: true }));
                         }).catch(() => { });
                     }

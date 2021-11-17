@@ -34,6 +34,9 @@ import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
 
 const env = envalid.cleanEnv(process.env, {
+    DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
+    DISCORD_OWNERS: str({ default: '', desc: 'Discord IDs separated by space' }),
+
     REDIS_PORT: num({ default: 0, desc: 'Redis Port' }),
     REDIS_HOST: str({ default: '', desc: 'Redis Host' }),
 
@@ -43,11 +46,18 @@ const env = envalid.cleanEnv(process.env, {
     DB_PASSWORD: str({ default: '', desc: 'MariaDB Database Password' }),
     DB_CONNECTION_LIMIT: num({ default: 0, desc: 'MariaDB Database Connection Limit' }),
 
+    OPEN_WEATHER_API_KEY: str({ desc: 'OpenWeather API Key', docs: 'https://openweathermap.org/api' }),
+
     DANBOORU_USERNAME: str({ default: '', desc: 'Danbooru Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
     DANBOORU_API_KEY: str({ default: '', desc: 'Danbooru API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
 
     SAFEBOORU_USERNAME: str({ default: '', desc: 'Safebooru Username', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' }),
-    SAFEBOORU_API_KEY: str({ default: '', desc: 'Safebooru API Key', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' })
+    SAFEBOORU_API_KEY: str({ default: '', desc: 'Safebooru API Key', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' }),
+
+    E621_USERNAME: str({ default: '', desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
+    E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
+    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' })
+
 });
 
 const poolConfig: PoolConfig = {
@@ -66,7 +76,7 @@ const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.R
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
-    ownerIds: (process.env['OWNERS'] || '').split(' '),
+    ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new AdminHandler(),
         new UtilsHandler(),
@@ -78,7 +88,7 @@ const client = new HandlerClient({
         new OwoifyMessageHandler(),
         new DDDHandler(pool),
         new MarkovHandler(pool),
-        new WeatherHandler(pool, process.env['OPEN_WEATHER_API_KEY']!),
+        new WeatherHandler(pool, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
@@ -102,5 +112,5 @@ const client = new HandlerClient({
 
 ClientLogger.setup(client);
 client.once('ready', () => { PresenceController.setup(client); })
-client.login(process.env['DISCORD_TOKEN']);
+client.login(env.DISCORD_TOKEN);
 MessageReaction(client);
