@@ -1,9 +1,11 @@
-(await import('dotenv-safe')).config();
-
 import { HandlerClient } from './discord/handler/HandlerClient.js';
+import envalid, { num, str } from 'envalid';
+// import BetterSqlit3 from 'better-sqlite3';
+import RedisMock from 'ioredis-mock';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import MariaDB from 'mariadb';
+import Redis from 'ioredis';
 
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
@@ -31,16 +33,35 @@ import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
 
+const env = envalid.cleanEnv(process.env, {
+    REDIS_PORT: num({ default: 0, desc: 'Redis Port' }),
+    REDIS_HOST: str({ default: '', desc: 'Redis Host' }),
+
+    DB_HOST: str({ default: '', desc: 'MariaDB Database Host' }),
+    DB_NAME: str({ default: '', desc: 'MariaDB Database Name' }),
+    DB_USERNAME: str({ default: '', desc: 'MariaDB Database Username' }),
+    DB_PASSWORD: str({ default: '', desc: 'MariaDB Database Password' }),
+    DB_CONNECTION_LIMIT: num({ default: 0, desc: 'MariaDB Database Connection Limit' }),
+
+    DANBOORU_USERNAME: str({ default: '', desc: 'Danbooru Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
+    DANBOORU_API_KEY: str({ default: '', desc: 'Danbooru API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
+
+    SAFEBOORU_USERNAME: str({ default: '', desc: 'Safebooru Username', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' }),
+    SAFEBOORU_API_KEY: str({ default: '', desc: 'Safebooru API Key', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' })
+});
+
 const poolConfig: PoolConfig = {
-    host: process.env['DB_HOST'],
-    database: process.env['DB_NAME'],
-    user: process.env['DB_USERNAME'],
-    password: process.env['DB_PASSWORD'],
-    connectionLimit: parseInt(process.env['DB_CONNECTION_LIMIT'] || '10'),
+    host: env.DB_HOST,
+    database: env.DB_NAME,
+    user: env.DB_USERNAME,
+    password: env.DB_PASSWORD,
+    connectionLimit: env.DB_CONNECTION_LIMIT,
     supportBigInt: true
 };
 
 const pool = MariaDB.createPool(poolConfig);
+// const _database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
+const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
@@ -61,11 +82,21 @@ const client = new HandlerClient({
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
-        new DanbooruHandler(),
-        new SafebooruHandler(),
         new E621Handler(),
         new PregchanHandler(),
         new Rule34Handler()
+    ],
+    handlerBuilders: [
+        (_client: HandlerClient) => {
+            const envAuth = { username: env.DANBOORU_USERNAME, apiKey: env.DANBOORU_API_KEY }
+            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
+            return new DanbooruHandler(redis, auth);
+        },
+        (_client: HandlerClient) => {
+            const envAuth = { username: env.SAFEBOORU_USERNAME, apiKey: env.SAFEBOORU_API_KEY }
+            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
+            return new SafebooruHandler(redis, auth);
+        }
     ]
 });
 

@@ -2,14 +2,17 @@ import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageA
 import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
 import { DanbooruCommandData } from './DanbooruCommandData.js';
 import { BooruSelectMenu } from '../BooruSelectMenu.js';
+import { DanbooruAPI } from './api/DanbooruAPI.js';
 import { BooruHandler } from '../BooruHandler.js';
 import { BooruButton } from '../BooruButton.js';
-import { DanbooruAPI } from './DanbooruAPI.js';
 import { BooruEmbed } from '../BooruEmbed.js';
+import { Redis } from 'ioredis';
 
 export class DanbooruHandler extends BooruHandler implements Autocomplete {
 
-    constructor() {
+    private readonly api: DanbooruAPI;
+
+    constructor(redis: Redis, auth?: { username: string, apiKey: string }) {
         super({
             id: 'danbooru',
             nsfw: true,
@@ -17,6 +20,7 @@ export class DanbooruHandler extends BooruHandler implements Autocomplete {
             apiName: 'Danbooru',
             apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg'
         });
+        this.api = new DanbooruAPI({ redis, auth });
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -24,7 +28,7 @@ export class DanbooruHandler extends BooruHandler implements Autocomplete {
         const tags = partialTags.split('+');
         const partial = tags.pop() as string;
         if (!partial.length) return interaction.respond([]);
-        const autocomplete = await DanbooruAPI.autocomplete(partial);
+        const autocomplete = await this.api.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
                 name: [...tags, tag.value].join('+'),
@@ -35,7 +39,7 @@ export class DanbooruHandler extends BooruHandler implements Autocomplete {
     }
 
     public async generateResponse(interaction: Interaction, tags: string = String()): Promise<InteractionReplyOptions> {
-        const data = await DanbooruAPI.random(tags);
+        const data = await this.api.random(tags);
         if ('success' in data && !data.success) {
             const details = data.message || 'The database timed out running your query.'
             switch (details) {
@@ -48,8 +52,8 @@ export class DanbooruHandler extends BooruHandler implements Autocomplete {
                 case 'The database timed out running your query.':
                     return BooruEmbed.createTimeoutEmbed(this, interaction, tags).toReplyOptions();
                 case 'That record was not found.':
-                    const url404 = await DanbooruAPI.get404();
-                    const autocomplete = await DanbooruAPI.autocomplete(tags);
+                    const url404 = await this.api.get404();
+                    const autocomplete = await this.api.autocomplete(tags);
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count } });
                     return {
                         embeds: [BooruEmbed.createSuggestionEmbed(this, interaction, { suggestions, tags, url404 })],

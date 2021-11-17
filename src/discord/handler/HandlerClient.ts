@@ -6,13 +6,15 @@ import { Handler } from './Handler';
 const { Events, ApplicationCommandTypes } = Constants;
 
 export interface HandlerClientOptions extends ClientOptions {
+    readonly handlerBuilders: ((client: HandlerClient) => Handler<any>)[],
     readonly handlers: Handler<any>[],
-    readonly ownerIds?: string[]
+    readonly ownerIds?: string[],
 }
 
 export class HandlerClient extends Client {
 
     private readonly presenceData?: PresenceData;
+
     public readonly handlers: Handler<any>[];
     public readonly ownerIds: string[];
 
@@ -22,6 +24,10 @@ export class HandlerClient extends Client {
         this.ownerIds = options.ownerIds || [];
         this.presenceData = options.presence;
         this.handlers = options.handlers;
+        for (const builder of options.handlerBuilders) {
+            const handler = builder(this);
+            this.handlers.push(handler);
+        }
     }
 
     public override async login(token?: string): Promise<string> {
