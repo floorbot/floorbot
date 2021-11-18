@@ -3,7 +3,7 @@ import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHa
 import { MarkovButton, MarkovButtonType } from './components/MarkovButton.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
@@ -27,7 +27,7 @@ export class MarkovHandler extends ChatInputHandler {
 
         switch (subCommand) {
             case 'settings': {
-                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const response = await this.fetchControlPanel(command, channel);
                 const message = await command.followUp(response) as Message;
@@ -37,7 +37,7 @@ export class MarkovHandler extends ChatInputHandler {
                 return message;
             }
             case 'frequency': {
-                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const perMessages = command.options.getInteger('messages') || undefined;
                 const perMinutes = command.options.getInteger('minutes') || undefined;
@@ -113,7 +113,7 @@ export class MarkovHandler extends ChatInputHandler {
         return async (component: MessageComponentInteraction<'cached'>) => {
             try {
                 if (component.isButton()) {
-                    if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                    if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     await component.deferUpdate();
                     switch (component.customId as MarkovButtonType) {
                         case MarkovButtonType.POSTING_ENABLE:

@@ -5,7 +5,7 @@ import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
 import { MagickAction, MagickProgress } from '../MagickConstants.js';
 import { MagickAttachment } from '../components/MagickAttachment.js';
 import { MagickSelectMenu } from '../components/MagickSelectMenu.js';
-import { HandlerReply } from '../../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
 import { MagickEmbed } from '../components/MagickEmbed.js';
 import { ImageMagick } from '../tools/ImageMagick.js';
 import { ProbeResult } from 'probe-image-size';
@@ -38,7 +38,7 @@ export class MagickMessageHandler extends ContextMenuHandler {
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
         collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
             if (component.isSelectMenu()) {
-                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(HandlerReply.createAdminOrOwnerReply(component));
+                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(HandlerReplies.createAdminOrOwnerReply(component));
                 await component.deferUpdate();
                 const action = MagickAction[component.values[0]!]!;
                 const metadata = (await probe(message.embeds[0]!.image!.url!).catch(() => null))!;

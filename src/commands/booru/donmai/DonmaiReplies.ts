@@ -1,5 +1,5 @@
 import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
-import { BooruReplies } from '../BooruReplies';
+import { BooruReplies } from '../BooruReplies.js';
 
 export interface BooruReplyConstructorOptions {
     readonly apiName: string,

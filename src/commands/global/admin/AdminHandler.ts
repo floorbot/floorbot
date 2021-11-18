@@ -2,7 +2,7 @@ import { CommandInteraction, Guild, Message, MessageActionRow, MessageButton, Co
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { Handler } from '../../../discord/handler/Handler.js';
 import { AdminCommandData } from './AdminCommandData.js';
 import { AdminSelectMenu } from './AdminSelectMenu.js';
@@ -23,7 +23,7 @@ export class AdminHandler extends ChatInputHandler {
         const subCommand = command.options.getSubcommand();
         const { guild, member } = command;
         if (!guild) return command.reply(new AdminEmbed(command).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
-        if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+        if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
         switch (subCommand) {
             case 'commands': {
                 await command.deferReply();
@@ -34,7 +34,7 @@ export class AdminHandler extends ChatInputHandler {
                 let message = await command.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', async (component) => {
-                    if (!HandlerUtil.isAdminOrOwner(member, command)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                    if (!HandlerUtil.isAdminOrOwner(member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     if (component.isSelectMenu() && component.customId === 'groups') {
                         await component.deferUpdate();
                         const response = this.createResponse(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);

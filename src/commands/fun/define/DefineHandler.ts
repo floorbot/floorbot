@@ -5,7 +5,7 @@ import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.j
 import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI.js';
 import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { DefineCommandData } from './DefineCommandData.js';
 
 export class DefineHandler extends ChatInputHandler implements Autocomplete {
@@ -31,10 +31,10 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
         const definitions = query ?
             await UrbanDictionaryAPI.define(Util.escapeMarkdown(query)).catch(() => null) :
             await UrbanDictionaryAPI.random().catch(() => null);
-        if (!definitions) return command.followUp(HandlerReply.createAPIErrorReply(command, this));
+        if (!definitions) return command.followUp(HandlerReplies.createAPIErrorReply(command, this));
         if (!definitions.length) {
-            if (!query) return command.followUp(HandlerReply.createUnexpectedErrorReply(command, this));
-            else return command.followUp(HandlerReply.createNotFoundReply(command, query));
+            if (!query) return command.followUp(HandlerReplies.createUnexpectedErrorReply(command, this));
+            else return command.followUp(HandlerReplies.createNotFoundReply(command, query));
         }
         const replyOptions = this.createDefinitionReply(command, definitions, page);
         const message = await command.followUp(replyOptions) as Message;
@@ -55,7 +55,7 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
 
     private createDefinitionReply(interaction: CommandInteraction, definitions: UrbanDictionaryData[], page: number = 0): InteractionReplyOptions {
         const definition = definitions[page];
-        if (!definition) return HandlerReply.createUnexpectedErrorReply(interaction, this);
+        if (!definition) return HandlerReplies.createUnexpectedErrorReply(interaction, this);
         const embed = new HandlerEmbed()
             .setContextAuthor(interaction)
             .setTitle(`${definition.word}`)

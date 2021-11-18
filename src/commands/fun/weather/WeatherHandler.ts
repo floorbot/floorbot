@@ -7,7 +7,7 @@ import { WeatherButton, WeatherButtonID } from './components/WeatherButton.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { WeatherDatabase, WeatherLinkRow } from './WeatherDatabase.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { WeatherEmbed } from './components/WeatherEmbed.js';
 import { Pool } from 'mariadb';
 
@@ -104,7 +104,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.LINK: {
                 const member = (command.options.getMember('user') || command.member);
-                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -133,7 +133,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.UNLINK: {
                 const member = (command.options.getMember('user') || command.member);
-                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReply.createAdminOrOwnerReply(command));
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 await this.database.deleteLink(member);
                 const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
