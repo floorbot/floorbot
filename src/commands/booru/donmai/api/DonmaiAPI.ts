@@ -1,21 +1,21 @@
 import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../helpers/HandlerAPI.js';
-import DanbooruAPIAutocomplete from './interfaces/DanbooruAPIAutocomplete';
-import DanbooruAPIError from './interfaces/DanbooruAPIError';
-import DanbooruAPICount from './interfaces/DanbooruAPICount';
-import DanbooruAPIPost from './interfaces/DanbooruAPIPost';
+import DonmaiAPIAutocomplete from './interfaces/DonmaiAPIAutocomplete';
+import DonmaiAPIError from './interfaces/DonmaiAPIError';
+import DonmaiAPICount from './interfaces/DonmaiAPICount';
+import DonmaiAPIPost from './interfaces/DonmaiAPIPost';
 import { Redis } from 'ioredis';
 
-export { DanbooruAPIAutocomplete, DanbooruAPIError, DanbooruAPICount, DanbooruAPIPost };
+export { DonmaiAPIAutocomplete, DonmaiAPIError, DonmaiAPICount, DonmaiAPIPost };
 
-export class DanbooruAPI extends HandlerAPI {
+export class DonmaiAPI extends HandlerAPI {
 
-    constructor(options: { redis: Redis, auth?: HandlerAPIAuth }) {
-        const { redis, auth } = options;
+    constructor(options: { subDomain: string, redis: Redis, auth?: HandlerAPIAuth }) {
+        const { subDomain, redis, auth } = options;
         super({
             auth: auth,
-            url: 'https://danbooru.donmai.us',
+            url: `https://${subDomain}.donmai.us`,
             limiter: HandlerAPI.createLimiter({
-                id: `danbooru-api-${auth ? auth.apiKey : 'global'}`,
+                id: `${subDomain}-api-${auth ? auth.apiKey : 'global'}`,
                 maxConcurrent: 10,
                 perSecond: 10,
                 redis: redis
@@ -31,15 +31,15 @@ export class DanbooruAPI extends HandlerAPI {
         return super.request(endpoint, params, requestUpdates).then(res => res.json());
     }
 
-    public async count(tags: string = String(), requestUpdates?: HandlerAPIRequestUpdates): Promise<DanbooruAPICount | DanbooruAPIError> {
+    public async count(tags: string = String(), requestUpdates?: HandlerAPIRequestUpdates): Promise<DonmaiAPICount | DonmaiAPIError> {
         return this.request('counts/posts', [['tags', tags]], requestUpdates);
     }
 
-    public async random(tags: string = String(), requestUpdates?: HandlerAPIRequestUpdates): Promise<DanbooruAPIPost | DanbooruAPIError> {
+    public async random(tags: string = String(), requestUpdates?: HandlerAPIRequestUpdates): Promise<DonmaiAPIPost | DonmaiAPIError> {
         return this.request('posts/random', [['tags', tags]], requestUpdates);
     }
 
-    public async autocomplete(tag: string = String(), limit: number = 10, requestUpdates?: HandlerAPIRequestUpdates): Promise<DanbooruAPIAutocomplete[]> {
+    public async autocomplete(tag: string = String(), limit: number = 10, requestUpdates?: HandlerAPIRequestUpdates): Promise<DonmaiAPIAutocomplete[]> {
         return this.request('autocomplete', [
             ['search[query]', tag],
             ['search[type]', 'tag_query'],
@@ -54,7 +54,7 @@ export class DanbooruAPI extends HandlerAPI {
     }
 
     // A type guard checking if a response is an error
-    public static isError(res: any): res is DanbooruAPIError {
+    public static isError(res: any): res is DonmaiAPIError {
         return 'success' in res && res.success === false;
     }
 }

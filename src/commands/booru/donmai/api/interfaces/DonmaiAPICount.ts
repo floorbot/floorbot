@@ -1,4 +1,4 @@
-export default interface SafebooruAPICount {
+export default interface DonmaiAPICount {
     readonly counts: {
         readonly posts: number
     }

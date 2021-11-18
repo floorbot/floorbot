@@ -1,4 +1,4 @@
-export default interface SafebooruAPIAutocomplete {
+export default interface DonmaiAPIAutocomplete {
     readonly type: string,
     readonly label: string,
     readonly value: string,

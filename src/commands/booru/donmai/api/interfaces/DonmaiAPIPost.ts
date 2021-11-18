@@ -1,4 +1,4 @@
-export default interface DanbooruAPIPost {
+export default interface DonmaiAPIPost {
     readonly id: number,
     readonly created_at: string,
     readonly uploader_id: number,

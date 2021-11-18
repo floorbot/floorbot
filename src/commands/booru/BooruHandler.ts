@@ -1,16 +1,11 @@
 import { ChatInputApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
 import { ChatInputHandler } from '../../discord/handler/abstracts/ChatInputHandler.js';
+import { BooruButtonID, BooruReplies, BooruSelectMenuID } from './BooruReplies.js';
 import { HandlerUtil } from '../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../helpers/HandlerReply.js';
-import { BooruSelectMenuID } from './BooruSelectMenu.js';
-import { BooruButtonID } from './BooruButton.js';
 
 export interface BooruHandlerOptions {
     readonly data: ChatInputApplicationCommandData
-    readonly nsfw: boolean,
-    readonly id: string,
-    readonly apiName: string,
-    readonly apiIcon: string
+    readonly nsfw: boolean
 }
 
 export interface BooruSuggestionData {
@@ -24,13 +19,10 @@ export interface BooruSuggestionData {
 
 export abstract class BooruHandler extends ChatInputHandler {
 
-    public readonly apiName: string;
-    public readonly apiIcon: string;
+    protected readonly abstract replies: BooruReplies;
 
     constructor(options: BooruHandlerOptions) {
         super({ group: 'Booru', global: false, ...options });
-        this.apiName = options.apiName;
-        this.apiIcon = options.apiIcon;
     }
 
     public abstract generateResponse(interaction: Interaction, query: string): Promise<InteractionReplyOptions>
@@ -63,7 +55,7 @@ export abstract class BooruHandler extends ChatInputHandler {
                     switch (component.customId) {
                         case BooruButtonID.RECYCLE: {
                             const member = component.member as GuildMember;
-                            if (!HandlerUtil.isAdminOrOwner(member, source)) await component.reply(HandlerReply.createAdminOrOwnerReply(component));
+                            if (!HandlerUtil.isAdminOrOwner(member, source)) await component.reply(this.replies.createAdminOrOwnerReply(component));
                             await component.deferUpdate();
                             const replyOptions = await this.generateResponse(component, query);
                             await component.editReply(replyOptions);

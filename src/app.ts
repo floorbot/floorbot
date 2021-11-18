@@ -18,9 +18,6 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
-import { SafebooruHandler } from './commands/booru/safebooru/SafebooruHandler.js';
-import { DanbooruHandler } from './commands/booru/danbooru/DanbooruHandler.js';
-import { PregchanHandler } from './commands/booru/pregchan/PregchanHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
@@ -32,6 +29,7 @@ import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
+import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -48,11 +46,8 @@ const env = envalid.cleanEnv(process.env, {
 
     OPEN_WEATHER_API_KEY: str({ desc: 'OpenWeather API Key', docs: 'https://openweathermap.org/api' }),
 
-    DANBOORU_USERNAME: str({ default: '', desc: 'Danbooru Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
-    DANBOORU_API_KEY: str({ default: '', desc: 'Danbooru API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
-
-    SAFEBOORU_USERNAME: str({ default: '', desc: 'Safebooru Username', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' }),
-    SAFEBOORU_API_KEY: str({ default: '', desc: 'Safebooru API Key', docs: 'https://safebooru.donmai.us/wiki_pages/help:api' }),
+    DONMAI_USERNAME: str({ default: '', desc: 'Donmai Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
+    DONMAI_API_KEY: str({ default: '', desc: 'Donmai API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
 
     E621_USERNAME: str({ default: '', desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
     E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
@@ -93,19 +88,20 @@ const client = new HandlerClient({
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
         new E621Handler(),
-        new PregchanHandler(),
         new Rule34Handler()
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {
-            const envAuth = { username: env.DANBOORU_USERNAME, apiKey: env.DANBOORU_API_KEY }
+            const details = { subDomain: 'danbooru', nsfw: true };
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new DanbooruHandler(redis, auth);
+            return new DonmaiHandler(details, redis, auth);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.SAFEBOORU_USERNAME, apiKey: env.SAFEBOORU_API_KEY }
+            const details = { subDomain: 'safebooru', nsfw: false };
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new SafebooruHandler(redis, auth);
+            return new DonmaiHandler(details, redis, auth);
         }
     ]
 });
