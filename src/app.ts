@@ -88,7 +88,9 @@ const client = new HandlerClient({
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
         new E621Handler(),
-        new Rule34Handler()
+
+        // These are good... probably...
+        new Rule34Handler(redis)
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {

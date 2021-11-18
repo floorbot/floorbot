@@ -1,22 +1,20 @@
-import { AutocompleteInteraction, Interaction, InteractionReplyOptions, MessageActionRow } from 'discord.js';
+import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
 import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
-import { Rule34API, Rule34APIAutocomplete } from './Rule34API.js';
+import { Rule34API, Rule34APIAutocomplete } from './api/Rule34API.js';
 import { Rule34CommandData } from './Rule34CommandData.js';
-import { BooruSelectMenu } from '../BooruSelectMenu.js';
 import { BooruHandler } from '../BooruHandler.js';
-import { BooruButton } from '../BooruButton.js';
-import { BooruEmbed } from '../BooruEmbed.js';
+import { BooruReplies } from '../BooruReplies.js';
+import { Redis } from 'ioredis';
 
 export class Rule34Handler extends BooruHandler implements Autocomplete {
 
-    constructor() {
-        super({
-            id: 'rule34',
-            nsfw: true,
-            data: Rule34CommandData,
-            apiName: 'Rule34',
-            apiIcon: 'https://rule34.xxx/apple-touch-icon-precomposed.png'
-        });
+    protected readonly replies: BooruReplies;
+    private readonly api: Rule34API;
+
+    constructor(redis: Redis, auth?: { username: string, apiKey: string }) {
+        super({ nsfw: true, data: Rule34CommandData });
+        this.replies = new BooruReplies({ apiName: 'Donmai', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
+        this.api = new Rule34API({ redis, auth });
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -24,7 +22,7 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
         const tags = partialTags.split('+');
         const partial = tags.pop() as string;
         if (!partial.length) return interaction.respond([]);
-        const autocomplete = await Rule34API.autocomplete(partial);
+        const autocomplete = await this.api.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
                 name: [...tags, tag.value].join('+'),
@@ -35,24 +33,14 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
     }
 
     public async generateResponse(interaction: Interaction, tags: string = String()): Promise<InteractionReplyOptions> {
-        const post = await Rule34API.random(tags);
+        const post = await this.api.random(tags);
         if (!post) {
-            const url404 = await Rule34API.get404();
-            const autocomplete = await Rule34API.autocomplete(tags);
+            const url404 = await this.api.get404();
+            const autocomplete = await this.api.autocomplete(tags);
             const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total } });
-            return {
-                embeds: [BooruEmbed.createSuggestionEmbed(this, interaction, { suggestions, tags, url404 })],
-                components: suggestions.length ? [BooruSelectMenu.createSuggestionSelectMenu({ tags, suggestions, url404 }).toActionRow()] : []
-            };
+            return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
         }
         const postURL = `https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;
-        return {
-            embeds: [BooruEmbed.createImageEmbed(this, interaction, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags })],
-            components: [new MessageActionRow().addComponents([
-                BooruButton.createViewOnlineButton(postURL),
-                BooruButton.createRepeatButton(tags),
-                BooruButton.createRecycleButton()
-            ])]
-        }
+        return this.replies.createImageReply(interaction, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags });
     }
 }
