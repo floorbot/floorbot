@@ -1,22 +1,26 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
 import { HandlerButton, HandlerButtonID } from '../../../discord/components/HandlerButton.js';
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { UrbanDictionaryAPI, UrbanDictionaryAPIData } from './UrbanDictionaryAPI.js';
 import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
-import { UrbanDictionaryAPI, UrbanDictionaryData } from './UrbanDictionaryAPI.js';
 import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { DefineCommandData } from './DefineCommandData.js';
+import { Redis } from 'ioredis';
 
 export class DefineHandler extends ChatInputHandler implements Autocomplete {
 
-    constructor() {
+    private readonly api: UrbanDictionaryAPI;
+
+    constructor(redis: Redis) {
         super({ group: 'Fun', global: false, nsfw: false, data: DefineCommandData })
+        this.api = new UrbanDictionaryAPI(redis);
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partial = interaction.options.getString('query', true);
-        const autocomplete = await UrbanDictionaryAPI.autocomplete(partial).catch(() => null);
+        const autocomplete = await this.api.autocomplete(partial).catch(() => null);
         if (!autocomplete) return interaction.respond([]);
         const options = autocomplete.slice(0, 5).map(suggestion => {
             return { name: suggestion.term, value: suggestion.term }
@@ -29,8 +33,8 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
         let page = 0;
         const query = command.options.getString('query');
         const definitions = query ?
-            await UrbanDictionaryAPI.define(Util.escapeMarkdown(query)).catch(() => null) :
-            await UrbanDictionaryAPI.random().catch(() => null);
+            await this.api.define(Util.escapeMarkdown(query)).catch(() => null) :
+            await this.api.random().catch(() => null);
         if (!definitions) return command.followUp(HandlerReplies.createAPIErrorReply(command, this));
         if (!definitions.length) {
             if (!query) return command.followUp(HandlerReplies.createUnexpectedErrorReply(command, this));
@@ -53,7 +57,7 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private createDefinitionReply(interaction: CommandInteraction, definitions: UrbanDictionaryData[], page: number = 0): InteractionReplyOptions {
+    private createDefinitionReply(interaction: CommandInteraction, definitions: UrbanDictionaryAPIData[], page: number = 0): InteractionReplyOptions {
         const definition = definitions[page];
         if (!definition) return HandlerReplies.createUnexpectedErrorReply(interaction, this);
         const embed = new HandlerEmbed()

@@ -76,7 +76,7 @@ const client = new HandlerClient({
         new AdminHandler(),
         new UtilsHandler(),
         new LostHandler(),
-        new DefineHandler(),
+        new DefineHandler(redis),
         new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),
         new FlipMessageHandler(),

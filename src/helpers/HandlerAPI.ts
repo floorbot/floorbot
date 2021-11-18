@@ -84,9 +84,9 @@ export abstract class HandlerAPI {
         return headers;
     }
 
-    protected async request(endpoint: string, params: [string, string | number][], requestUpdates?: HandlerAPIRequestUpdates): Promise<Response> {
+    protected async request(endpoint: string, params?: [string, string | number][], requestUpdates?: HandlerAPIRequestUpdates): Promise<Response> {
         return this.limiter.schedule({ expiration: this.expiration }, async () => {
-            const paramString = params.map((param) => `${param[0]}=${param[1]}`).join('&');
+            const paramString = (params || []).map((param) => `${param[0]}=${param[1]}`).join('&');
             const options = { method: 'GET', headers: this.getHeaders() };
             const url = this.getRequestURL(endpoint, paramString);
             return fetch(url, options);
