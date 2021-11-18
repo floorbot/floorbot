@@ -4,6 +4,7 @@ import { HandlerSelectMenu } from '../discord/components/HandlerSelectMenu.js';
 import { HandlerButton } from '../discord/components/HandlerButton.js';
 import { HandlerEmbed } from '../discord/components/HandlerEmbed.js';
 import { Handler } from '../discord/handler/Handler.js';
+import Bottleneck from 'bottleneck';
 import { Stream } from 'stream';
 import path from 'path';
 import fs from 'fs';
@@ -46,9 +47,7 @@ export class HandlerReplies {
     }
 
     public createErrorReply(context: Interaction | Message, error: any): InteractionReplyOptions {
-        if (error instanceof Error) {
-            error.message
-        }
+        if (error instanceof Bottleneck.BottleneckError) return this.createBottleneckErrorReply(context, error);
         const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
@@ -59,6 +58,24 @@ export class HandlerReplies {
                 `Error: *${error.message ?? error.name ?? 'unknown'}*`,
                 '',
                 'This error has been reported and will be fixed!'
+            ]);
+        console.warn('Unknown Error', error)
+        return { embeds: [embed], files: [attachment] }
+    }
+
+
+    public createBottleneckErrorReply(context: Interaction | Message, error: Bottleneck.BottleneckError): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setTitle(error.name)
+            .setDescription([
+                'Sorry! It appears I am being rate limited',
+                `Message: *${error.message}*`,
+                '',
+                '*Please give me some time before trying again!*'
             ]);
         console.warn('Unknown Error', error)
         return { embeds: [embed], files: [attachment] }
