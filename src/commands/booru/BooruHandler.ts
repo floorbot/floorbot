@@ -72,7 +72,10 @@ export abstract class BooruHandler extends ChatInputHandler {
                         }
                     }
                 }
-            } catch { }
+            } catch (error) {
+                const replyOptions = this.replies.createErrorReply(component, error);
+                await component.followUp(replyOptions).catch(() => { });
+            }
         }
     }
 }

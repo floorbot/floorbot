@@ -26,7 +26,9 @@ export class HandlerUtil {
                     attachments: [...message.attachments.values()]
                 };
                 await message.edit(replyOptions);
-            } catch { }
+            } catch (error) {
+                console.warn('[util] Error deleting components from collector', error)
+            }
         }
     }
 
