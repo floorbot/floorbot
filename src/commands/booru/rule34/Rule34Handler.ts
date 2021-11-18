@@ -11,10 +11,10 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
     protected readonly replies: BooruReplies;
     private readonly api: Rule34API;
 
-    constructor(redis: Redis, auth?: { username: string, apiKey: string }) {
+    constructor(redis: Redis) {
         super({ nsfw: true, data: Rule34CommandData });
         this.replies = new BooruReplies({ apiName: 'Donmai', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
-        this.api = new Rule34API({ redis, auth });
+        this.api = new Rule34API({ redis });
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {

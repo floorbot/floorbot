@@ -87,7 +87,6 @@ const client = new HandlerClient({
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
-        new E621Handler(),
 
         // These are good... probably...
         new Rule34Handler(redis)
@@ -104,6 +103,11 @@ const client = new HandlerClient({
             const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
             return new DonmaiHandler(details, redis, auth);
+        },
+        (_client: HandlerClient) => {
+            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env] invalid or missing e621 credentials!');
+            return new E621Handler(redis, envAuth);
         }
     ]
 });

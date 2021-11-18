@@ -48,8 +48,8 @@ export class DonmaiAPI extends HandlerAPI {
     }
 
     public async get404(): Promise<string> {
-        const data = await this.random('pool:16069');
-        if ('large_file_url' in data) return data.large_file_url;
+        const post = await this.random('pool:16069');
+        if ('large_file_url' in post) return post.large_file_url;
         else return 'https://cdn.donmai.us/sample/f1/13/sample-f113114efd070fdd1778cc9ae63f18c8.jpg';
     }
 
