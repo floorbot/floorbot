@@ -2,12 +2,12 @@ import { HandlerAttachment } from '../discord/components/HandlerAttachment.js';
 import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
 import { HandlerEmbed } from '../discord/components/HandlerEmbed.js';
 import { Handler } from '../discord/handler/Handler.js';
-import fs from 'fs';
+import { readFileSync } from 'fs';
 
 export class HandlerReply {
 
     public static createMessageContentReply(context: Interaction | Message, action: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-2.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -20,7 +20,7 @@ export class HandlerReply {
     }
 
     public static createInvalidInputReply(context: Interaction | Message, message: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-2.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-2.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -33,7 +33,7 @@ export class HandlerReply {
     }
 
     public static createAdminOrOwnerReply(context: Interaction | Message): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-5.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-5.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -46,7 +46,7 @@ export class HandlerReply {
     }
 
     public static createNotFoundReply(context: Interaction | Message, query: string, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-3.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-3.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -59,7 +59,7 @@ export class HandlerReply {
     }
 
     public static createUnexpectedErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-7.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-7.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -72,7 +72,7 @@ export class HandlerReply {
     }
 
     public static createAPIErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${__dirname}/../../res/avatars/2-7.png`);
+        const buffer = readFileSync(new URL(`../../res/avatars/2-7.png`, import.meta.url));
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
