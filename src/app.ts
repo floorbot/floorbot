@@ -1,5 +1,3 @@
-(await import('dotenv-safe')).config();
-
 import { HandlerClient } from './discord/handler/HandlerClient.js';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
@@ -30,6 +28,7 @@ import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 
 const poolConfig: PoolConfig = {
     host: process.env['DB_HOST'],
@@ -65,7 +64,8 @@ const client = new HandlerClient({
         new SafebooruHandler(),
         new E621Handler(),
         new PregchanHandler(),
-        new Rule34Handler()
+        new Rule34Handler(),
+        new DisputeHandler(pool)
     ]
 });
 
