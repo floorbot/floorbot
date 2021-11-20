@@ -2,7 +2,6 @@ import { ContextMenuHandler } from '../../../discord/handler/abstracts/ContextMe
 import { DisputeCommandData } from './DisputeCommandData.js';
 import { HandlerReply } from '../../../helpers/HandlerReply.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
 import { DisputeEmbed } from './components/DisputeEmbed.js';
 import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction } from 'discord.js';
@@ -28,12 +27,14 @@ export class DisputeHandler extends ContextMenuHandler {
         await this.database.setDisputeVote(contextMenu, contextMenu, origMessage, true);
         await contextMenu.deferReply();
         const disputeResults = await this.database.fetchResults(origMessage);
-        const replyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!);
+        const yes_string = await this.database.getVoters(origMessage, 'yes');
+        console.log(yes_string);
+        const no_string = await this.database.getVoters(origMessage, 'no');
+        const replyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
         const message = await contextMenu.followUp(replyOptions) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 1 });
         collector.on('collect', this.createCollectorFunction(contextMenu, origMessage));
-        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
-        // collector.on('end', (contextMenu, origMessage) => this.onCollectEnd(contextMenu, origMessage));
+        collector.on('end', () => { this.onCollectEnd(contextMenu, message, origMessage); });
     }
 
     private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message): (component: MessageComponentInteraction) => void {
@@ -46,7 +47,9 @@ export class DisputeHandler extends ContextMenuHandler {
                             if (!currVote) await this.database.setDisputeVote(contextMenu, component, message, true);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!);
+                            const yes_string = await this.database.getVoters(message, 'yes');
+                            const no_string = await this.database.getVoters(message, 'no');
+                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!);
                             await component.editReply(replyOptions);
                             break;
                         }
@@ -55,7 +58,9 @@ export class DisputeHandler extends ContextMenuHandler {
                             if (!currVote) await this.database.setDisputeVote(contextMenu, component, message, false);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!);
+                            const yes_string = await this.database.getVoters(message, 'yes');
+                            const no_string = await this.database.getVoters(message, 'no');
+                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!);
                             await component.editReply(replyOptions);
                             break;
                         }
@@ -65,8 +70,8 @@ export class DisputeHandler extends ContextMenuHandler {
         }
     }
 
-    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults): InteractionReplyOptions {
-        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results);
+    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string): InteractionReplyOptions {
+        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             DisputeButton.createDisputeButton(DisputeButtonID.YES),
             DisputeButton.createDisputeButton(DisputeButtonID.NO)
@@ -74,18 +79,17 @@ export class DisputeHandler extends ContextMenuHandler {
         return { embeds: [embed], components: [actionRow] };
     }
 
-    // private createFinalResponse(interaction: Interaction, message: Message, results: DisputeResults): InteractionReplyOptions {
-    //
-    //     return ;
-    // }
-
-    // private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message) {
-    //   // await contextMenu.deferUpdate();
-    //   const disputeResults = await this.database.fetchResults(message);
-    //   const embed = DisputeEmbed.getFinalEmbed(contextMenu, message, disputeResults!);
-    //   const replyOptions = { embeds: [embed] };
-    //   await message.edit(replyOptions);
-    // }
+    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message) {
+        const updatedMessage = await message.fetch();
+        const disputeResults = await this.database.fetchResults(origMessage);
+        if (disputeResults!.total_votes <= 1) {
+            contextMenu.editReply(DisputeEmbed.getNotEnoughVotesEmbed(contextMenu));
+        } else {
+            const embed = DisputeEmbed.getFinalEmbed(contextMenu, origMessage, disputeResults!);
+            const replyOptions = { embeds: [embed], components: [] };
+            await updatedMessage.edit(replyOptions);
+        }
+    }
 
     public override async setup(client: HandlerClient): Promise<any> {
         return super.setup(client).then(() => this.database.createTables()).then(() => true);

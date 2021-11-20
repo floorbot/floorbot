@@ -11,15 +11,15 @@ export class DisputeEmbed extends HandlerEmbed {
         this.setContextAuthor(interaction);
     }
 
-    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults): DisputeEmbed {
+    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string): DisputeEmbed {
         const embed = new DisputeEmbed(interaction);
         const intMember = interaction.member! as GuildMember
         embed.setAuthor([`${intMember.displayName} thinks that ${message.member!.displayName} is full of shit.`,
                          `Do you believe ${message.member!.displayName} is correct?`
                         ].join('\n'));
         embed.setDescription(message.content + ' -' + `${message.author}`);
-        embed.addField(`*Yes Votes*`, (`${results.yes_votes}`), true);
-        embed.addField(`*No Votes*`, (`${results.no_votes}`), true);
+        embed.addField(`*Yes Votes: ${results.yes_votes}*`, (`${yes_string ? yes_string : 'None'}`), true);
+        embed.addField(`*No Votes: ${results.no_votes}*`, (`${no_string ? no_string : 'None'}`), true);
         return embed;
     }
 
@@ -59,5 +59,14 @@ export class DisputeEmbed extends HandlerEmbed {
                               `\n`,
                               `That dispute had ${results.total_votes} votes and ${helperText}`].join('\n'));
         return { embeds: [embed], files: [attachment], ephemeral: true };
+    }
+
+    public static getNotEnoughVotesEmbed(interaction: Interaction): InteractionReplyOptions {
+        const buffer = readFileSync(new URL(`../../../../../res/avatars/2-5.png`, import.meta.url));
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new DisputeEmbed(interaction);
+        embed.setThumbnail(attachment.getEmbedUrl());
+        embed.setDescription(`Not enough people voted. This dispute has been cancelled.`);
+        return { embeds: [embed], components: [], files: [attachment] };
     }
 }
