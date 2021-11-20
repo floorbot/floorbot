@@ -28,7 +28,6 @@ export class DisputeHandler extends ContextMenuHandler {
         await contextMenu.deferReply();
         const disputeResults = await this.database.fetchResults(origMessage);
         const yes_string = await this.database.getVoters(origMessage, 'yes');
-        console.log(yes_string);
         const no_string = await this.database.getVoters(origMessage, 'no');
         const replyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
         const message = await contextMenu.followUp(replyOptions) as Message;
@@ -84,9 +83,11 @@ export class DisputeHandler extends ContextMenuHandler {
         const disputeResults = await this.database.fetchResults(origMessage);
         if (disputeResults!.total_votes <= 1) {
             contextMenu.editReply(DisputeEmbed.getNotEnoughVotesEmbed(contextMenu));
+            //TODO: Delete record that didn't get enough votes.
         } else {
             const embed = DisputeEmbed.getFinalEmbed(contextMenu, origMessage, disputeResults!);
             const replyOptions = { embeds: [embed], components: [] };
+            //TODO: Remove buttons from existing message and create new message instead
             await updatedMessage.edit(replyOptions);
         }
     }
