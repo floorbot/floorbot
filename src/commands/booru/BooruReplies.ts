@@ -86,8 +86,8 @@ export class BooruReplies extends HandlerReplies {
             components: [
                 new MessageActionRow().addComponents([
                     viewOnlineButton,
-                    recycleButton,
-                    repeatButton
+                    repeatButton,
+                    recycleButton
                 ])
             ]
         }
