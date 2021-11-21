@@ -1,4 +1,4 @@
-import { Pool } from 'mariadb';
+import { HandlerDatabase, HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -32,12 +32,10 @@ export interface DDDNutRow {
     readonly description: string | null
 }
 
-export class DDDDatabase {
+export class DDDDatabase extends HandlerDatabase {
 
-    private readonly pool: Pool;
-
-    constructor(pool: Pool) {
-        this.pool = pool;
+    constructor(db: HandlerDB) {
+        super({ db: db });
     }
 
     /** --- Settings Functions --- **/
@@ -52,13 +50,13 @@ export class DDDDatabase {
             passing_role_id: partial.passing_role_id ?? ('passing_role_id' in partial ? null : existing.passing_role_id),
             failed_role_id: partial.failed_role_id ?? ('failed_role_id' in partial ? null : existing.failed_role_id),
         };
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, settingsRow);
+        await this.exec(sql, settingsRow);
         return settingsRow;
     }
 
     public async fetchSettings(partial: DDDPartialSettingsRow): Promise<DDDSettingsRow> {
         const sql = 'SELECT * FROM ddd_settings WHERE guild_id = :guild_id AND year = :year LIMIT 1';
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
+        const rows = await this.select(sql, partial);
         return rows.length ? rows[0] : { ...partial, channel_id: null, event_role_id: null, passing_role_id: null, failed_role_id: null }
     }
 
@@ -66,18 +64,18 @@ export class DDDDatabase {
 
     public async setParticipant(participantRow: DDDParticipantRow): Promise<DDDParticipantRow> {
         const sql = 'REPLACE INTO ddd_participant VALUES (:guild_id, :year, :user_id, :zone, :failed)';
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, participantRow);
+        await this.exec(sql, participantRow);
         return participantRow;
     }
 
     public async deleteParticipant(partial: DDDPartialParticipantRow): Promise<void> {
         const sql = 'DELETE FROM ddd_participant WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id';
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
+        await this.exec(sql, partial);
     }
 
     public async fetchParticipant(partial: DDDPartialParticipantRow): Promise<DDDParticipantRow | null> {
         const sql = 'SELECT * FROM ddd_participant WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id LIMIT 1';
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
+        const rows = await this.select(sql, partial);
         return rows.length ? rows[0] : null;
     }
 
@@ -87,29 +85,29 @@ export class DDDDatabase {
             'SELECT * FROM ddd_participant WHERE guild_id = :guild_id AND year = :year'
         );
         const data = typeof scope === 'number' ? { year: scope } : scope;
-        return await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+        return await this.select(sql, data);
     }
 
     /** --- Nut Functions --- **/
 
     public async setNut(nutRow: DDDNutRow): Promise<DDDNutRow> {
         const sql = 'REPLACE INTO ddd_nut VALUES (:guild_id, :year, :user_id, :epoch, :description)';
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, nutRow);
+        await this.exec(sql, nutRow);
         return nutRow;
     }
 
     public async fetchAllNuts(partial: DDDPartialParticipantRow): Promise<DDDNutRow[]> {
         const sql = 'SELECT * FROM ddd_nut WHERE guild_id = :guild_id AND year = :year AND user_id = :user_id';
-        return await this.pool.query({ namedPlaceholders: true, sql: sql }, partial);
+        return await this.select(sql, partial);
     }
 
     /** --- Create Database Tables --- **/
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_participant.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_settings.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_nut.sql`, 'utf8'))
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_participant.sql`, 'utf8')),
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_settings.sql`, 'utf8')),
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/ddd_nut.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

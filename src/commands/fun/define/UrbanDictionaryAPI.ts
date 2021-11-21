@@ -1,42 +1,64 @@
+import { HandlerAPI, HandlerAPIRequestUpdates } from '../../../helpers/HandlerAPI.js';
 import CacheMap from 'cache-map';
-import fetch from 'node-fetch';
+import { Redis } from 'ioredis';
 
-export class UrbanDictionaryAPI {
 
-    private static cache: CacheMap<string, UrbanDictionaryData[] | UrbanDictionaryAutocomplete> = new CacheMap({ ttl: 1000 * 60 * 60 });
+export class UrbanDictionaryAPI extends HandlerAPI {
 
-    private static async request(endpoint: string, params: Map<string, string> = new Map(), options: Object = {}) {
-        options = Object.assign({ method: 'GET' }, options)
-        const paramString: string = Array.from(params).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
-        const url: string = `http://api.urbandictionary.com/v0/${endpoint}?${paramString}`;
-        const existing = UrbanDictionaryAPI.cache.get(paramString);
-        return existing || fetch(url, options).then((res) => res.json()).then(res => {
-            if (['define', 'autocomplete-extra'].includes(endpoint)) UrbanDictionaryAPI.cache.set(paramString, res);
-            return res;
+    private autocompleteCache: CacheMap<string, UrbanDictionaryAPIAutocomplete[]>;
+    private defineCache: CacheMap<string, UrbanDictionaryAPIData[]>;
+
+    constructor(redis: Redis) {
+        super({
+            url: `http://api.urbandictionary.com/v0`,
+            limiter: HandlerAPI.createLimiter({
+                id: `urbandictionary-api`,
+                maxConcurrent: 10,
+                perSecond: 10,
+                redis: redis
+            })
         });
+        this.autocompleteCache = new CacheMap({ ttl: 1000 * 60 * 60 });
+        this.defineCache = new CacheMap({ ttl: 1000 * 60 * 60 });
     }
 
-    public static async define(term: string): Promise<UrbanDictionaryData[]> {
-        const params = new Map([['term', term]]);
-        return await UrbanDictionaryAPI.request('define', params).then(res => { return res.list ?? []});
+    protected override async request(endpoint: string, params?: [string, string | number][], requestUpdates?: HandlerAPIRequestUpdates): Promise<any> {
+        return super.request(endpoint, params, requestUpdates).then(res => res.json());
     }
 
-    public static async random(): Promise<UrbanDictionaryData[]> {
-        return await UrbanDictionaryAPI.request('random').then(res => res.list ?? []);
+    public async define(term: string): Promise<UrbanDictionaryAPIData[]> {
+        const existing = this.defineCache.get(term.toLowerCase());
+        if (existing) return existing;
+        return await this.request('define', [['term', term]])
+            .then(res => { return res.list ?? []})
+            .then(res => {
+                this.defineCache.set(term.toLowerCase(), res);
+                return res;
+            });
     }
 
-    public static async autocomplete(term: string): Promise<UrbanDictionaryAutocomplete[]> {
-        const params = new Map([['term', term]]);
-        return await UrbanDictionaryAPI.request('autocomplete-extra', params).then(res => res.results ?? []);
+    public async random(): Promise<UrbanDictionaryAPIData[]> {
+        return await this.request('random').then(res => res.list ?? []);
+    }
+
+    public async autocomplete(term: string): Promise<UrbanDictionaryAPIAutocomplete[]> {
+        const existing = this.autocompleteCache.get(term.toLowerCase());
+        if (existing) return existing;
+        return await this.request('autocomplete-extra', [['term', term]])
+            .then(res => res.results ?? [])
+            .then(res => {
+                this.autocompleteCache.set(term.toLowerCase(), res);
+                return res;
+            });
     }
 }
 
-export interface UrbanDictionaryAutocomplete {
+export interface UrbanDictionaryAPIAutocomplete {
     readonly preview: string,
     readonly term: string
 }
 
-export interface UrbanDictionaryData {
+export interface UrbanDictionaryAPIData {
     readonly definition: string,
     readonly permalink: string,
     readonly thumbs_up: number,

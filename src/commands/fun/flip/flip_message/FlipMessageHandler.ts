@@ -1,6 +1,6 @@
 import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler.js';
 import { FlipMessageCommandData } from './FlipMessageCommandData.js';
-import { HandlerReply } from '../../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
 import { ContextMenuInteraction, Util } from 'discord.js';
 import { Flipper } from '../Flipper.js';
 
@@ -12,7 +12,7 @@ export class FlipMessageHandler extends ContextMenuHandler {
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
         const text = contextMenu.options.getMessage('message', true).content;
-        if (!text.length) return contextMenu.reply(HandlerReply.createMessageContentReply(contextMenu, 'flip'));
+        if (!text.length) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'flip'));
         await contextMenu.deferReply();
         const flipped = Flipper.flipText(text);
         const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!
