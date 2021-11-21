@@ -1,6 +1,6 @@
 CREATE TABLE markov_channel (
-    guild_id BIGINT NOT NULL,
-    channel_id BIGINT NOT NULL,
+    guild_id VARCHAR(64) NOT NULL,
+    channel_id VARCHAR(64) NOT NULL,
     minutes INT NOT NULL,
     messages INT NOT NULL,
     posting BOOLEAN NOT NULL,
