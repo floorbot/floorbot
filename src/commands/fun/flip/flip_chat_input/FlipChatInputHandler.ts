@@ -2,7 +2,7 @@ import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInpu
 import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { FlipChatInputCommandData } from './FlipChatInputCommandData.js';
 import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
-import { HandlerReply } from '../../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
 import { CommandInteraction, Util } from 'discord.js';
 import { Flipper } from '../Flipper.js';
 
@@ -33,7 +33,7 @@ export class FlipChatInputHandler extends ChatInputHandler {
                 return command.followUp({ content: split, allowedMentions: { parse: [] } });
             }
             default: {
-                return command.followUp(HandlerReply.createUnexpectedErrorReply(command, this));
+                return command.followUp(HandlerReplies.createUnexpectedErrorReply(command, this));
             }
         }
     }

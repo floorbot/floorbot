@@ -6,13 +6,15 @@ import { Handler } from './Handler';
 const { Events, ApplicationCommandTypes } = Constants;
 
 export interface HandlerClientOptions extends ClientOptions {
+    readonly handlerBuilders: ((client: HandlerClient) => Handler<any>)[],
     readonly handlers: Handler<any>[],
-    readonly ownerIds?: string[]
+    readonly ownerIds?: string[],
 }
 
 export class HandlerClient extends Client {
 
     private readonly presenceData?: PresenceData;
+
     public readonly handlers: Handler<any>[];
     public readonly ownerIds: string[];
 
@@ -22,6 +24,10 @@ export class HandlerClient extends Client {
         this.ownerIds = options.ownerIds || [];
         this.presenceData = options.presence;
         this.handlers = options.handlers;
+        for (const builder of options.handlerBuilders) {
+            const handler = builder(this);
+            this.handlers.push(handler);
+        }
     }
 
     public override async login(token?: string): Promise<string> {
@@ -73,11 +79,14 @@ export class HandlerClient extends Client {
                                 default: return this.emit('log', `[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
                             }
                         }
-                        return handler.execute(interaction).catch(error => {
+                        return handler.execute(interaction).catch(async error => {
                             this.emit('error', error);
-                            return interaction.followUp(new HandlerEmbed().setDescription([
+                            const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
+                            return interaction[method](new HandlerEmbed().setDescription([
                                 `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
-                                `*The error has been reported and will be fixed in the future!*`
+                                `*The error has been reported and will be fixed in the future!*`,
+                                '',
+                                ...(error && error.message ? [`Message: \`${error.message}\``] : [])
                             ]).toReplyOptions({ ephemeral: true }));
                         }).catch(() => { });
                     }

@@ -3,22 +3,22 @@ import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase.js
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { DDDButton, DDDButtonID } from './components/DDDButton.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { DDDEventDetails, DDDUtil } from './DDDUtil.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDEmbed } from './components/DDDEmbed.js';
 import { EventHandler } from '../EventHandler.js';
 import Schedule from 'node-schedule';
-import { Pool } from 'mariadb';
 
 export class DDDHandler extends EventHandler {
 
     private readonly jobs: Map<string, Schedule.Job> = new Collection();
     private readonly database: DDDDatabase;
 
-    constructor(pool: Pool) {
-        super({ eventName: 'Destroy Dick December', pool: pool, data: DDDCommandData });
-        this.database = new DDDDatabase(pool);
+    constructor(db: HandlerDB) {
+        super({ eventName: 'Destroy Dick December', data: DDDCommandData });
+        this.database = new DDDDatabase(db);
     }
 
     private async createSchedule(client: Client, participantRow: DDDParticipantRow) {
@@ -130,7 +130,7 @@ export class DDDHandler extends EventHandler {
                 const message = await command.followUp(replyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
-                    if (!HandlerUtil.isAdminOrOwner(component.member)) return component.reply(HandlerReply.createAdminOrOwnerReply(command));
+                    if (!HandlerUtil.isAdminOrOwner(component.member)) return component.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     if (!component.isButton()) { throw component }
                     await component.deferUpdate();
                     switch (component.customId) {
