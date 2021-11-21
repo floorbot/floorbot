@@ -1,5 +1,5 @@
+import { HandlerDatabase, HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { GuildChannel, User, Message, Guild } from 'discord.js';
-import { Pool } from 'mariadb';
 import path from 'path';
 import fs from 'fs';
 
@@ -31,20 +31,19 @@ export interface MarkovStringTotals {
     users: number
 }
 
-export class MarkovDatabase {
+export class MarkovDatabase extends HandlerDatabase {
 
     private static readonly DEFAULT_MESSAGES = 50;
     private static readonly DEAFULT_MINUTES = 100;
 
-    private readonly pool: Pool;
-
-    constructor(pool: Pool) {
-        this.pool = pool;
+    constructor(db: HandlerDB) {
+        super({ db: db });
     }
+
     public async fetchChannel(channel: GuildChannel): Promise<MarkovChannelRow> {
         const query = { guild_id: channel.guild.id, channel_id: channel.id };
         const sql = 'SELECT * FROM markov_channel WHERE guild_id = :guild_id AND channel_id = :channel_id LIMIT 1';
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        const rows = await this.select(sql, query);
         return rows.length ? rows[0] : {
             ...query,
             messages: MarkovDatabase.DEFAULT_MESSAGES,
@@ -61,7 +60,7 @@ export class MarkovDatabase {
     public async fetchAllChannels(guild: Guild): Promise<Array<MarkovChannelRow>> {
         const query = { guild_id: guild.id };
         const sql = 'SELECT * FROM markov_channel WHERE guild_id = :guild_id';
-        return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        return this.select(sql, query);
     }
 
     public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean, owoify?: boolean, quoting?: boolean }): Promise<MarkovChannelRow> {
@@ -79,7 +78,7 @@ export class MarkovDatabase {
             owoify: options.owoify ?? existing.owoify,
             quoting: options.quoting ?? existing.quoting
         }
-        await this.pool.query({ namedPlaceholders: true, sql: sql }, data);
+        await this.exec(sql, data);
         return data;
     }
 
@@ -87,12 +86,12 @@ export class MarkovDatabase {
         if (scope instanceof GuildChannel) {
             const query = { guild_id: scope.guild.id, channel_id: scope.id };
             const sql = 'DELETE FROM markov_channel WHERE guild_id = :guild_id AND channel_id = :channel_id';
-            return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+            return this.exec(sql, query);
         }
         if (scope instanceof Guild) {
             const query = { guild_id: scope.id };
             const sql = 'DELETE FROM markov_channel WHERE guild_id = :guild_id';
-            return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+            return this.exec(sql, query);
         }
     }
 
@@ -100,8 +99,8 @@ export class MarkovDatabase {
         const query = { guild_id: channel.guild.id, channel_id: channel.id };
         const sql_total_all = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id'
         const sql_total_users = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false';
-        const total_all_rows = await this.pool.query({ namedPlaceholders: true, sql: sql_total_all }, query);
-        const total_users_rows = await this.pool.query({ namedPlaceholders: true, sql: sql_total_users }, query);
+        const total_all_rows = await this.select(sql_total_all, query);
+        const total_users_rows = await this.select(sql_total_users, query);
         return {
             total: total_all_rows.length ? total_all_rows[0].total : 0,
             users: total_users_rows.length ? total_users_rows[0].total : 0
@@ -114,7 +113,7 @@ export class MarkovDatabase {
             'SELECT * FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND user_id = :user_id' :
             'SELECT * FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false'
         )
-        return this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        return this.select(sql, query);
     }
 
     public async setStrings(message: Message): Promise<void> {
@@ -122,7 +121,7 @@ export class MarkovDatabase {
         const existing = await this.fetchChannel(<GuildChannel>message.channel);
         if (!existing.tracking) return;
         const sql = 'REPLACE INTO markov_string VALUES (:epoch, :bot, :user_id, :guild_id, :channel_id, :message_id, :content)';
-        return await this.pool.query({ namedPlaceholders: true, sql: sql }, {
+        return await this.exec(sql, {
             epoch: message.createdTimestamp,
             bot: message.author.bot,
             user_id: message.author.id,
@@ -137,22 +136,22 @@ export class MarkovDatabase {
         if (scope instanceof GuildChannel) {
             const query = { guild_id: scope.guild.id, channel_id: scope.id }
             const sql = 'DELETE FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id';
-            return await this.pool.query({ namedPlaceholders: true, sql: sql }, query)
+            return await this.exec(sql, query)
         }
         if (scope instanceof Guild) {
             const query = { guild_id: scope.id }
             const sql = 'DELETE FROM markov_string WHERE guild_id = :guild_id';
-            return await this.pool.query({ namedPlaceholders: true, sql: sql }, query)
+            return await this.exec(sql, query)
         }
     }
 
     public async hasData(guild: Guild): Promise<boolean> {
         const query = { guild_id: guild.id };
         const stringSQL = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id';
-        const strings = await this.pool.query({ namedPlaceholders: true, sql: stringSQL }, query);
+        const strings = await this.select(stringSQL, query);
         if (strings.length && strings[0].total) return true;
         const channelSQL = 'SELECT COUNT(*) AS total FROM markov_channel WHERE guild_id = :guild_id';
-        const channels = await this.pool.query({ namedPlaceholders: true, sql: channelSQL }, query);
+        const channels = await this.select(channelSQL, query);
         return channels.length ? Boolean(channels[0].total) : true;
     }
 
@@ -163,8 +162,8 @@ export class MarkovDatabase {
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/markov_channel.sql`, 'utf8')),
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/markov_string.sql`, 'utf8')),
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/markov_channel.sql`, 'utf8')),
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/markov_string.sql`, 'utf8')),
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

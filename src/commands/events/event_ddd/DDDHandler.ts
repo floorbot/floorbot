@@ -3,22 +3,22 @@ import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase.js
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { DDDButton, DDDButtonID } from './components/DDDButton.js';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { DDDEventDetails, DDDUtil } from './DDDUtil.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDEmbed } from './components/DDDEmbed.js';
 import { EventHandler } from '../EventHandler.js';
 import Schedule from 'node-schedule';
-import { Pool } from 'mariadb';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 
 export class DDDHandler extends EventHandler {
 
     private readonly jobs: Map<string, Schedule.Job> = new Collection();
     private readonly database: DDDDatabase;
 
-    constructor(pool: Pool) {
-        super({ eventName: 'Destroy Dick December', pool: pool, data: DDDCommandData });
-        this.database = new DDDDatabase(pool);
+    constructor(db: HandlerDB) {
+        super({ eventName: 'Destroy Dick December', data: DDDCommandData });
+        this.database = new DDDDatabase(db);
     }
 
     private async createSchedule(client: Client, participantRow: DDDParticipantRow) {

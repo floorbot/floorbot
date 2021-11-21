@@ -4,11 +4,11 @@ import { MarkovButton, MarkovButtonType } from './components/MarkovButton.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
 import Markov from 'markov-strings';
-import { Pool } from 'mariadb';
 import owoify from 'owoify-js';
 
 export class MarkovHandler extends ChatInputHandler {
@@ -16,9 +16,9 @@ export class MarkovHandler extends ChatInputHandler {
     private static CORPUSES: Collection<string, Markov> = new Collection();
     private readonly database: MarkovDatabase;
 
-    constructor(pool: Pool) {
+    constructor(db: HandlerDB) {
         super({ group: 'Fun', global: false, nsfw: false, data: MarkovCommandData });
-        this.database = new MarkovDatabase(pool);
+        this.database = new MarkovDatabase(db);
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {

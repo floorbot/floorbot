@@ -1,6 +1,6 @@
 import { HandlerClient } from './discord/handler/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
-// import BetterSqlit3 from 'better-sqlite3';
+import BetterSqlit3 from 'better-sqlite3';
 import RedisMock from 'ioredis-mock';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
@@ -64,8 +64,8 @@ const poolConfig: PoolConfig = {
     supportBigInt: true
 };
 
-const pool = MariaDB.createPool(poolConfig);
-// const _database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
+if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
+const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
@@ -81,9 +81,9 @@ const client = new HandlerClient({
         new OwoifyChatInputHandler(),
         new FlipMessageHandler(),
         new OwoifyMessageHandler(),
-        new DDDHandler(pool),
-        new MarkovHandler(pool),
-        new WeatherHandler(pool, env.OPEN_WEATHER_API_KEY),
+        new DDDHandler(database),
+        new MarkovHandler(database),
+        new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),

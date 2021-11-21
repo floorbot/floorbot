@@ -5,11 +5,11 @@ import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHa
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
 import { WeatherButton, WeatherButtonID } from './components/WeatherButton.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { WeatherDatabase, WeatherLinkRow } from './WeatherDatabase.js';
+import { WeatherDatabase, WeatherLinkRow } from './db/WeatherDatabase.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { WeatherEmbed } from './components/WeatherEmbed.js';
-import { Pool } from 'mariadb';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
 
@@ -18,7 +18,7 @@ export class WeatherHandler extends ChatInputHandler {
     private readonly database: WeatherDatabase;
     private readonly openweather: OpenWeatherAPI;
 
-    constructor(pool: Pool, apiKey: string) {
+    constructor(pool: HandlerDB, apiKey: string) {
         super({ group: 'Fun', global: false, nsfw: false, data: WeatherCommandData });
         this.database = new WeatherDatabase(pool);
         this.openweather = new OpenWeatherAPI(apiKey);
@@ -75,6 +75,7 @@ export class WeatherHandler extends ChatInputHandler {
                 let loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, 0).toReplyOptions();
                 let lastUpdate = (await command.followUp(loadingReplyOptions) as Message).createdTimestamp;
                 for (const [i, link] of allLinks.entries()) {
+                    console.log(link)
                     const member = channel.members.get(link.user_id.toString());
                     if (member) {
                         const onecall = await this.openweather.oneCall(link);
