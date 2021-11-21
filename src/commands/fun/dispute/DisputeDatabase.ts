@@ -1,5 +1,5 @@
+import { HandlerDatabase, HandlerDB } from '../../../helpers/HandlerDatabase.js';
 import { Message, Interaction, User } from 'discord.js';
-import { Pool } from 'mariadb';
 import path from 'path';
 import fs from 'fs';
 
@@ -25,51 +25,49 @@ export interface DisputeResults {
     readonly message_user_id: string
 }
 
-export class DisputeDatabase {
+export class DisputeDatabase extends HandlerDatabase {
 
-    private readonly pool: Pool;
-
-    constructor(pool: Pool) {
-        this.pool = pool;
+    constructor(db: HandlerDB) {
+        super({ db: db });
     }
 
     public async fetchResults(message: Message): Promise<DisputeResults | null> {
         const sql = `SELECT sum(vote_choice) yes_votes,
                             count(*) - sum(vote_choice) no_votes,
                             count(*) total_votes,
-                            sum(vote_choice) / count(*) * 100 successful_pct,
-                            round(sum(vote_choice) / count(*) * 100,2) successful_pct_rounded,
+                            sum(cast(vote_choice as double)) / count(*) * 100 successful_pct,
+                            round(sum(cast(vote_choice as double)) / count(*) * 100,2) successful_pct_rounded,
                             dispute_user_id dispute_user_id,
                             message_user_id message_user_id
                        FROM dispute
                       WHERE guild_id = :guild_id
                         AND channel_id = :channel_id
-                        AND message_id = :message_id LIMIT 1`;
+                        AND message_id = :message_id`;
         const query = {
             guild_id: message.guild!.id,
             channel_id: message.channel.id,
             message_id: message.id
         };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        const rows = await this.select(sql, query);
         return rows.length ? rows[0] : null;
     }
 
     public async getVoters(message: Message, which: string): Promise<string | null> {
         let sql = ''
         if (which == 'yes') {
-            sql = `select concat('<@',vote_user_id,'>') user from dispute where guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 1`;
+            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 1'
         } else {
-            sql = `select concat('<@',vote_user_id,'>') user from dispute where guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0`;
+            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0'
         };
         const query = {
             guild_id: message.guild!.id,
             channel_id: message.channel.id,
             message_id: message.id
         };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        const rows = await this.select(sql, query);
         let result = []
         for (let i = 0; i < rows.length; i++) {
-            result.push(rows[i]['user'])
+            result.push(`<@${rows[i]['vote_user_id']}>`)
         }
         return result.join('\n');
     }
@@ -82,13 +80,13 @@ export class DisputeDatabase {
             message_id: message.id,
             vote_user_id: interaction.user!.id
         };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        const rows = await this.select(sql, query);
         return rows.length ? rows[0] : null;
     }
 
     public async setDisputeVote(contextMenu: Interaction, buttonClick: Interaction, message: Message, choice: boolean) {
         const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
-        return this.pool.query({ namedPlaceholders: true, sql: sql }, {
+        return await this.exec(sql, {
             epoch: message.createdTimestamp,
             dispute_user_id: contextMenu.user.id,
             message_user_id: message.author.id,
@@ -103,7 +101,7 @@ export class DisputeDatabase {
 
     public async setDisputeVoteID(contextMenu: Interaction, user: User, message: Message, choice: boolean) {
         const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
-        return this.pool.query({ namedPlaceholders: true, sql: sql }, {
+        return await this.exec(sql, {
             epoch: message.createdTimestamp,
             dispute_user_id: contextMenu.user.id,
             message_user_id: message.author.id,
@@ -118,7 +116,7 @@ export class DisputeDatabase {
 
     public async deleteResults(message: Message) {
         const sql = 'delete from dispute where guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id';
-        return this.pool.query({ namedPlaceholders: true, sql: sql }, {
+        return await this.exec(sql, {
             guild_id: message.guild!.id,
             channel_id: message.channel.id,
             message_id: message.id
@@ -132,13 +130,13 @@ export class DisputeDatabase {
             channel_id: message.channel.id,
             message_id: message.id
         };
-        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        const rows = await this.select(sql, query);
         return rows.length;
     }
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.pool.query(fs.readFileSync(`${path.resolve()}/res/schemas/dispute.sql`, 'utf8'))
+            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/dispute.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

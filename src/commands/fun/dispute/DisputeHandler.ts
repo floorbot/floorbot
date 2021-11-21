@@ -1,27 +1,27 @@
 import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
 import { ContextMenuHandler } from '../../../discord/handler/abstracts/ContextMenuHandler.js';
-import { DisputeCommandData } from './DisputeCommandData.js';
-import { HandlerReply } from '../../../helpers/HandlerReply.js';
+import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
-import { DisputeEmbed } from './components/DisputeEmbed.js';
 import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js'
-import { Pool } from 'mariadb';
+import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { DisputeCommandData } from './DisputeCommandData.js';
+import { DisputeEmbed } from './components/DisputeEmbed.js';
+import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
 
 export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
     private readonly endDelay: number = 1000 * 60 * 1;
 
-    constructor(pool: Pool) {
+    constructor(db: HandlerDB) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
-        this.database = new DisputeDatabase(pool);
+        this.database = new DisputeDatabase(db);
     }
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
         const origMessage = contextMenu.options.getMessage('message', true) as Message;
-        if (!origMessage.content.length) return contextMenu.reply(HandlerReply.createMessageContentReply(contextMenu, 'dispute'));
+        if (!origMessage.content.length) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'dispute'));
         if (origMessage.author == contextMenu.user) return contextMenu.reply(DisputeEmbed.getSelfUsedEmbed(contextMenu));
         const disputeExists = await this.database.disputeExists(origMessage);
         const disputeResultsErr = await this.database.fetchResults(origMessage);
