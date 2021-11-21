@@ -75,7 +75,6 @@ export class WeatherHandler extends ChatInputHandler {
                 let loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, 0).toReplyOptions();
                 let lastUpdate = (await command.followUp(loadingReplyOptions) as Message).createdTimestamp;
                 for (const [i, link] of allLinks.entries()) {
-                    console.log(link)
                     const member = channel.members.get(link.user_id.toString());
                     if (member) {
                         const onecall = await this.openweather.oneCall(link);

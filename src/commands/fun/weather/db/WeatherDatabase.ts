@@ -24,7 +24,6 @@ export class WeatherDatabase extends HandlerDatabase {
         const query = { guild_id: scope instanceof Guild ? scope.id : -1 };
         const sql = 'SELECT * FROM weather_link WHERE guild_id = :guild_id';
         const res = this.select(sql, query);
-        console.log(res)
         return res;
     }
 
