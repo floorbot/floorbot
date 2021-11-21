@@ -29,6 +29,7 @@ import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
@@ -87,6 +88,7 @@ const client = new HandlerClient({
         new RollHandler(),
         new MagickChatInputHandler(),
         new MagickMessageHandler(),
+        new DisputeHandler(database),
 
         // These are good... probably...
         new Rule34Handler(redis)
