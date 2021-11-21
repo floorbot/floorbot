@@ -20,7 +20,7 @@ export class HandlerClient extends Client {
 
     constructor(options: HandlerClientOptions) {
         const handlerIntents = options.handlers.map(handler => handler.intents);
-        super({ ...options, intents: [options.intents, ...handlerIntents], presence: { status: 'invisible' } });
+        super({ ...options, intents: [options.intents, ...handlerIntents], presence: { status: 'online' } }); // doesnt work
         this.ownerIds = options.ownerIds || [];
         this.presenceData = options.presence;
         this.handlers = options.handlers;
