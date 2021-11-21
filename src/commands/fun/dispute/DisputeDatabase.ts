@@ -1,4 +1,4 @@
-import { Message, Interaction } from 'discord.js';
+import { Message, Interaction, User } from 'discord.js';
 import { Pool } from 'mariadb';
 import path from 'path';
 import fs from 'fs';
@@ -92,6 +92,30 @@ export class DisputeDatabase {
             content: message.content,
             vote_user_id: buttonClick.user!.id,
             vote_choice: choice
+        });
+    }
+
+    public async setDisputeVoteID(contextMenu: Interaction, user: User, message: Message, choice: boolean) {
+        const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
+        return this.pool.query({ namedPlaceholders: true, sql: sql }, {
+            epoch: message.createdTimestamp,
+            dispute_user_id: contextMenu.user.id,
+            message_user_id: message.author.id,
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id,
+            content: message.content,
+            vote_user_id: user.id,
+            vote_choice: choice
+        });
+    }
+
+    public async deleteResults(message: Message) {
+        const sql = 'delete from dispute where guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id';
+        return this.pool.query({ namedPlaceholders: true, sql: sql }, {
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id
         });
     }
 

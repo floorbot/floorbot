@@ -1,16 +1,18 @@
+import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
 import { ContextMenuHandler } from '../../../discord/handler/abstracts/ContextMenuHandler.js';
 import { DisputeCommandData } from './DisputeCommandData.js';
 import { HandlerReply } from '../../../helpers/HandlerReply.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
 import { DisputeEmbed } from './components/DisputeEmbed.js';
-import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction } from 'discord.js';
 import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js'
 import { Pool } from 'mariadb';
 
 export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
+    private readonly endDelay:number = 1000 * 60 * 1;
 
     constructor(pool: Pool) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
@@ -31,9 +33,9 @@ export class DisputeHandler extends ContextMenuHandler {
         const no_string = await this.database.getVoters(origMessage, 'no');
         const replyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
         const message = await contextMenu.followUp(replyOptions) as Message;
-        const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 1 });
+        const collector = message.createMessageComponentCollector({ idle: this.endDelay });
         collector.on('collect', this.createCollectorFunction(contextMenu, origMessage));
-        collector.on('end', () => { this.onCollectEnd(contextMenu, message, origMessage); });
+        collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection); });
     }
 
     private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message): (component: MessageComponentInteraction) => void {
@@ -48,7 +50,8 @@ export class DisputeHandler extends ContextMenuHandler {
                             const disputeResults = await this.database.fetchResults(message);
                             const yes_string = await this.database.getVoters(message, 'yes');
                             const no_string = await this.database.getVoters(message, 'no');
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!);
+                            const newTargetTimestamp = component.createdTimestamp + this.endDelay;
+                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!, newTargetTimestamp);
                             await component.editReply(replyOptions);
                             break;
                         }
@@ -59,7 +62,8 @@ export class DisputeHandler extends ContextMenuHandler {
                             const disputeResults = await this.database.fetchResults(message);
                             const yes_string = await this.database.getVoters(message, 'yes');
                             const no_string = await this.database.getVoters(message, 'no');
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!);
+                            const newTargetTimestamp = component.createdTimestamp + this.endDelay;
+                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!, newTargetTimestamp);
                             await component.editReply(replyOptions);
                             break;
                         }
@@ -69,8 +73,8 @@ export class DisputeHandler extends ContextMenuHandler {
         }
     }
 
-    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string): InteractionReplyOptions {
-        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string);
+    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number=0): InteractionReplyOptions {
+        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string, targetTimestamp);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             DisputeButton.createDisputeButton(DisputeButtonID.YES),
             DisputeButton.createDisputeButton(DisputeButtonID.NO)
@@ -78,17 +82,29 @@ export class DisputeHandler extends ContextMenuHandler {
         return { embeds: [embed], components: [actionRow] };
     }
 
-    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message) {
+    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>) {
         const updatedMessage = await message.fetch();
-        const disputeResults = await this.database.fetchResults(origMessage);
+        let disputeResults = await this.database.fetchResults(origMessage);
+        let tieReplyOptions = {}
         if (disputeResults!.total_votes <= 1) {
             contextMenu.editReply(DisputeEmbed.getNotEnoughVotesEmbed(contextMenu));
-            //TODO: Delete record that didn't get enough votes.
+            await this.database.deleteResults(origMessage);
         } else {
+            if (disputeResults!.yes_votes == disputeResults!.no_votes) {
+                const random_boolean = Math.random() < 0.5;
+                await this.database.setDisputeVoteID(contextMenu, contextMenu.client.user!, origMessage, random_boolean);
+                disputeResults = await this.database.fetchResults(origMessage);
+
+                const yes_string = await this.database.getVoters(origMessage, 'yes');
+                const no_string = await this.database.getVoters(origMessage, 'no');
+                tieReplyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
+                await contextMenu.editReply(tieReplyOptions);
+            }
             const embed = DisputeEmbed.getFinalEmbed(contextMenu, origMessage, disputeResults!);
-            const replyOptions = { embeds: [embed], components: [] };
-            //TODO: Remove buttons from existing message and create new message instead
-            await updatedMessage.edit(replyOptions);
+            const newMessage = { embeds: [embed] };
+
+            HandlerUtil.deleteComponentsOnEnd(updatedMessage)();
+            await collection.last()!.followUp(newMessage);
         }
     }
 

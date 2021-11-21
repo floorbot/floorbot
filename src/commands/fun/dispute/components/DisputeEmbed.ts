@@ -1,8 +1,9 @@
-import { Message, MessageEmbed, MessageEmbedOptions, Interaction, InteractionReplyOptions, GuildMember } from 'discord.js';
+import { Message, MessageEmbed, MessageEmbedOptions, Interaction, InteractionReplyOptions, GuildMember, Util } from 'discord.js';
 import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { HandlerAttachment } from '../../../../discord/components/HandlerAttachment.js';
 import { DisputeResults } from '../DisputeDatabase.js'
 import { readFileSync } from 'fs';
+// import humanizeDuration from 'humanize-duration';
 
 export class DisputeEmbed extends HandlerEmbed {
 
@@ -11,31 +12,45 @@ export class DisputeEmbed extends HandlerEmbed {
         this.setContextAuthor(interaction);
     }
 
-    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string): DisputeEmbed {
+    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number=0): DisputeEmbed {
+        const endDelay:number = 1000 * 60 * 1;
         const embed = new DisputeEmbed(interaction);
         const intMember = interaction.member! as GuildMember
-        embed.setAuthor([`${intMember.displayName} thinks that ${message.member!.displayName} is full of shit.`,
-                         `Do you believe ${message.member!.displayName} is correct?`
-                        ].join('\n'));
-        embed.setDescription(message.content + ' -' + `${message.author}`);
+        let newTargetTimestamp = 0
+        // let timeCalc = 0
+        if (targetTimestamp == 0) {
+            // timeCalc = (Math.round((Date.now() - interaction.createdTimestamp) / 1000) * 1000) + endDelay;
+            newTargetTimestamp = Math.round((interaction.createdTimestamp + endDelay) / 1000);
+        } else {
+            // timeCalc = Math.round((Date.now() - targetTimestamp) / 1000) * 1000;
+            newTargetTimestamp = Math.round(targetTimestamp / 1000)
+        }
+        embed.setTitle(`Do you agree with ${intMember.displayName}'s decision to dispute this statement?`);
+        embed.setDescription([`${intMember.displayName} thinks that ${message.member!.displayName} is full of shit.`,
+                              ``,
+                              Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!,
+                              ``,
+                              `Vote Ends: <t:${newTargetTimestamp}:R>`].join('\n'));
         embed.addField(`*Yes Votes: ${results.yes_votes}*`, (`${yes_string ? yes_string : 'None'}`), true);
         embed.addField(`*No Votes: ${results.no_votes}*`, (`${no_string ? no_string : 'None'}`), true);
+        embed.setURL(message.url);
         return embed;
     }
 
     public static getFinalEmbed(interaction: Interaction, message: Message, results: DisputeResults): DisputeEmbed {
         const embed = new DisputeEmbed(interaction);
         if (results.successful_pct > 50) {
-          embed.setAuthor([`Turns out that ${message.member!.displayName} was full of shit.`,
-                           `This dispute successed with ${results.successful_pct_rounded}% agreeing.`
-                          ].join('\n'));
-          embed.setDescription(message.content + ' -' + `${message.author}`);
+          embed.setTitle(`Turns out that ${message.member!.displayName} was full of shit.`);
+          embed.setDescription([`This dispute succeeded with ${results.successful_pct_rounded}% agreeing.`,
+                                ``,
+                                Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
         } else {
-          embed.setAuthor([`Turns out that ${message.member!.displayName} was not full of shit.`,
-                           `This dispute failed with only ${results.successful_pct_rounded}% agreeing.`
-                          ].join('\n'));
-          embed.setDescription(message.content + ' -' + `${message.author}`);
+          embed.setTitle(`Turns out that ${message.member!.displayName} was not full of shit.`);
+          embed.setDescription([`This dispute failed with only ${results.successful_pct_rounded}% agreeing.`,
+                                ``,
+                                Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
         }
+        embed.setURL(message.url);
         return embed;
     }
 
