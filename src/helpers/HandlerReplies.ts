@@ -11,7 +11,7 @@ import fs from 'fs';
 
 export class HandlerReplies {
 
-    public createEmbedTemplate(context: Interaction | Message): HandlerEmbed {
+    public createEmbedTemplate(context?: Interaction | Message): HandlerEmbed {
         const embed = new HandlerEmbed();
         if (context) embed.setContextAuthor(context);
         return embed;

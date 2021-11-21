@@ -1,24 +1,35 @@
-import { Client, Collection, CommandInteraction, MessageActionRow, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { DDDDatabase, DDDParticipantRow, DDDSettingsRow } from './DDDDatabase.js';
+import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
+import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
 import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { DDDButton, DDDButtonID } from './components/DDDButton.js';
+import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
 import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { DDDButtonID, DDDReplies } from './replies/DDDReplies.js';
 import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
-import { DDDEventDetails, DDDUtil } from './DDDUtil.js';
 import { DDDCommandData } from './DDDCommandData.js';
-import { DDDEmbed } from './components/DDDEmbed.js';
-import { EventHandler } from '../EventHandler.js';
+import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';
+import tzdata from 'tzdata';
 
-export class DDDHandler extends EventHandler {
+export class DDDHandler extends ChatInputHandler {
+
+    private static readonly ZONES = Object.keys(tzdata.zones);
 
     private readonly jobs: Map<string, Schedule.Job> = new Collection();
     private readonly database: DDDDatabase;
+    private readonly replies: DDDReplies;
 
     constructor(db: HandlerDB) {
-        super({ eventName: 'Destroy Dick December', data: DDDCommandData });
+        super({ data: DDDCommandData, group: 'Event', global: false, nsfw: false });
+        this.replies = new DDDReplies({ eventName: 'Destroy Dick December', eventAcronym: 'DDD' });
         this.database = new DDDDatabase(db);
+    }
+
+    public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
+        const partial = interaction.options.getString('zone', true).toLowerCase();
+        const suggestions = DDDHandler.ZONES.filter(zone => zone.toLowerCase().includes(partial));
+        const options = suggestions.slice(0, 25).map(suggestion => ({ name: suggestion, value: suggestion }));
+        return interaction.respond(options);
     }
 
     private async createSchedule(client: Client, participantRow: DDDParticipantRow) {
@@ -38,8 +49,7 @@ export class DDDHandler extends EventHandler {
         if (participantRow.failed === -1) {
             if (guild && member) {
                 if (channel) {
-                    const content = settingsRow.event_role_id ? `<@&${settingsRow.event_role_id}>` : 'Hey Everyone!';
-                    const replyOptions = DDDEmbed.createParticipantPassedEmbed(participantStats).toReplyOptions({ content: content });
+                    const replyOptions = this.replies.createParticipantPassedReply(settingsRow, participantStats)
                     await channel.send(replyOptions).catch(() => { });
                 }
                 if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
@@ -51,8 +61,7 @@ export class DDDHandler extends EventHandler {
                 participantRow = await this.database.setParticipant({ ...participantRow, failed: participantStats.dayFailed });
                 if (guild && member) {
                     if (channel) {
-                        const content = settingsRow.event_role_id ? `<@&${settingsRow.event_role_id}>` : 'Hey Everyone!';
-                        const replyOptions = DDDEmbed.createParticipantFailedEmbed(participantStats).toReplyOptions({ content: content });
+                        const replyOptions = this.replies.createParticipantFailedReply(settingsRow, participantStats);
                         await channel.send(replyOptions).catch(() => { });
                     }
                     if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
@@ -93,13 +102,13 @@ export class DDDHandler extends EventHandler {
                     (allNutRows.length) ||                                                // Already reported a DDD nut for current zone
                     (!zoneDetails || zoneDetails.isDecemberish) ||                        // New zone is invalid or has already begun DDD
                     (participantZoneDetails && participantZoneDetails.isDecemberish)      // Existing zone has already begun DDD
-                ) { return command.followUp(DDDEmbed.createJoinFailEmbed(command, eventDetails, zone, participantZoneDetails, zoneDetails, allNutRows).toReplyOptions()); }
+                ) { return command.followUp(this.replies.createJoinFailReply(command, eventDetails, zone, zoneDetails, participantZoneDetails, allNutRows)); }
                 participantRow = await this.database.setParticipant({ ...partialParticipant, zone: zone, failed: 0 });
                 this.createSchedule(client, participantRow); // TODO
                 const settingsRow = await this.database.fetchSettings(partialParticipant);
                 if (settingsRow.event_role_id) await member.roles.add(settingsRow.event_role_id).catch(() => { });
                 if (settingsRow.passing_role_id) await member.roles.add(settingsRow.passing_role_id).catch(() => { });
-                const replyOptions = DDDEmbed.createJoinEmbed(command, eventDetails, zoneDetails).toReplyOptions();
+                const replyOptions = this.replies.createJoinReply(command, eventDetails, zoneDetails);
                 return command.followUp(replyOptions);
             }
             case 'leave': {
@@ -111,22 +120,22 @@ export class DDDHandler extends EventHandler {
                 if (
                     (allNutRows.length) ||                                                // Already reported a DDD nut for current zone
                     (!participantZoneDetails || participantZoneDetails.isDecemberish)     // Existing Zone has already begun DDD or not joined
-                ) { return command.followUp(DDDEmbed.createLeaveFailEmbed(command, eventDetails, participantZoneDetails, allNutRows).toReplyOptions()); }
+                ) { return command.followUp(this.replies.createLeaveFailReply(command, eventDetails, participantZoneDetails, allNutRows)); }
                 await this.database.deleteParticipant(partialParticipant);
                 this.deleteSchedule(participantRow!);
                 const settingsRow = await this.database.fetchSettings(partialParticipant);
                 if (settingsRow.event_role_id) await member.roles.remove(settingsRow.event_role_id).catch(() => { });
                 if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
-                const replyOptions = DDDEmbed.createLeaveEmbed(command, eventDetails, participantZoneDetails).toReplyOptions({ ephemeral: true });
+                const replyOptions = this.replies.createLeaveReply(command, eventDetails);
                 return command.followUp(replyOptions);
             }
             case 'settings': {
-                if (!(channel instanceof TextChannel)) return command.reply(DDDEmbed.createNotTextChannelEmbed(command, eventDetails).toReplyOptions({ ephemeral: true }));
+                if (!(channel instanceof TextChannel)) return command.reply(this.replies.createNotTextChannelReply(command, eventDetails));
                 await command.deferReply();
                 const partialSettingsRow = { guild_id: guild.id, year: eventDetails.year };
                 let settingsRow = await this.database.fetchSettings(partialSettingsRow);
                 let participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                const replyOptions = this.createControlPanelReplyOptions(command, eventDetails, settingsRow, participantRows);
+                const replyOptions = this.replies.createSettingsReply(command, eventDetails, settingsRow, participantRows);
                 const message = await command.followUp(replyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
@@ -198,7 +207,7 @@ export class DDDHandler extends EventHandler {
                         }
                     }
                     participantRows = await this.database.fetchAllParticipants(partialSettingsRow);
-                    const replyOptions = this.createControlPanelReplyOptions(command, eventDetails, settingsRow, participantRows);
+                    const replyOptions = this.replies.createSettingsReply(command, eventDetails, settingsRow, participantRows);
                     return await component.editReply(replyOptions);
                 }));
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
@@ -212,31 +221,14 @@ export class DDDHandler extends EventHandler {
                 const allNutRows = await this.database.fetchAllNuts(partialParticipant);
                 if (
                     (!participantZoneDetails || !participantZoneDetails.isDecember)       // It is not december or they have not joined
-                ) { return command.followUp(DDDEmbed.createNutFailEmbed(command, eventDetails, participantZoneDetails).toReplyOptions()); }
+                ) { return command.followUp(this.replies.createNutFailReply(command, eventDetails, participantZoneDetails)); }
                 const description = command.options.getString('description');
                 allNutRows.push(await this.database.setNut({ ...partialParticipant, epoch: command.createdTimestamp.toString(), description: description }));
                 const participantStats = DDDUtil.getParticipantStats(participantRow!, allNutRows)
-                const replyOptions = DDDEmbed.createNutEmbed(command, participantStats).toReplyOptions();
+                const replyOptions = this.replies.createNutReply(command, participantStats);
                 return command.followUp(replyOptions);
             }
         }
-    }
-
-    public createControlPanelReplyOptions(command: CommandInteraction, eventDetails: DDDEventDetails, settingsRow: DDDSettingsRow, participantRows: DDDParticipantRow[]) {
-        const embed = DDDEmbed.createSettingsEmbed(command, eventDetails, settingsRow, participantRows);
-        const actionRow = new MessageActionRow().addComponents([
-            ...(!settingsRow.channel_id ? [DDDButton.createSetChannelButton()] : []),
-            ...(settingsRow.channel_id ? [DDDButton.createClearChannelButton()] : []),
-            ...(!settingsRow.event_role_id ? [DDDButton.createCreateEventRoleButton()] : []),
-            ...(settingsRow.event_role_id ? [DDDButton.createDeleteEventRoleButton()] : [])
-        ]);
-        const actionRow2 = new MessageActionRow().addComponents([
-            ...(!settingsRow.passing_role_id ? [DDDButton.createCreatePassingRoleButton()] : []),
-            ...(settingsRow.passing_role_id ? [DDDButton.createDeletePassingRoleButton()] : []),
-            ...(!settingsRow.failed_role_id ? [DDDButton.createCreateFailedRoleButton()] : []),
-            ...(settingsRow.failed_role_id ? [DDDButton.createDeleteFailedRoleButton()] : [])
-        ])
-        return { embeds: [embed], components: [actionRow, actionRow2] };
     }
 
     public override async setup(client: HandlerClient): Promise<any> {

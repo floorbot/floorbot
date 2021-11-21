@@ -1,36 +1,13 @@
-import { HandlerDatabase, HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { DDDPartialParticipantRow, DDDParticipantRow } from './interfaces/DDDParticipantRow';
+import { DDDPartialSettingsRow, DDDSettingsRow } from './interfaces/DDDSettingsRow';
+import { HandlerDatabase, HandlerDB } from '../../../../helpers/HandlerDatabase.js';
+import { DDDPartialNutRow, DDDNutRow } from './interfaces/DDDNutRow';
 import path from 'path';
 import fs from 'fs';
 
-export type DDDOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
-
-export type DDDPartialSettingsRow = DDDOptional<DDDSettingsRow, 'channel_id' | 'event_role_id' | 'passing_role_id' | 'failed_role_id'>;
-export interface DDDSettingsRow {
-    readonly guild_id: string,
-    readonly year: number,
-    readonly channel_id: string | null,
-    readonly event_role_id: string | null,
-    readonly passing_role_id: string | null,
-    readonly failed_role_id: string | null
-}
-
-export type DDDPartialParticipantRow = DDDOptional<DDDParticipantRow, 'zone' | 'failed'>;
-export interface DDDParticipantRow {
-    readonly guild_id: string,
-    readonly year: number,
-    readonly user_id: string,
-    readonly zone: string,
-    readonly failed: number
-}
-
-export type DDDPartialNutRow = DDDOptional<DDDNutRow, 'epoch' | 'description'>;
-export interface DDDNutRow {
-    readonly guild_id: string,
-    readonly year: number,
-    readonly user_id: string,
-    readonly epoch: string,
-    readonly description: string | null
-}
+export { DDDPartialParticipantRow, DDDParticipantRow };
+export { DDDPartialSettingsRow, DDDSettingsRow };
+export { DDDPartialNutRow, DDDNutRow };
 
 export class DDDDatabase extends HandlerDatabase {
 
