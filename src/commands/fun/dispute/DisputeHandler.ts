@@ -12,7 +12,7 @@ import { Pool } from 'mariadb';
 export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
-    private readonly endDelay:number = 1000 * 60 * 1;
+    private readonly endDelay: number = 1000 * 60 * 1;
 
     constructor(pool: Pool) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
@@ -73,7 +73,7 @@ export class DisputeHandler extends ContextMenuHandler {
         }
     }
 
-    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number=0): InteractionReplyOptions {
+    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number = 0): InteractionReplyOptions {
         const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string, targetTimestamp);
         const actionRow: MessageActionRow = new MessageActionRow().addComponents([
             DisputeButton.createDisputeButton(DisputeButtonID.YES),

@@ -45,9 +45,11 @@ export class DisputeDatabase {
                       WHERE guild_id = :guild_id
                         AND channel_id = :channel_id
                         AND message_id = :message_id LIMIT 1`;
-        const query = { guild_id: message.guild!.id,
-                        channel_id: message.channel.id,
-                        message_id: message.id };
+        const query = {
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id
+        };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : null;
     }
@@ -59,9 +61,11 @@ export class DisputeDatabase {
         } else {
             sql = `select concat('<@',vote_user_id,'>') user from dispute where guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0`;
         };
-        const query = { guild_id: message.guild!.id,
-                        channel_id: message.channel.id,
-                        message_id: message.id };
+        const query = {
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id
+        };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         let result = []
         for (let i = 0; i < rows.length; i++) {
@@ -72,10 +76,12 @@ export class DisputeDatabase {
 
     public async getDisputeVote(interaction: Interaction, message: Message): Promise<DisputeRow | null> {
         const sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id and vote_user_id = :vote_user_id LIMIT 1';
-        const query = { guild_id: message.guild!.id,
-                        channel_id: message.channel.id,
-                        message_id: message.id,
-                        vote_user_id: interaction.user!.id };
+        const query = {
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id,
+            vote_user_id: interaction.user!.id
+        };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : null;
     }
@@ -121,9 +127,11 @@ export class DisputeDatabase {
 
     public async disputeExists(message: Message): Promise<boolean | null> {
         const sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id LIMIT 1';
-        const query = { guild_id: message.guild!.id,
-                        channel_id: message.channel.id,
-                        message_id: message.id };
+        const query = {
+            guild_id: message.guild!.id,
+            channel_id: message.channel.id,
+            message_id: message.id
+        };
         const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length;
     }

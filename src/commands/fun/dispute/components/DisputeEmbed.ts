@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, MessageEmbedOptions, Interaction, InteractionReplyOptions, GuildMember, Util } from 'discord.js';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { HandlerAttachment } from '../../../../discord/components/HandlerAttachment.js';
+import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { DisputeResults } from '../DisputeDatabase.js'
 import { readFileSync } from 'fs';
 // import humanizeDuration from 'humanize-duration';
@@ -12,8 +12,8 @@ export class DisputeEmbed extends HandlerEmbed {
         this.setContextAuthor(interaction);
     }
 
-    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number=0): DisputeEmbed {
-        const endDelay:number = 1000 * 60 * 1;
+    public static getCurrentEmbed(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number = 0): DisputeEmbed {
+        const endDelay: number = 1000 * 60 * 1;
         const embed = new DisputeEmbed(interaction);
         const intMember = interaction.member! as GuildMember
         let newTargetTimestamp = 0
@@ -27,10 +27,10 @@ export class DisputeEmbed extends HandlerEmbed {
         }
         embed.setTitle(`Do you agree with ${intMember.displayName}'s decision to dispute this statement?`);
         embed.setDescription([`${intMember.displayName} thinks that ${message.member!.displayName} is full of shit.`,
-                              ``,
-                              Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!,
-                              ``,
-                              `Vote Ends: <t:${newTargetTimestamp}:R>`].join('\n'));
+            ``,
+        Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!,
+            ``,
+        `Vote Ends: <t:${newTargetTimestamp}:R>`].join('\n'));
         embed.addField(`*Yes Votes: ${results.yes_votes}*`, (`${yes_string ? yes_string : 'None'}`), true);
         embed.addField(`*No Votes: ${results.no_votes}*`, (`${no_string ? no_string : 'None'}`), true);
         embed.setURL(message.url);
@@ -40,15 +40,15 @@ export class DisputeEmbed extends HandlerEmbed {
     public static getFinalEmbed(interaction: Interaction, message: Message, results: DisputeResults): DisputeEmbed {
         const embed = new DisputeEmbed(interaction);
         if (results.successful_pct > 50) {
-          embed.setTitle(`Turns out that ${message.member!.displayName} was full of shit.`);
-          embed.setDescription([`This dispute succeeded with ${results.successful_pct_rounded}% agreeing.`,
-                                ``,
-                                Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
+            embed.setTitle(`Turns out that ${message.member!.displayName} was full of shit.`);
+            embed.setDescription([`This dispute succeeded with ${results.successful_pct_rounded}% agreeing.`,
+                ``,
+            Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
         } else {
-          embed.setTitle(`Turns out that ${message.member!.displayName} was not full of shit.`);
-          embed.setDescription([`This dispute failed with only ${results.successful_pct_rounded}% agreeing.`,
-                                ``,
-                                Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
+            embed.setTitle(`Turns out that ${message.member!.displayName} was not full of shit.`);
+            embed.setDescription([`This dispute failed with only ${results.successful_pct_rounded}% agreeing.`,
+                ``,
+            Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!].join('\n'));
         }
         embed.setURL(message.url);
         return embed;
@@ -71,8 +71,8 @@ export class DisputeEmbed extends HandlerEmbed {
         let helperText = `failed with only ${results.successful_pct_rounded}% agreeing.`
         if (results.successful_pct > 50) helperText = `suceeded with ${results.successful_pct_rounded}% agreeing that <@${results.dispute_user_id}> was full of shit.`
         embed.setDescription([`That message has already been disputed by <@${results.dispute_user_id}>, you fucking idiot. How can you be so fucking stupid??`,
-                              `\n`,
-                              `That dispute had ${results.total_votes} votes and ${helperText}`].join('\n'));
+            `\n`,
+        `That dispute had ${results.total_votes} votes and ${helperText}`].join('\n'));
         return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
