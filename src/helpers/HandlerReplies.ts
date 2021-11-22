@@ -30,7 +30,7 @@ export class HandlerReplies {
     }
 
     public createAdminOrOwnerReply(context: Interaction | Message): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-5.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = this.createEmbedTemplate(context)
             .setThumbnail(attachment.getEmbedUrl())
@@ -48,7 +48,7 @@ export class HandlerReplies {
 
     public createErrorReply(context: Interaction | Message, error: any): InteractionReplyOptions {
         if (error instanceof Bottleneck.BottleneckError) return this.createBottleneckErrorReply(context, error);
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -65,7 +65,7 @@ export class HandlerReplies {
 
 
     public createBottleneckErrorReply(context: Interaction | Message, error: Bottleneck.BottleneckError): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -84,7 +84,7 @@ export class HandlerReplies {
     // OLD
 
     public static createMessageContentReply(context: Interaction | Message, action: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-2.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-2.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -97,7 +97,7 @@ export class HandlerReplies {
     }
 
     public static createInvalidInputReply(context: Interaction | Message, message: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-2.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-2.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -110,7 +110,7 @@ export class HandlerReplies {
     }
 
     public static createAdminOrOwnerReply(context: Interaction | Message): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-5.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -123,7 +123,7 @@ export class HandlerReplies {
     }
 
     public static createNotFoundReply(context: Interaction | Message, query: string, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-3.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-3.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -136,7 +136,7 @@ export class HandlerReplies {
     }
 
     public static createUnexpectedErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
@@ -149,7 +149,7 @@ export class HandlerReplies {
     }
 
     public static createAPIErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/../../res/avatars/2-7.png`);
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
         const embed = new HandlerEmbed()
             .setContextAuthor(context)
