@@ -1,0 +1,40 @@
+query($id: Int, $search: String) {
+    Character(id: $id, search: $search) {
+        id
+        image {
+            large
+            medium
+        }
+        description
+        favourites
+        siteUrl
+        name {
+            first
+            last
+            full
+            native
+        }
+        media {
+            edges {
+                id
+                node {
+                    id
+                    type
+                    coverImage {
+                        extraLarge
+                        large
+                        medium
+                        color
+                    }
+                    siteUrl
+                    title {
+                        romaji
+                        english
+                        native
+                        userPreferred
+                    }
+                }
+            }
+        }
+    }
+}

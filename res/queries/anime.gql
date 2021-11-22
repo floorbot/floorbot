@@ -1,0 +1,79 @@
+query($id: Int, $search: String) {
+    Media(type: ANIME, id: $id, search: $search){
+        id
+        description
+        stats {
+            scoreDistribution {
+                score
+                amount
+            }
+        }
+        trailer {
+            id
+            site
+        }
+        rankings {
+            id
+            rank
+            type
+            format
+            year
+            season
+            allTime
+            context
+        }
+        siteUrl
+        status
+        popularity
+        averageScore
+        season
+        isAdult
+        coverImage {
+            extraLarge
+            large
+            medium
+            color
+        }
+    	bannerImage
+        streamingEpisodes {
+            title
+            thumbnail
+            url
+            site
+        }
+        studios {
+            edges {
+                id
+                isMain
+                node {
+                    id
+                    name
+                    siteUrl
+                }
+            }
+        }
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
+        title {
+            romaji
+            english
+            native
+        }
+        format
+        episodes
+        nextAiringEpisode {
+            id
+            episode
+            airingAt
+            timeUntilAiring
+        }
+    }
+}

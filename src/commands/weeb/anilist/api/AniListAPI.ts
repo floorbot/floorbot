@@ -30,7 +30,11 @@ export type QueryVars = MediaVariables & {
 
 export class AniListAPI {
 
-    public static async request(query: string, variables: QueryVars): Promise<AniListResponse> {
+    constructor() {
+
+    }
+
+    public async request(query: string, variables: QueryVars): Promise<AniListResponse> {
         return fetch(`https://graphql.anilist.co`, {
             method: 'POST',
             body: JSON.stringify({ query: query, variables: variables }),
