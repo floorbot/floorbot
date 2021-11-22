@@ -34,5 +34,9 @@ export const DDDCommandData: ChatInputApplicationCommandData = {
             type: ApplicationCommandOptionTypes.STRING,
             description: 'Wanna describe it?'
         }]
+    }, {
+        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        name: 'leaderboard',
+        description: 'See the current DDD leaderboard'
     }]
 }

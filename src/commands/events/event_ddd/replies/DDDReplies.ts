@@ -81,6 +81,21 @@ export class DDDReplies extends HandlerReplies {
             .toReplyOptions({ content: settings.event_role_id ? `<@&${settings.event_role_id}>` : 'Hey Everyone!' });
     }
 
+    public createLeaderboardReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, allParticipantStats: DDDParticipantStats[]): InteractionReplyOptions {
+        allParticipantStats = allParticipantStats.sort((one, two) => one.zoneDetails.now.toMillis() - two.zoneDetails.now.toMillis());
+        const stringRows = allParticipantStats.map(participantStats => {
+            const day = participantStats.day;
+            const userID = participantStats.participantRow.user_id;
+            const nuts = participantStats.allNutRows.length;
+            const requiredNuts = (day) * (day + 1) / 2;
+            return `Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
+        });
+        return this.createEmbedTemplate(command, eventDetails)
+            .setTitle(`DDD Leaderboard for ${command.guild.name}`)
+            .setDescription(stringRows.length ? stringRows : 'There are no participants to show...')
+            .toReplyOptions()
+    }
+
     public createNotTextChannelReply(command: CommandInteraction, eventDetails: DDDEventDetails): InteractionReplyOptions {
         return this.createEmbedTemplate(command, eventDetails)
             .setDescription(`Sorry! You can only view the control panel in TextChannels...`)

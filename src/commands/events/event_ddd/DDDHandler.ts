@@ -90,6 +90,18 @@ export class DDDHandler extends ChatInputHandler {
         const subCommand = command.options.getSubcommand();
         const eventDetails = DDDUtil.getEventDetails();
         switch (subCommand) {
+            case 'leaderboard': {
+                await command.deferReply();
+                const allParticipantRows = await this.database.fetchAllParticipants(eventDetails.year);
+                const allParticipantStats = [];
+                for (const participantRow of allParticipantRows) {
+                    const allNutRows = await this.database.fetchAllNuts(participantRow);
+                    const participanStats = DDDUtil.getParticipantStats(participantRow, allNutRows);
+                    allParticipantStats.push(participanStats);
+                }
+                const replyOptions = this.replies.createLeaderboardReply(command, eventDetails, allParticipantStats);
+                return command.followUp(replyOptions);
+            }
             case 'join': {
                 await command.deferReply();
                 const zone = command.options.getString('zone', true);
@@ -104,7 +116,7 @@ export class DDDHandler extends ChatInputHandler {
                     (participantZoneDetails && participantZoneDetails.isDecemberish)      // Existing zone has already begun DDD
                 ) { return command.followUp(this.replies.createJoinFailReply(command, eventDetails, zone, zoneDetails, participantZoneDetails, allNutRows)); }
                 participantRow = await this.database.setParticipant({ ...partialParticipant, zone: zone, failed: 0 });
-                this.createSchedule(client, participantRow); // TODO
+                this.createSchedule(client, participantRow);
                 const settingsRow = await this.database.fetchSettings(partialParticipant);
                 if (settingsRow.event_role_id) await member.roles.add(settingsRow.event_role_id).catch(() => { });
                 if (settingsRow.passing_role_id) await member.roles.add(settingsRow.passing_role_id).catch(() => { });
