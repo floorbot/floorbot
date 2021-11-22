@@ -18,7 +18,10 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
+import { AnilistHandler } from './commands/weeb/anilist/AnilistHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
+import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
 import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
@@ -29,8 +32,6 @@ import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
-import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -74,6 +75,7 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
+        new AnilistHandler(),
         new AdminHandler(),
         new UtilsHandler(),
         new LostHandler(),

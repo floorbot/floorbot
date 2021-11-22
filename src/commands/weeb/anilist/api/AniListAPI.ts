@@ -3,10 +3,10 @@ import { Page } from './interfaces/Common';
 import fetch from 'node-fetch';
 
 // THESE ARE THE COMPLETED TYPES
-export * from './interfaces/Character';
-export * from './interfaces/Studio';
-export * from './interfaces/Media';
-export * from './interfaces/Staff';
+export * from './interfaces/Character.js';
+export * from './interfaces/Studio.js';
+export * from './interfaces/Media.js';
+export * from './interfaces/Staff.js';
 
 export interface AniListResponse {
     data: {
@@ -40,7 +40,7 @@ export class AniListAPI {
             body: JSON.stringify({ query: query, variables: variables }),
             headers: { 'Content-Type': 'application/json' },
         }).then(res => {
-            console.log(res.headers)
+            // console.log(res.headers)
             return res.json()
         });
     }

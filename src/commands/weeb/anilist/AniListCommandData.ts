@@ -11,7 +11,7 @@ export const AniListCommandData: ChatInputApplicationCommandData = {
         name: 'media',
         description: 'Search for an anime or manga',
         options: [{
-            name: 'query',
+            name: 'search',
             required: true,
             description: 'Search for an anime or manga!',
             type: ApplicationCommandOptionTypes.STRING
