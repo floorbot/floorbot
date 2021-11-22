@@ -92,7 +92,8 @@ export class DDDHandler extends ChatInputHandler {
         switch (subCommand) {
             case 'leaderboard': {
                 await command.deferReply();
-                const allParticipantRows = await this.database.fetchAllParticipants(eventDetails.year);
+                const partialSettingsRow = { guild_id: guild.id, year: eventDetails.year };
+                const allParticipantRows = await this.database.fetchAllParticipants(partialSettingsRow);
                 const allParticipantStats = [];
                 for (const participantRow of allParticipantRows) {
                     const allNutRows = await this.database.fetchAllNuts(participantRow);
