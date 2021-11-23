@@ -3,7 +3,7 @@ import { HandlerEmbed } from '../components/HandlerEmbed.js';
 import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
 
-const { Events, ApplicationCommandTypes } = Constants;
+const { Events } = Constants;
 
 export interface HandlerClientOptions extends ClientOptions {
     readonly handlerBuilders: ((client: HandlerClient) => Handler<any>)[],
@@ -51,47 +51,39 @@ export class HandlerClient extends Client {
                 if (handler.data.name !== interaction.commandName) continue;
                 if (interaction.isAutocomplete() && handler.hasAutocomplete()) return handler.autocomplete(interaction).catch(() => { });
                 if (!(interaction! instanceof handler.type)) continue;
-                switch (true) {
-                    case (handler.data.type === undefined && interaction.isCommand()):
-                    case (handler.data.type === ApplicationCommandTypes.USER && interaction.isContextMenu()):
-                    case (handler.data.type === ApplicationCommandTypes.CHAT_INPUT && interaction.isCommand()):
-                    case (handler.data.type === ApplicationCommandTypes.MESSAGE && interaction.isContextMenu()): {
-                        if (channel && handler.nsfw) {
-                            switch (channel.type) {
-                                case "DM": break;
-                                case "GUILD_TEXT":
-                                case "GUILD_NEWS": {
-                                    if (!channel.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
-                                        `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                        '*Try a different channel or make this one NSFW if it is appropriate!*'
-                                    ]).toReplyOptions({ ephemeral: true })).catch(() => { });
-                                    else break;
-                                }
-                                case "GUILD_PRIVATE_THREAD":
-                                case "GUILD_PUBLIC_THREAD":
-                                case "GUILD_NEWS_THREAD": {
-                                    if (!channel.parent || !channel.parent.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
-                                        `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                        '*Try a different channel or make this one NSFW if it is appropriate!*'
-                                    ]).toReplyOptions({ ephemeral: true })).catch(() => { });
-                                    else break;
-                                }
-                                default: return this.emit('log', `[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
-                            }
+                if (channel && handler.nsfw) {
+                    switch (channel.type) {
+                        case "DM": break;
+                        case "GUILD_TEXT":
+                        case "GUILD_NEWS": {
+                            if (!channel.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
+                                `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
+                                '*Try a different channel or make this one NSFW if it is appropriate!*'
+                            ]).toReplyOptions({ ephemeral: true })).catch(() => { });
+                            else break;
                         }
-                        return handler.execute(interaction).catch(async error => {
-                            this.emit('error', error);
-                            const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
-                            return interaction[method](new HandlerEmbed().setDescription([
-                                `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
-                                `*The error has been reported and will be fixed in the future!*`,
-                                '',
-                                ...(error && error.message ? [`Message: \`${error.message}\``] : [])
-                            ]).toReplyOptions({ ephemeral: true }));
-                        }).catch(() => { });
+                        case "GUILD_PRIVATE_THREAD":
+                        case "GUILD_PUBLIC_THREAD":
+                        case "GUILD_NEWS_THREAD": {
+                            if (!channel.parent || !channel.parent.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
+                                `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
+                                '*Try a different channel or make this one NSFW if it is appropriate!*'
+                            ]).toReplyOptions({ ephemeral: true })).catch(() => { });
+                            else break;
+                        }
+                        default: return this.emit('log', `[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
                     }
-                    default: return this.emit('log', `[support](interaction) Unknown application command interaction <${interaction.constructor.name}>`);
                 }
+                return handler.execute(interaction).catch(async error => {
+                    this.emit('error', error);
+                    const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
+                    return interaction[method](new HandlerEmbed().setDescription([
+                        `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
+                        `*The error has been reported and will be fixed in the future!*`,
+                        '',
+                        ...(error && error.message ? [`Message: \`${error.message}\``] : [])
+                    ]).toReplyOptions({ ephemeral: true }));
+                }).catch(() => { });
             }
         }
     }
