@@ -1,9 +1,9 @@
 import { CommandInteraction, Guild, Message, MessageActionRow, MessageButton, Constants, InteractionReplyOptions, SelectMenuInteraction, ApplicationCommand, Interaction } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
-import { Handler } from '../../../discord/handler/Handler.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { Handler } from '../../../discord/Handler.js';
 import { AdminCommandData } from './AdminCommandData.js';
 import { AdminSelectMenu } from './AdminSelectMenu.js';
 import { AdminEmbed } from './AdminEmbed.js';

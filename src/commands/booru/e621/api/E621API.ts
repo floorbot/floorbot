@@ -1,4 +1,4 @@
-import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../helpers/HandlerAPI.js';
+import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../discord/helpers/HandlerAPI.js';
 import E621APIAutocomplete from './interfaces/E621APIAutocomplete';
 import E621APIError from './interfaces/E621APIError';
 import E621APIPost from './interfaces/E621APIPost';

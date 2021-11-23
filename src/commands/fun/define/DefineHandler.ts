@@ -1,11 +1,11 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../helpers/components/HandlerButton.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { HandlerButton, HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { UrbanDictionaryAPI, UrbanDictionaryAPIData } from './UrbanDictionaryAPI.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
-import { HandlerEmbed } from '../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
+import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { DefineCommandData } from './DefineCommandData.js';
 import { Redis } from 'ioredis';
 

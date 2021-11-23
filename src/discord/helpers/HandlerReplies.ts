@@ -3,7 +3,7 @@ import { HandlerAttachment } from './components/HandlerAttachment.js';
 import { HandlerSelectMenu } from './components/HandlerSelectMenu.js';
 import { HandlerButton } from './components/HandlerButton.js';
 import { HandlerEmbed } from './components/HandlerEmbed.js';
-import { Handler } from '../discord/handler/Handler.js';
+import { Handler } from '../Handler.js';
 import Bottleneck from 'bottleneck';
 import { Stream } from 'stream';
 import path from 'path';

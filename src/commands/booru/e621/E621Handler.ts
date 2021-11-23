@@ -1,5 +1,5 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
 import { E621CommandData } from './E621CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
 import { BooruReplies } from '../BooruReplies.js';

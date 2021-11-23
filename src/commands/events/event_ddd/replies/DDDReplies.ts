@@ -1,10 +1,10 @@
 import { CommandInteraction, Constants, Interaction, InteractionReplyOptions, Message, MessageActionRow } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../../helpers/components/HandlerButton.js';
+import { HandlerButton, HandlerButtonID } from '../../../../discord/helpers/components/HandlerButton.js';
 import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from '../DDDUtil.js';
 import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from '../db/DDDDatabase.js';
-import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
 import { DateTime } from 'luxon';
 
 const { MessageButtonStyles } = Constants;

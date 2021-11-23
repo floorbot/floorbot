@@ -1,4 +1,4 @@
-import { HandlerAPI, HandlerAPIAuth } from '../../../../helpers/HandlerAPI.js';
+import { HandlerAPI, HandlerAPIAuth } from '../../../../discord/helpers/HandlerAPI.js';
 import Rule34APIAutocomplete from './interfaces/Rule34APIAutocomplete';
 import Rule34APIPost from './interfaces/Rule34APIPost';
 import { Redis } from 'ioredis';

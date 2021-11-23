@@ -1,6 +1,6 @@
 import { MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
 import { MagickAction, MagickProgress } from '../MagickConstants.js';
 import { MagickAttachment } from './MagickAttachment.js';
 import { ProbeResult } from 'probe-image-size';

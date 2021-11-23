@@ -1,6 +1,6 @@
 import { DDDPartialParticipantRow, DDDParticipantRow } from './interfaces/DDDParticipantRow';
 import { DDDPartialSettingsRow, DDDSettingsRow } from './interfaces/DDDSettingsRow';
-import { HandlerDatabase, HandlerDB } from '../../../../helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../../discord/helpers/HandlerDatabase.js';
 import { DDDPartialNutRow, DDDNutRow } from './interfaces/DDDNutRow';
 import path from 'path';
 import fs from 'fs';

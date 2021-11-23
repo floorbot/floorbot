@@ -1,8 +1,8 @@
-import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
+import { ChatInputHandler } from '../../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
 import { FlipChatInputCommandData } from './FlipChatInputCommandData.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
 import { CommandInteraction, Util } from 'discord.js';
 import { Flipper } from '../Flipper.js';
 

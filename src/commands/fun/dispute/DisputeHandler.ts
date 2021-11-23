@@ -1,13 +1,13 @@
 import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
-import { ContextMenuHandler } from '../../../discord/handler/abstracts/ContextMenuHandler.js';
+import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
 import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js'
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { DisputeCommandData } from './DisputeCommandData.js';
 import { DisputeEmbed } from './components/DisputeEmbed.js';
-import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 
 export class DisputeHandler extends ContextMenuHandler {
 

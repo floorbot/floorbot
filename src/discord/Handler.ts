@@ -1,5 +1,5 @@
 import { ApplicationCommandData, BaseCommandInteraction, BitFieldResolvable, IntentsString } from 'discord.js';
-import { Autocomplete } from './interfaces/Autocomplete.js';
+import { Autocomplete } from './handlers/interfaces/Autocomplete.js';
 import { HandlerClient } from './HandlerClient.js';
 
 export interface HandlerOptions {

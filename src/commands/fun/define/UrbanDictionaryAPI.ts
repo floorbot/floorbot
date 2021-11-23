@@ -1,4 +1,4 @@
-import { HandlerAPI, HandlerAPIRequestUpdates } from '../../../helpers/HandlerAPI.js';
+import { HandlerAPI, HandlerAPIRequestUpdates } from '../../../discord/helpers/HandlerAPI.js';
 import CacheMap from 'cache-map';
 import { Redis } from 'ioredis';
 

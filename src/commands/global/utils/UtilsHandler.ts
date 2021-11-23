@@ -1,6 +1,6 @@
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerEmbed } from '../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { CommandInteraction, Message } from 'discord.js';
 import { UtilsCommandData } from './UtilsCommandData.js';
 import humanizeDuration from 'humanize-duration';

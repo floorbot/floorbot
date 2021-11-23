@@ -1,7 +1,7 @@
 import { GuildChannel, Interaction, MessageEmbed, MessageEmbedOptions, User } from 'discord.js';
 import { MarkovChannelRow, MarkovStringTotals } from '../MarkovDatabase.js';
-import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
 
 export class MarkovEmbed extends HandlerEmbed {
 

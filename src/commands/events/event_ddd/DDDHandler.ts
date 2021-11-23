@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { DDDButtonID, DDDReplies } from './replies/DDDReplies.js';
-import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';

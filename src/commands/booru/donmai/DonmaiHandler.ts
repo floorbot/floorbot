@@ -1,5 +1,5 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
-import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
+import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
 import { DonmaiCommandData } from './DonmaiCommandData.js';
 import { DonmaiReplies } from './DonmaiReplies.js';
 import { BooruHandler } from '../BooruHandler.js';

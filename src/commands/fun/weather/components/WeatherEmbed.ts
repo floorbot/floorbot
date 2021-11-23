@@ -1,7 +1,7 @@
 import { GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../api/OpenWeatherAPI.js';
 import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
 import { WeatherLinkRow } from '../db/WeatherDatabase.js';
 import { OpenWeatherData } from '../WeatherHandler.js';
 import { WeatherEmojis } from '../WeatherEmojis.js';

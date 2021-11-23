@@ -1,11 +1,11 @@
 import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ContextMenuHandler } from '../../../../discord/handler/abstracts/ContextMenuHandler.js';
+import { ContextMenuHandler } from '../../../../discord/handlers/abstracts/ContextMenuHandler.js';
 import { MagickMessageCommandData } from './MagickMessageCommandData.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
 import { MagickAction, MagickProgress } from '../MagickConstants.js';
 import { MagickAttachment } from '../components/MagickAttachment.js';
 import { MagickSelectMenu } from '../components/MagickSelectMenu.js';
-import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
+import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
 import { MagickEmbed } from '../components/MagickEmbed.js';
 import { ImageMagick } from '../tools/ImageMagick.js';
 import { ProbeResult } from 'probe-image-size';

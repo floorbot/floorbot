@@ -1,4 +1,4 @@
-import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../helpers/HandlerAPI.js';
+import { HandlerAPI, HandlerAPIAuth, HandlerAPIRequestUpdates } from '../../../../discord/helpers/HandlerAPI.js';
 import DonmaiAPIAutocomplete from './interfaces/DonmaiAPIAutocomplete';
 import DonmaiAPIError from './interfaces/DonmaiAPIError';
 import DonmaiAPICount from './interfaces/DonmaiAPICount';
