@@ -55,7 +55,7 @@ export class DDDEventDetails {
 
     protected constructor(year: number) {
         this.year = year;
-        this.stopDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.FIRST_ZONE }).plus({ months: 1 });
+        this.stopDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.LAST_ZONE }).plus({ months: 1 });
         this.startDate = DateTime.fromObject({ year: year, month: DDDEventDetails.MONTH, day: 1, hour: 0, minute: 0 }, { zone: DDDEventDetails.FIRST_ZONE });
         this.guaranteedDate = this.startDate.plus({ days: 1 });
     }

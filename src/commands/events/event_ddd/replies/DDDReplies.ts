@@ -103,10 +103,6 @@ export class DDDReplies extends HandlerReplies {
     }
 
     public createSettingsReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, settings: DDDSettingsRow, participants: DDDParticipantRow[]): InteractionReplyOptions {
-        const now = DateTime.now();
-        const year = now.month <= 12 ? now.year : now.year + 1;
-        const starts = DateTime.fromObject({ year: year, month: 12, day: 1, hour: 0 });
-        const stops = DateTime.fromObject({ year: year, month: 12, day: 31, hour: 24 });
         const eventID = this.getEventID(eventDetails);
         const embed = this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Settings for ${command.guild.name}`)
@@ -118,8 +114,8 @@ export class DDDReplies extends HandlerReplies {
                 `**Participants:** ${HandlerUtil.formatCommas(participants.length)}`,
                 '',
                 `**Time until ${eventID}:**`,
-                `**Starts:** <t:${Math.round(starts.toSeconds())}:R>`,
-                `**Stops:** <t:${Math.round(stops.toSeconds())}:R>`,
+                `**Starts:** <t:${Math.round(eventDetails.startDate.toSeconds())}:R>`,
+                `**Stops:** <t:${Math.round(eventDetails.stopDate.toSeconds())}:R>`,
                 '',
                 '__Please Note__:',
                 ' - *The event role can be customised (e.g. rename, hoist, colour)*',

@@ -63,7 +63,6 @@ export class HandlerReplies {
         return { embeds: [embed], files: [attachment] }
     }
 
-
     public createBottleneckErrorReply(context: Interaction | Message, error: Bottleneck.BottleneckError): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');
