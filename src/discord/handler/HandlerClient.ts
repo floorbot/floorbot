@@ -36,7 +36,7 @@ export class HandlerClient extends Client {
         this.on(Events.SHARD_ERROR, async (_error, _id) => { for (const handler of this.handlers.values()) await handler.finalise(this); });
         this.on(Events.INTERACTION_CREATE, this.onInteractionCreate);
         exitHook((done) => this.onExitHook(done));
-        console.log(`[login] All handlers and events setup`);
+        console.log(`[login] All handlers and events setup for <${this.user!.tag}>`);
         return string;
     }
 

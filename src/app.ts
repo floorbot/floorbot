@@ -1,3 +1,7 @@
+import consolePrettifier from './lib/ConsolePrettifier.js';
+console.error = consolePrettifier(console.error);
+console.log = consolePrettifier(console.log);
+
 import { HandlerClient } from './discord/handler/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
 import BetterSqlit3 from 'better-sqlite3';
@@ -30,7 +34,6 @@ import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
-import { ClientLogger } from './automations/ClientLogger.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -113,7 +116,6 @@ const client = new HandlerClient({
     ]
 });
 
-ClientLogger.setup(client);
 client.once('ready', () => { PresenceController.setup(client); })
 client.login(env.DISCORD_TOKEN);
 MessageReaction(client);
