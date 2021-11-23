@@ -5,7 +5,7 @@ import { LostCommandData } from './LostCommandData.js';
 export class LostHandler extends ChatInputHandler {
 
     constructor() {
-        super({ group: 'temp', global: false, nsfw: false, data: LostCommandData });
+        super({ group: 'Events', global: false, nsfw: false, data: LostCommandData });
     }
 
     public async execute(command: CommandInteraction): Promise<any> {

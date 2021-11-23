@@ -20,7 +20,7 @@ export class DDDHandler extends ChatInputHandler {
     private readonly replies: DDDReplies;
 
     constructor(db: HandlerDB) {
-        super({ data: DDDCommandData, group: 'Event', global: false, nsfw: false });
+        super({ data: DDDCommandData, group: 'Events', global: false, nsfw: false });
         this.replies = new DDDReplies({ eventName: 'Destroy Dick December', eventAcronym: 'DDD' });
         this.database = new DDDDatabase(db);
     }

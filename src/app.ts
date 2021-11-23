@@ -31,8 +31,8 @@ import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
 import { AdminHandler } from './commands/global/admin/AdminHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
+import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
-import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
