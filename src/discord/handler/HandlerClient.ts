@@ -1,5 +1,4 @@
-import { Client, ClientOptions, Constants, Interaction, PresenceData } from 'discord.js';
-import { HandlerEmbed } from '../components/HandlerEmbed.js';
+import { Client, ClientOptions, Constants, Interaction, MessageEmbed, PresenceData } from 'discord.js';
 import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
 
@@ -49,40 +48,55 @@ export class HandlerClient extends Client {
         if (interaction.isApplicationCommand() || interaction.isAutocomplete()) {
             for (const handler of this.handlers) {
                 if (handler.data.name !== interaction.commandName) continue;
-                if (interaction.isAutocomplete() && handler.hasAutocomplete()) return handler.autocomplete(interaction).catch(() => { });
+
+                // Special case to check and execute autocomplete
+                if (interaction.isAutocomplete() && handler.hasAutocomplete()) return handler.autocomplete(interaction).catch(error => console.error(`[client] failed to handle autocomplete interaction...`, error));
+
+                // Check handler type and interaction type match
                 if (!(interaction! instanceof handler.type)) continue;
+
+                // Check if the handler and channel are NSFW compatible
                 if (channel && handler.nsfw) {
                     switch (channel.type) {
                         case "DM": break;
                         case "GUILD_TEXT":
                         case "GUILD_NEWS": {
-                            if (!channel.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
-                                `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                '*Try a different channel or make this one NSFW if it is appropriate!*'
-                            ]).toReplyOptions({ ephemeral: true })).catch(() => { });
+                            if (!channel.nsfw) return interaction.reply({
+                                ephemeral: true,
+                                embeds: [new MessageEmbed().setDescription([
+                                    `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
+                                    '*Try a different channel or make this one NSFW if it is appropriate!*'
+                                ].join('\n'))]
+                            }).catch((error) => console.error(`[client] failed to handle NSFW reply...`, error));
                             else break;
                         }
                         case "GUILD_PRIVATE_THREAD":
                         case "GUILD_PUBLIC_THREAD":
                         case "GUILD_NEWS_THREAD": {
-                            if (!channel.parent || !channel.parent.nsfw) return interaction.reply(new HandlerEmbed().setDescription([
-                                `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                '*Try a different channel or make this one NSFW if it is appropriate!*'
-                            ]).toReplyOptions({ ephemeral: true })).catch(() => { });
+                            if (!channel.parent || !channel.parent.nsfw) return interaction.reply({
+                                ephemeral: true,
+                                embeds: [new MessageEmbed().setDescription([
+                                    `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
+                                    '*Try a different channel or make this one NSFW if it is appropriate!*'
+                                ].join('\n'))]
+                            }).catch((error) => console.error(`[client] failed to handle NSFW reply...`, error));
                             else break;
                         }
-                        default: return this.emit('log', `[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
+                        default: console.warn(`[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
                     }
                 }
                 return handler.execute(interaction).catch(async error => {
                     this.emit('error', error);
                     const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
-                    return interaction[method](new HandlerEmbed().setDescription([
-                        `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
-                        `*The error has been reported and will be fixed in the future!*`,
-                        '',
-                        ...(error && error.message ? [`Message: \`${error.message}\``] : [])
-                    ]).toReplyOptions({ ephemeral: true }));
+                    return interaction[method]({
+                        ephemeral: true,
+                        embeds: [new MessageEmbed().setDescription([
+                            `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
+                            `*The error has been reported and will be fixed in the future!*`,
+                            '',
+                            ...(error && error.message ? [`Message: \`${error.message}\``] : [])
+                        ].join('\n'))]
+                    });
                 }).catch(() => { });
             }
         }

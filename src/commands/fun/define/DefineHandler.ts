@@ -1,9 +1,9 @@
 import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../discord/components/HandlerButton.js';
+import { HandlerButton, HandlerButtonID } from '../../../helpers/components/HandlerButton.js';
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
 import { UrbanDictionaryAPI, UrbanDictionaryAPIData } from './UrbanDictionaryAPI.js';
 import { Autocomplete } from '../../../discord/handler/interfaces/Autocomplete.js';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { HandlerEmbed } from '../../../helpers/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
 import { DefineCommandData } from './DefineCommandData.js';

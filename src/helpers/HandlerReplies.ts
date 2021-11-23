@@ -1,8 +1,8 @@
 import { BaseCommandInteraction, BufferResolvable, Interaction, InteractionReplyOptions, Message } from 'discord.js';
-import { HandlerAttachment } from '../discord/components/HandlerAttachment.js';
-import { HandlerSelectMenu } from '../discord/components/HandlerSelectMenu.js';
-import { HandlerButton } from '../discord/components/HandlerButton.js';
-import { HandlerEmbed } from '../discord/components/HandlerEmbed.js';
+import { HandlerAttachment } from './components/HandlerAttachment.js';
+import { HandlerSelectMenu } from './components/HandlerSelectMenu.js';
+import { HandlerButton } from './components/HandlerButton.js';
+import { HandlerEmbed } from './components/HandlerEmbed.js';
 import { Handler } from '../discord/handler/Handler.js';
 import Bottleneck from 'bottleneck';
 import { Stream } from 'stream';

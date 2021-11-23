@@ -1,4 +1,4 @@
-import { HandlerSelectMenu } from '../../../../discord/components/HandlerSelectMenu.js';
+import { HandlerSelectMenu } from '../../../../helpers/components/HandlerSelectMenu.js';
 import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
 import { MagickAction } from '../MagickConstants.js';
 

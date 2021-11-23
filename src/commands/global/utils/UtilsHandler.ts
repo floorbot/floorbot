@@ -1,5 +1,5 @@
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
+import { HandlerEmbed } from '../../../helpers/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { CommandInteraction, Message } from 'discord.js';
 import { UtilsCommandData } from './UtilsCommandData.js';

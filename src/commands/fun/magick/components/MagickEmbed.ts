@@ -1,5 +1,5 @@
 import { MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
+import { HandlerEmbed } from '../../../../helpers/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
 import { MagickAction, MagickProgress } from '../MagickConstants.js';
 import { MagickAttachment } from './MagickAttachment.js';

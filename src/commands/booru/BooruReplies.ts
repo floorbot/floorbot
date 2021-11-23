@@ -1,7 +1,7 @@
 import { Constants, Interaction, InteractionReplyOptions, Message, MessageActionRow, Util } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../discord/components/HandlerButton.js';
-import { HandlerSelectMenuID } from '../../discord/components/HandlerSelectMenu.js';
-import { HandlerEmbed } from '../../discord/components/HandlerEmbed.js';
+import { HandlerButton, HandlerButtonID } from '../../helpers/components/HandlerButton.js';
+import { HandlerSelectMenuID } from '../../helpers/components/HandlerSelectMenu.js';
+import { HandlerEmbed } from '../../helpers/components/HandlerEmbed.js';
 import { HandlerReplies } from '../../helpers/HandlerReplies.js';
 
 const { MessageButtonStyles } = Constants;
