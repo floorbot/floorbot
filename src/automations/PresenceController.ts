@@ -9,21 +9,21 @@ export class PresenceController {
 
     private static ACTIVITIES: Array<ActivitiesOptions> = [
         { type: "COMPETING", name: " NNN 😄" },
-        // { type: "LISTENING", name: "japan asmr" },
-        // { type: "LISTENING", name: "soft loli breathing" },
-        // { type: "LISTENING", name: "the rain" },
-        // { type: "LISTENING", name: "you" },
-        // { type: "WATCHING", name: "anime" },
-        // { type: "WATCHING", name: "for feet" },
-        // { type: "WATCHING", name: "hentai" },
-        // { type: "WATCHING", name: "hentai again" },
-        // { type: "WATCHING", name: "more hentai" },
-        // { type: "WATCHING", name: "the weather" },
-        // { type: "WATCHING", name: "the clouds" },
-        // { type: "PLAYING", name: "on the floor" },
-        // { type: "PLAYING", name: "with the carpet" },
-        // { type: "PLAYING", name: "with ur mum" },
-        // { type: "COMPETING", name: "your harem" }
+        { type: "LISTENING", name: "japan asmr" },
+        { type: "LISTENING", name: "soft loli breathing" },
+        { type: "LISTENING", name: "the rain" },
+        { type: "LISTENING", name: "you" },
+        { type: "WATCHING", name: "anime" },
+        { type: "WATCHING", name: "for feet" },
+        { type: "WATCHING", name: "hentai" },
+        { type: "WATCHING", name: "hentai again" },
+        { type: "WATCHING", name: "more hentai" },
+        { type: "WATCHING", name: "the weather" },
+        { type: "WATCHING", name: "the clouds" },
+        { type: "PLAYING", name: "on the floor" },
+        { type: "PLAYING", name: "with the carpet" },
+        { type: "PLAYING", name: "with ur mum" },
+        { type: "COMPETING", name: "your harem" }
         // { type: "COMPETING", name: "for your love" } // "competing in"
     ];
 

@@ -116,6 +116,8 @@ const client = new HandlerClient({
     ]
 });
 
-client.once('ready', () => { PresenceController.setup(client); })
+client.once('ready', () => {
+    PresenceController.setup(client);
+    MessageReaction.setup(client);
+})
 client.login(env.DISCORD_TOKEN);
-MessageReaction(client);
