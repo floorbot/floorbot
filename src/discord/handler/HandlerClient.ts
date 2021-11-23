@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Constants, Interaction, MessageEmbed, PresenceData } from 'discord.js';
+import { Client, ClientOptions, Constants, Interaction, MessageEmbed } from 'discord.js';
 import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
 
@@ -12,16 +12,13 @@ export interface HandlerClientOptions extends ClientOptions {
 
 export class HandlerClient extends Client {
 
-    private readonly presenceData?: PresenceData;
-
     public readonly handlers: Handler<any>[];
     public readonly ownerIds: string[];
 
     constructor(options: HandlerClientOptions) {
         const handlerIntents = options.handlers.map(handler => handler.intents);
-        super({ ...options, intents: [options.intents, ...handlerIntents], presence: { status: 'online' } }); // doesnt work
+        super({ ...options, intents: [options.intents, ...handlerIntents] });
         this.ownerIds = options.ownerIds || [];
-        this.presenceData = options.presence;
         this.handlers = options.handlers;
         for (const builder of options.handlerBuilders) {
             const handler = builder(this);
@@ -31,6 +28,7 @@ export class HandlerClient extends Client {
 
     public override async login(token?: string): Promise<string> {
         const string = await super.login(token);
+        console.log(`[login] Logged in as <${this.user!.tag}>`);
         for (const handler of this.handlers.values()) await handler.setup(this);
         this.on(Events.SHARD_READY, async (_id, _unavailableGuilds) => { for (const handler of this.handlers.values()) await handler.initialise(this); });
         this.on(Events.SHARD_RESUME, async (_id, _replayedEvents) => { for (const handler of this.handlers.values()) await handler.initialise(this); });
@@ -38,8 +36,7 @@ export class HandlerClient extends Client {
         this.on(Events.SHARD_ERROR, async (_error, _id) => { for (const handler of this.handlers.values()) await handler.finalise(this); });
         this.on(Events.INTERACTION_CREATE, this.onInteractionCreate);
         exitHook((done) => this.onExitHook(done));
-        if (this.user) this.user.setPresence(this.presenceData || { status: 'online' });
-        this.emit('log', `[login] Logged in as <${this.user!.tag}>`);
+        console.log(`[login] All handlers and events setup`);
         return string;
     }
 
@@ -86,9 +83,9 @@ export class HandlerClient extends Client {
                     }
                 }
                 return handler.execute(interaction).catch(async error => {
-                    this.emit('error', error);
+                    console.error(`[client] failed to handle command interaction...`, error);
                     const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
-                    return interaction[method]({
+                    return await interaction[method]({
                         ephemeral: true,
                         embeds: [new MessageEmbed().setDescription([
                             `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
@@ -97,13 +94,13 @@ export class HandlerClient extends Client {
                             ...(error && error.message ? [`Message: \`${error.message}\``] : [])
                         ].join('\n'))]
                     });
-                }).catch(() => { });
+                }).catch(error => console.error(`[client] failed to handle command error...`, error));
             }
         }
     }
 
     private async onExitHook(done: () => void): Promise<void> {
-        this.emit('log', '[exit-hook] Finalising all handlers before exiting');
+        console.log('[exit-hook] Finalising all handlers before exiting');
         for (const handler of this.handlers.values()) await handler.finalise(this);
         this.destroy();
         return done();
