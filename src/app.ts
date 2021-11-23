@@ -20,6 +20,8 @@ import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipCh
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
+import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
 import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
 import { AdminHandler } from './commands/global/admin/AdminHandler.js';
@@ -29,8 +31,6 @@ import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 import { ClientLogger } from './automations/ClientLogger.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
-import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -90,7 +90,6 @@ const client = new HandlerClient({
         new MagickMessageHandler(),
         new DisputeHandler(database),
 
-        // These are good... probably...
         new Rule34Handler(redis)
     ],
     handlerBuilders: [
