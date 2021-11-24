@@ -1,21 +1,22 @@
-import { CommandInteraction, Message, MessageActionRow, Util, InteractionReplyOptions, AutocompleteInteraction } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
+import { CommandInteraction, Message, Util, AutocompleteInteraction } from 'discord.js';
+import { UrbanDictionaryAPI } from '../../../apis/urban-dictionary/UrbanDictionaryAPI.js';
+import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { UrbanDictionaryAPI, UrbanDictionaryAPIData } from './UrbanDictionaryAPI.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
-import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { DefineCommandData } from './DefineCommandData.js';
-import { Redis } from 'ioredis';
+import { DefineReplies } from './DefineReplies.js';
 
 export class DefineHandler extends ChatInputHandler implements Autocomplete {
 
     private readonly api: UrbanDictionaryAPI;
+    private readonly replies: DefineReplies;
 
-    constructor(redis: Redis) {
+    constructor() {
         super({ group: 'Fun', global: false, nsfw: false, data: DefineCommandData })
-        this.api = new UrbanDictionaryAPI(redis);
+        this.api = new UrbanDictionaryAPI();
+        this.replies = new DefineReplies();
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -40,39 +41,18 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
             if (!query) return command.followUp(HandlerReplies.createUnexpectedErrorReply(command, this));
             else return command.followUp(HandlerReplies.createNotFoundReply(command, query));
         }
-        const replyOptions = this.createDefinitionReply(command, definitions, page);
+        const replyOptions = this.replies.createDefinitionReply(command, definitions, page);
         const message = await command.followUp(replyOptions) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
-        collector.on('collect', async component => {
-            try {
-                await component.deferUpdate();
-                if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
-                if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
-                page = page % definitions.length;
-                page = page >= 0 ? page : definitions.length + page;
-                const replyOptions = this.createDefinitionReply(command, definitions, page);
-                await component.editReply(replyOptions);
-            } catch { }
-        });
+        collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
+            await component.deferUpdate();
+            if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
+            if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
+            page = page % definitions.length;
+            page = page >= 0 ? page : definitions.length + page;
+            const replyOptions = this.replies.createDefinitionReply(command, definitions, page);
+            await component.editReply(replyOptions);
+        }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
-    }
-
-    private createDefinitionReply(interaction: CommandInteraction, definitions: UrbanDictionaryAPIData[], page: number = 0): InteractionReplyOptions {
-        const definition = definitions[page];
-        if (!definition) return HandlerReplies.createUnexpectedErrorReply(interaction, this);
-        const embed = new HandlerEmbed()
-            .setContextAuthor(interaction)
-            .setTitle(`${definition.word}`)
-            .setURL(definition.permalink)
-            .setDescription(Util.splitMessage(definition.definition.replace(/(\[|\])/g, '*'), { maxLength: 2048, char: '', append: '...' })[0]!)
-            .setFooter(`${(page) + 1}/${definitions.length} - Powered by Urban Dictionary`, 'https://i.pinimg.com/originals/f2/aa/37/f2aa3712516cfd0cf6f215301d87a7c2.jpg')
-        if (definition.example.length) {
-            embed.addField('Example', Util.splitMessage(definition.example.replace(/(\[|\])/g, '*'), { maxLength: 1024, char: '', append: '...' })[0]!);
-        }
-        const actionRow = new MessageActionRow().addComponents([
-            HandlerButton.createPreviousPageButton(),
-            HandlerButton.createNextPageButton(),
-        ])
-        return { embeds: [embed], components: [actionRow] };
     }
 }

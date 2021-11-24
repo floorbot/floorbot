@@ -1,7 +1,8 @@
-import { DonmaiAPIAutocomplete } from './interfaces/DonmaiAPIAutocomplete';
-import { DonmaiAPIError } from './interfaces/DonmaiAPIError';
-import { DonmaiAPICount } from './interfaces/DonmaiAPICount';
-import { DonmaiAPIPost } from './interfaces/DonmaiAPIPost';
+import { DonmaiAPIAutocomplete } from './interfaces/DonmaiAPIAutocomplete.js';
+import { DonmaiAPIError } from './interfaces/DonmaiAPIError.js';
+import { DonmaiAPICount } from './interfaces/DonmaiAPICount.js';
+import { DonmaiAPIPost } from './interfaces/DonmaiAPIPost.js';
+import fetch, { Headers } from 'node-fetch';
 
 export { DonmaiAPIAutocomplete, DonmaiAPIError, DonmaiAPICount, DonmaiAPIPost };
 

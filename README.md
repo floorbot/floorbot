@@ -54,7 +54,7 @@ npm start                                                // Run the app
 
 ### Fun Commands
 
--   [ ] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
+-   [x] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
 -   [ ] `☰ dispute` - Dispute each other's messages
 -   [ ] `/flip` & `☰ flip` - Flip a coin or text
 -   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)

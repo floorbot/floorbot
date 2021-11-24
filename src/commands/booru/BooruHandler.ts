@@ -38,44 +38,39 @@ export abstract class BooruHandler extends ChatInputHandler {
     }
 
     private createCollectorFunction(query: string, source: Interaction) {
-        return async (component: MessageComponentInteraction) => {
-            try {
-                if (component.isSelectMenu()) {
-                    switch (component.customId) {
-                        case BooruSelectMenuID.SUGGESTIONS: {
-                            await component.deferUpdate();
-                            query = component.values[0]!;
-                            const replyOptions = await this.generateResponse(component, query);
-                            await component.editReply(replyOptions);
-                            break;
-                        }
+        return HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction) => {
+            if (component.isSelectMenu()) {
+                switch (component.customId) {
+                    case BooruSelectMenuID.SUGGESTIONS: {
+                        await component.deferUpdate();
+                        query = component.values[0]!;
+                        const replyOptions = await this.generateResponse(component, query);
+                        await component.editReply(replyOptions);
+                        break;
                     }
                 }
-                if (component.isButton()) {
-                    switch (component.customId) {
-                        case BooruButtonID.RECYCLE: {
-                            const member = component.member as GuildMember;
-                            if (!HandlerUtil.isAdminOrOwner(member, source)) await component.reply(this.replies.createAdminOrOwnerReply(component));
-                            await component.deferUpdate();
-                            const replyOptions = await this.generateResponse(component, query);
-                            await component.editReply(replyOptions);
-                            break;
-                        }
-                        case BooruButtonID.REPEAT: {
-                            await component.deferReply();
-                            const replyOptions = await this.generateResponse(component, query);
-                            const message = await component.followUp(replyOptions) as Message;
-                            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
-                            collector.on('collect', this.createCollectorFunction(query, component));
-                            collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
-                            break;
-                        }
-                    }
-                }
-            } catch (error) {
-                const replyOptions = this.replies.createErrorReply(component, error);
-                await component.followUp(replyOptions).catch(() => { });
             }
-        }
+            if (component.isButton()) {
+                switch (component.customId) {
+                    case BooruButtonID.RECYCLE: {
+                        const member = component.member as GuildMember;
+                        if (!HandlerUtil.isAdminOrOwner(member, source)) await component.reply(this.replies.createAdminOrOwnerReply(component));
+                        await component.deferUpdate();
+                        const replyOptions = await this.generateResponse(component, query);
+                        await component.editReply(replyOptions);
+                        break;
+                    }
+                    case BooruButtonID.REPEAT: {
+                        await component.deferReply();
+                        const replyOptions = await this.generateResponse(component, query);
+                        const message = await component.followUp(replyOptions) as Message;
+                        const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 })
+                        collector.on('collect', this.createCollectorFunction(query, component));
+                        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+                        break;
+                    }
+                }
+            }
+        })
     }
 }

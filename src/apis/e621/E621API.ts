@@ -1,7 +1,8 @@
-import { E621APIAutocomplete } from './interfaces/E621APIAutocomplete';
-import { E621APIError } from './interfaces/E621APIError';
-import { E621APIPost } from './interfaces/E621APIPost';
-import { E621APITag } from './interfaces/E621APITag';
+import { E621APIAutocomplete } from './interfaces/E621APIAutocomplete.js';
+import { E621APIError } from './interfaces/E621APIError.js';
+import { E621APIPost } from './interfaces/E621APIPost.js';
+import { E621APITag } from './interfaces/E621APITag.js';
+import fetch, { Headers } from 'node-fetch';
 
 export { E621APIAutocomplete, E621APIError, E621APIPost, E621APITag };
 

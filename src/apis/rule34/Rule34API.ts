@@ -1,5 +1,6 @@
-import { Rule34APIAutocomplete } from './interfaces/Rule34APIAutocomplete';
-import { Rule34APIPost } from './interfaces/Rule34APIPost';
+import { Rule34APIAutocomplete } from './interfaces/Rule34APIAutocomplete.js';
+import { Rule34APIPost } from './interfaces/Rule34APIPost.js';
+import fetch, { Headers, Response } from 'node-fetch';
 import xml2js from 'xml2js';
 
 export { Rule34APIAutocomplete, Rule34APIPost };
@@ -10,7 +11,7 @@ export class Rule34API {
     public static MAX_PAGE: number = 200000
 
     constructor() {
-        // There is no required auth for rule34 api
+        // There is no required auth or anything for rule34 api
     }
 
     private async request(endpoint: string, params?: [string, string | number][]): Promise<Response> {

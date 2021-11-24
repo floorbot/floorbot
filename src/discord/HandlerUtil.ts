@@ -1,4 +1,5 @@
 import { Channel, Client, DMChannel, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
+import { HandlerReplies } from './helpers/HandlerReplies.js';
 import { HandlerClient } from './HandlerClient.js';
 import twemoji from 'twemoji';
 
@@ -12,7 +13,11 @@ export class HandlerUtil {
     }
 
     public static handleCollectorErrors(listener: (interaction: MessageComponentInteraction<any>) => Promise<any>): (interaction: MessageComponentInteraction) => Promise<void> {
-        return (interaction: MessageComponentInteraction) => listener(interaction).catch(error => console.error(error));
+        return (interaction: MessageComponentInteraction) => listener(interaction).catch(async error => {
+            console.error(`[client] Collector has run into an error...`, error);
+            const replyOptions = HandlerReplies.createUnexpectedErrorReply(interaction, error);
+            await interaction.followUp(replyOptions)
+        }).catch(error => console.error(`[client] Collector failed to report error...`, error));;
     }
 
     public static deleteComponentsOnEnd(message: Message): () => Promise<void> {
