@@ -1,6 +1,12 @@
+<img align="right" width="30%" src="https://github.com/floorbot/floorbot/blob/main/res/avatars/1-2.png">
+
 # floorbot
 
 The discord bot nobody deserves
+
+She is always doing her best to fulfill our requests no matter how degenerate they might be. Her loyalty is unmatched and she's always waiting for you no matter how long you leave her. It is this reason everyone must protect her at all costs to make sure she is happy.
+
+No body deserves her kindness
 
 ## Installation
 
