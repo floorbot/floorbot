@@ -1,7 +1,7 @@
-import { CommandInteraction, Message, Util, AutocompleteInteraction } from 'discord.js';
-import { UrbanDictionaryAPI } from '../../../apis/urban-dictionary/UrbanDictionaryAPI.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { UrbanDictionaryAPI } from '../../../apis/urban-dictionary/UrbanDictionaryAPI.js';
+import { CommandInteraction, Message, Util, AutocompleteInteraction } from 'discord.js';
+import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';

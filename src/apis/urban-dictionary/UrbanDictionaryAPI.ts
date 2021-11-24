@@ -22,23 +22,25 @@ export class UrbanDictionaryAPI {
     }
 
     public async define(term: string): Promise<UrbanDictionaryAPIData[]> {
-        const existing = UrbanDictionaryAPI.DEFINE_CACHE.get(term.toLowerCase());
+        const cacheKey = term.toLowerCase();
+        const existing = UrbanDictionaryAPI.DEFINE_CACHE.get(cacheKey);
         if (existing) return existing as UrbanDictionaryAPIData[];
         return await this.request('define', [['term', term]])
             .then(res => { return res.list ?? []})
             .then(res => {
-                UrbanDictionaryAPI.DEFINE_CACHE.set(term.toLowerCase(), res);
+                if (cacheKey) UrbanDictionaryAPI.DEFINE_CACHE.set(cacheKey, res);
                 return res;
             });
     }
 
     public async autocomplete(term: string): Promise<UrbanDictionaryAPIAutocomplete[]> {
-        const existing = UrbanDictionaryAPI.AUTOCOMPLETE_CACHE.get(term.toLowerCase());
-        if (existing) return existing as UrbanDictionaryAPIAutocomplete[];
+        const cacheKey = term.toLowerCase();
+        const existing = UrbanDictionaryAPI.AUTOCOMPLETE_CACHE.get(cacheKey);
+        if (cacheKey && existing) return existing as UrbanDictionaryAPIAutocomplete[];
         return await this.request('autocomplete-extra', [['term', term]])
             .then(res => res.results ?? [])
             .then(res => {
-                UrbanDictionaryAPI.AUTOCOMPLETE_CACHE.set(term.toLowerCase(), res);
+                if (cacheKey) UrbanDictionaryAPI.AUTOCOMPLETE_CACHE.set(cacheKey, res);
                 return res;
             });
     }

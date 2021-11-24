@@ -3,6 +3,7 @@ import { E621APIError } from './interfaces/E621APIError.js';
 import { E621APIPost } from './interfaces/E621APIPost.js';
 import { E621APITag } from './interfaces/E621APITag.js';
 import fetch, { Headers } from 'node-fetch';
+import NodeCache from 'node-cache';
 
 export { E621APIAutocomplete, E621APIError, E621APIPost, E621APITag };
 
@@ -13,6 +14,9 @@ export interface E621APIAuth {
 }
 
 export class E621API {
+
+    private static AUTOCOMPLETE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
+    private static TAGS_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
     private readonly userAgent: string | null;
     private readonly secret: string | null;
@@ -37,7 +41,15 @@ export class E621API {
     }
 
     public async tags(tags: string = String()): Promise<Array<E621APITag> | E621APIError> {
-        return this.request('tags', [['search[name_matches]', tags]]).then((res: any) => res.tags ? res.tags : res)
+        const cacheKey = tags.toLowerCase();
+        const existing = E621API.TAGS_CACHE.get(cacheKey);
+        if (cacheKey && existing) return existing as Array<E621APITag> | E621APIError;
+        return this.request('tags', [['search[name_matches]', tags]])
+            .then((res: any) => res.tags ? res.tags : res)
+            .then(res => {
+                if (cacheKey) E621API.TAGS_CACHE.set(cacheKey, res);
+                return res;
+            });
     }
 
     public async random(tags: string = String()): Promise<E621APIPost | E621APIError> {
@@ -46,7 +58,14 @@ export class E621API {
     }
 
     public async autocomplete(tag = String()): Promise<E621APIAutocomplete[]> {
-        return this.request('tags/autocomplete', [['search[name_matches]', tag]]);
+        const cacheKey = tag.toLowerCase();
+        const existing = E621API.AUTOCOMPLETE_CACHE.get(cacheKey);
+        if (cacheKey && existing) return existing as E621APIAutocomplete[];
+        return this.request('tags/autocomplete', [['search[name_matches]', tag]])
+            .then(res => {
+                if (cacheKey) E621API.AUTOCOMPLETE_CACHE.set(cacheKey, res);
+                return res;
+            });
     }
 
     public async get404(): Promise<string> {

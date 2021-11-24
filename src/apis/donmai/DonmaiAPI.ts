@@ -3,6 +3,7 @@ import { DonmaiAPIError } from './interfaces/DonmaiAPIError.js';
 import { DonmaiAPICount } from './interfaces/DonmaiAPICount.js';
 import { DonmaiAPIPost } from './interfaces/DonmaiAPIPost.js';
 import fetch, { Headers } from 'node-fetch';
+import NodeCache from 'node-cache';
 
 export { DonmaiAPIAutocomplete, DonmaiAPIError, DonmaiAPICount, DonmaiAPIPost };
 
@@ -13,6 +14,9 @@ export interface DonmaiAPIAuth {
 }
 
 export class DonmaiAPI {
+
+    private static AUTOCOMPLETE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
+    private static COUNT_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
     private readonly userAgent: string | null;
     private readonly secret: string | null;
@@ -39,7 +43,14 @@ export class DonmaiAPI {
     }
 
     public async count(tags: string = String()): Promise<DonmaiAPICount | DonmaiAPIError> {
-        return this.request('counts/posts', [['tags', tags]]);
+        const cacheKey = tags.toLowerCase();
+        const existing = DonmaiAPI.COUNT_CACHE.get(cacheKey);
+        if (cacheKey && existing) return existing as DonmaiAPICount | DonmaiAPIError;
+        return this.request('counts/posts', [['tags', tags]])
+            .then(res => {
+                if (cacheKey) DonmaiAPI.COUNT_CACHE.set(cacheKey, res);
+                return res;
+            });
     }
 
     public async random(tags: string = String()): Promise<DonmaiAPIPost | DonmaiAPIError> {
@@ -47,11 +58,17 @@ export class DonmaiAPI {
     }
 
     public async autocomplete(tag: string = String(), limit: number = 10): Promise<DonmaiAPIAutocomplete[]> {
+        const cacheKey = `${limit}-${tag.toLowerCase()}`;
+        const existing = DonmaiAPI.AUTOCOMPLETE_CACHE.get(cacheKey);
+        if (cacheKey && existing) return existing as DonmaiAPIAutocomplete[];
         return this.request('autocomplete', [
             ['search[query]', tag],
             ['search[type]', 'tag_query'],
             ['limit', limit]
-        ]);
+        ]).then(res => {
+            if (cacheKey) DonmaiAPI.AUTOCOMPLETE_CACHE.set(cacheKey, res);
+            return res;
+        });
     }
 
     public async get404(): Promise<string> {
