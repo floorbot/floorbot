@@ -1,4 +1,4 @@
-export default interface DonmaiAPICount {
+export interface DonmaiAPICount {
     readonly counts: {
         readonly posts: number
     }

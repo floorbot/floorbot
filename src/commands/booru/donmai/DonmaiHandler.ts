@@ -1,23 +1,20 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
+import { DonmaiAPI, DonmaiAPIAuth } from '../../../apis/donmai/DonmaiAPI.js';
 import { DonmaiCommandData } from './DonmaiCommandData.js';
 import { DonmaiReplies } from './DonmaiReplies.js';
 import { BooruHandler } from '../BooruHandler.js';
-import { DonmaiAPI } from './api/DonmaiAPI.js';
-import { Redis } from 'ioredis';
 
 export class DonmaiHandler extends BooruHandler implements Autocomplete {
 
     protected readonly replies: DonmaiReplies;
-    private readonly subDomain: string;
     private readonly api: DonmaiAPI;
 
-    constructor(details: { subDomain: string, nsfw: boolean }, redis: Redis, auth?: { username: string, apiKey: string }) {
-        const { subDomain, nsfw } = details;
+    constructor(options: { subDomain: string, auth?: DonmaiAPIAuth, nsfw: boolean }) {
+        const { subDomain, auth, nsfw } = options;
         super({ nsfw: nsfw, data: DonmaiCommandData.create(subDomain) });
-        this.replies = new DonmaiReplies({ apiName: 'Donmai', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
-        this.api = new DonmaiAPI({ subDomain, redis, auth });
-        this.subDomain = subDomain;
+        this.replies = new DonmaiReplies(subDomain);
+        this.api = new DonmaiAPI(subDomain, auth);
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -54,14 +51,14 @@ export class DonmaiHandler extends BooruHandler implements Autocomplete {
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count } });
                     return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
                 default: {
-                    console.warn(`[${this.subDomain}] Unknown api response details <${details}>`);
+                    console.warn(`[${this.api.subDomain}] Unknown api response details <${details}>`);
                     return this.replies.createUnknownDetailsReply(interaction, tags, details);
                 }
             }
         } else if (!('id' in data)) {
             return this.replies.createRestrictedTagReply(interaction, tags);
         }
-        const postURL = `https://${this.subDomain}.donmai.us/posts/${data.id}`;
+        const postURL = `https://${this.api.subDomain}.donmai.us/posts/${data.id}`;
         return this.replies.createImageReply(interaction, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags });
     }
 }

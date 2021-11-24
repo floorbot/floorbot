@@ -1,4 +1,5 @@
-import { Client, ClientOptions, Constants, Interaction, MessageEmbed } from 'discord.js';
+import { Client, ClientOptions, Constants, Interaction } from 'discord.js';
+import { HandlerReplies } from './helpers/HandlerReplies.js';
 import exitHook from 'async-exit-hook';
 import { Handler } from './Handler';
 
@@ -58,45 +59,34 @@ export class HandlerClient extends Client {
                         case "DM": break;
                         case "GUILD_TEXT":
                         case "GUILD_NEWS": {
-                            if (!channel.nsfw) return interaction.reply({
-                                ephemeral: true,
-                                embeds: [new MessageEmbed().setDescription([
-                                    `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                    '*Try a different channel or make this one NSFW if it is appropriate!*'
-                                ].join('\n'))]
-                            }).catch((error) => console.error(`[client] failed to handle NSFW reply...`, error));
-                            else break;
+                            if (!channel.nsfw) {
+                                const replyOptions = HandlerReplies.createNSFWChannelReply(interaction);
+                                return interaction.reply(replyOptions).catch(error => this.handleError('nsfw', error));
+                            } else break;
                         }
                         case "GUILD_PRIVATE_THREAD":
                         case "GUILD_PUBLIC_THREAD":
                         case "GUILD_NEWS_THREAD": {
-                            if (!channel.parent || !channel.parent.nsfw) return interaction.reply({
-                                ephemeral: true,
-                                embeds: [new MessageEmbed().setDescription([
-                                    `Sorry! The \`${interaction.commandName}\` command can only be used in \`NSFW\` channels 😏`,
-                                    '*Try a different channel or make this one NSFW if it is appropriate!*'
-                                ].join('\n'))]
-                            }).catch((error) => console.error(`[client] failed to handle NSFW reply...`, error));
-                            else break;
+                            if (!channel.parent || !channel.parent.nsfw) {
+                                const replyOptions = HandlerReplies.createNSFWChannelReply(interaction);
+                                return interaction.reply(replyOptions).catch(error => this.handleError('nsfw', error));
+                            } else break;
                         }
                         default: console.warn(`[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
                     }
                 }
                 return handler.execute(interaction).catch(async error => {
-                    console.error(`[client] failed to handle command interaction...`, error);
-                    const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply'
-                    return await interaction[method]({
-                        ephemeral: true,
-                        embeds: [new MessageEmbed().setDescription([
-                            `Sorry! I seem to have run into an issue with your \`${interaction.commandName}\` command 😦`,
-                            `*The error has been reported and will be fixed in the future!*`,
-                            '',
-                            ...(error && error.message ? [`Message: \`${error.message}\``] : [])
-                        ].join('\n'))]
-                    });
-                }).catch(error => console.error(`[client] failed to handle command error...`, error));
+                    this.handleError('handler', error);
+                    const method = (interaction.deferred || interaction.replied) ? 'followUp' : 'reply';
+                    const replyOptions = HandlerReplies.createUnexpectedErrorReply(interaction, error);
+                    return interaction[method](replyOptions);
+                }).catch(error => this.handleError('handler', error));
             }
         }
+    }
+
+    private handleError(scope: string, error: any) {
+        console.error(`[client](${scope}) failed to handle NSFW reply...`, error)
     }
 
     private async onExitHook(done: () => void): Promise<void> {

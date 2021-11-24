@@ -1,32 +1,23 @@
-import { HandlerAPI, HandlerAPIAuth } from '../../../../discord/helpers/HandlerAPI.js';
-import Rule34APIAutocomplete from './interfaces/Rule34APIAutocomplete';
-import Rule34APIPost from './interfaces/Rule34APIPost';
-import { Redis } from 'ioredis';
+import { Rule34APIAutocomplete } from './interfaces/Rule34APIAutocomplete';
+import { Rule34APIPost } from './interfaces/Rule34APIPost';
 import xml2js from 'xml2js';
 
 export { Rule34APIAutocomplete, Rule34APIPost };
 
-export class Rule34API extends HandlerAPI {
+export class Rule34API {
 
-    // Rule34 accessible page limit
+    /** Rule34 accessible page limit */
     public static MAX_PAGE: number = 200000
 
-    constructor(options: { redis: Redis, auth?: HandlerAPIAuth }) {
-        const { redis, auth } = options;
-        super({
-            auth: auth,
-            url: `https://rule34.xxx`,
-            limiter: HandlerAPI.createLimiter({
-                id: `rule34-api-${auth ? auth.apiKey : 'global'}`,
-                maxConcurrent: 10,
-                perSecond: 10,
-                redis: redis
-            })
-        });
+    constructor() {
+        // There is no required auth for rule34 api
     }
 
-    protected override getRequestURL(endpoint: string, paramString: string) {
-        return `${this.url}/${endpoint}.php?${paramString}`
+    private async request(endpoint: string, params?: [string, string | number][]): Promise<Response> {
+        const paramString = (params || []).map((param) => `${param[0]}=${param[1]}`).join('&');
+        const url = `https://rule34.xxx/${endpoint}.php?${paramString}`;
+        const options = { method: 'GET', headers: new Headers() };
+        return fetch(url, options);
     }
 
     public async count(tags: string = String()): Promise<number> {

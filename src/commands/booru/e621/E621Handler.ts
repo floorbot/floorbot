@@ -1,20 +1,19 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
+import { E621API, E621APIAuth } from '../../../apis/e621/E621API.js';
 import { E621CommandData } from './E621CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
 import { BooruReplies } from '../BooruReplies.js';
-import { E621API } from './api/E621API.js';
-import { Redis } from 'ioredis';
 
 export class E621Handler extends BooruHandler implements Autocomplete {
 
     protected readonly replies: BooruReplies;
     private readonly api: E621API;
 
-    constructor(redis: Redis, auth: { username: string, apiKey: string, userAgent: string }) {
+    constructor(auth: E621APIAuth) {
         super({ nsfw: true, data: E621CommandData });
         this.replies = new BooruReplies({ apiName: 'e621', apiIcon: 'https://en.wikifur.com/w/images/d/dd/E621Logo.png' });
-        this.api = new E621API({ redis, auth });
+        this.api = new E621API(auth);
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {

@@ -93,25 +93,27 @@ const client = new HandlerClient({
         new MagickMessageHandler(),
         new DisputeHandler(database),
 
-        new Rule34Handler(redis)
+        new Rule34Handler()
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {
-            const details = { subDomain: 'danbooru', nsfw: true };
             const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new DonmaiHandler(details, redis, auth);
+            const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
+            return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const details = { subDomain: 'safebooru', nsfw: false };
             const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new DonmaiHandler(details, redis, auth);
+            const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
+            return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
             const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env] invalid or missing e621 credentials!');
-            return new E621Handler(redis, envAuth);
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
+            return new E621Handler(envAuth);
         }
     ]
 });

@@ -1,15 +1,14 @@
+import { BooruReplies, BooruReplyConstructorOptions } from '../BooruReplies.js';
 import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
-import { BooruReplies } from '../BooruReplies.js';
-
-export interface BooruReplyConstructorOptions {
-    readonly apiName: string,
-    readonly apiIcon: string
-}
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 
 export class DonmaiReplies extends BooruReplies {
 
-    constructor(options: BooruReplyConstructorOptions) {
-        super(options);
+    constructor(subDomain: string, options?: BooruReplyConstructorOptions) {
+        super(options ? options : {
+            apiName: HandlerUtil.capitalizeString(subDomain),
+            apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg'
+        });
     }
 
     public createRestrictedTagReply(context: Interaction | Message, tag: string): InteractionReplyOptions {
