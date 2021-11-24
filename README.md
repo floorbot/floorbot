@@ -1,50 +1,72 @@
 # floorbot
 
-The collection and consolidation of the different floorbot features
+The discord bot nobody deserves
 
-### [floorbot](https://github.com/floorbot/floorbot)
+## Installation
 
-```console
-/markov (user)
-/define (query) - urbandictionary.com
+```bash
+git clone https://github.com/floorbot/floorbot           // Clone the repo
 ```
 
-### [floorbot-anilist](https://github.com/floorbot/floorbot/tree/floorbot-anilist)
+Rename or copy the [`.env.example`](https://github.com/floorbot/floorbot/blob/main/.env.example) file as `.env` and fill out all the details.
+Not all variables are required however for advanced setup please include a MariaDB database as well as Redis server details (when in a sharded environment)
 
-```console
-/anilist link [name|id] (user)
-/anilist unlink (user)
-/anime (name|id)
-/manga (name|id)
-/animelist (name|id)
-/mangalist (name|id)
-/character (name|id)
-/bestgirl (name|id)
-/description (name|id)
+```bash
+npm run build                                            // Build the TypeScript
+npm start                                                // Run the app
 ```
 
-### [floorbot-booru](https://github.com/floorbot/floorbot/tree/floorbot-booru)
+## Features
 
-```console
-/e621 (tags) - e621.net
-/rule34 (tags) - rule34.xxx
-/danbooru (tags) - danbooru.donmai.us
-/safebooru (tags) - safebooru.donmai.us
-/pregchan (threads) - pregchan.com
-```
+-   [x] NSFW specific commands
+-   [x] Context menu command support
+-   [x] Autocomplete support for commands
+-   [x] Admin specific command control
+-   [x] MariaDB database support
+-   [x] Redis server support for clustering
+-   [ ] Command specific permission control
+-   [ ] Command rate limits per user/guild
+-   [ ] Guild specific command registration
+-   [ ] Seasonal presence updates (christmas/halloween)
+-   [ ] RegEx support for commands
 
-### [floorbot-weather](https://github.com/floorbot/floorbot/tree/floorbot-weather)
+### Global Commands
 
-```console
-/weather temps
-/weather current (city_name) (state_code) (country_code)
-/weather forecast (city_name) (state_code) (country_code)
-/weather link (city_name) (state_code) (country_code) (user)
-/weather unlink (user)
-```
+-   [ ] `/floorbot`
+    -   [ ] `/floorbot commands` - Add or remove commands from a guild
+    -   [ ] `/floorbot about` - Get the bots ping/invite link
+    -   [ ] `/floorbot screenshare` - Generate a screenshare link
+    -   [ ] `/floorbot guild` - Display stats from the current
 
-### [floorbot-magick](https://github.com/floorbot/floorbot/tree/floorbot-magick)
+### Booru Commands
 
-```console
-/magick [action] (image)
-```
+-   [x] `/danbooru` - [Danbooru](http://danbooru.donmai.us/)
+-   [x] `/safebooru` - [Safebooru](http://safebooru.donmai.us/)
+-   [x] `/e621` - [e621](https://e621.net/)
+-   [x] `/rule34` - [Rule 34](https://rule34.xxx/index.php)
+-   [ ] `/pregchan` - [Pregchan](https://pregchan.com/) (scraping) Cloudflare limitations
+
+### Fun Commands
+
+-   [ ] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
+-   [ ] `☰ dispute` - Dispute each other's messages
+-   [ ] `/flip` & `☰ flip` - Flip a coin or text
+-   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
+-   [ ] `/markov` - Markov chain message generation
+-   [ ] `/owoify` & `☰ owoify`  - Owoify a message
+-   [ ] `/roll` - Roll a die
+
+### Service Commands
+
+-   [ ] `/weather` - [Open Weather](https://openweathermap.org/)
+-   [ ] `/media` - Media player for anything audio related
+
+### Weeb Commands
+
+-   [ ] `/anilist` - [AniList](https://anilist.co/)
+-   [ ] `/vtuber` - [Virtual YouTuber](https://virtualyoutuber.fandom.com/wiki/Virtual_YouTuber_Wiki) (scraping) Cloudflare limitations
+
+### Tracker Commands
+
+-   [ ] `/osu` - [osu!](https://osu.ppy.sh/)
+-   [ ] `/rocket_league` - [Rocket League Tracker](https://rocketleague.tracker.network/) (scraping) _Unofficial_
