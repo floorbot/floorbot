@@ -24,6 +24,7 @@ export class HandlerUtil {
         return async () => {
             try {
                 message = await message.fetch();
+                if (message.deleted) return;
                 const replyOptions: InteractionReplyOptions = {
                     ...(message.content && { content: message.content }),
                     embeds: message.embeds,
