@@ -1,4 +1,4 @@
-export default interface Rule34APIPost {
+export interface Rule34APIPost {
     readonly count: {
         readonly total: number,
         readonly offset: number

@@ -1,4 +1,4 @@
-export default interface DonmaiAPIError {
+export interface DonmaiAPIError {
     readonly success: boolean,
     readonly message: string,
     readonly backtrace: Array<string>

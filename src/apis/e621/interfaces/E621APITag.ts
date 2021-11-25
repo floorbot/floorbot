@@ -1,4 +1,4 @@
-export default interface E621APITag {
+export interface E621APITag {
     readonly id: number,
     readonly name: string,
     readonly post_count: number,

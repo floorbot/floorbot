@@ -1,4 +1,4 @@
-export default interface E621APIAutocomplete {
+export interface E621APIAutocomplete {
     id: number,
     name: string,
     post_count: number,

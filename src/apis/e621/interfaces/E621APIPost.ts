@@ -1,4 +1,4 @@
-export default interface E621APIPost {
+export interface E621APIPost {
     readonly id: number,
     readonly created_at: string,
     readonly updated_at: string,

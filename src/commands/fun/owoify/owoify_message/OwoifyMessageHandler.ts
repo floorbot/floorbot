@@ -1,6 +1,6 @@
 import { ContextMenuHandler } from '../../../../discord/handlers/abstracts/ContextMenuHandler.js';
-import { OwoifyMessageCommandData } from './OwoifyMessageCommandData.js';
 import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
+import { OwoifyMessageCommandData } from './OwoifyMessageCommandData.js';
 import { ContextMenuInteraction, Util } from 'discord.js';
 import owoify from 'owoify-js';
 

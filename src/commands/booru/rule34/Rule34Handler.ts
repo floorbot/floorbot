@@ -1,20 +1,19 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
+import { Rule34API, Rule34APIAutocomplete } from '../../../apis/rule34/Rule34API.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
-import { Rule34API, Rule34APIAutocomplete } from './api/Rule34API.js';
 import { Rule34CommandData } from './Rule34CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
 import { BooruReplies } from '../BooruReplies.js';
-import { Redis } from 'ioredis';
 
 export class Rule34Handler extends BooruHandler implements Autocomplete {
 
     protected readonly replies: BooruReplies;
     private readonly api: Rule34API;
 
-    constructor(redis: Redis) {
+    constructor() {
         super({ nsfw: true, data: Rule34CommandData });
-        this.replies = new BooruReplies({ apiName: 'Donmai', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
-        this.api = new Rule34API({ redis });
+        this.replies = new BooruReplies({ apiName: 'Rule34', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
+        this.api = new Rule34API();
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {

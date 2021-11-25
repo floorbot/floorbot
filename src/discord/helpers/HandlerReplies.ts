@@ -11,6 +11,12 @@ import fs from 'fs';
 
 export class HandlerReplies {
 
+    /** Temporary method to use until a better solution is implemented */
+    public getAvatar(avatar: string): HandlerAttachment {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${avatar}.png`);
+        return new HandlerAttachment(buffer, 'floorbot.png');
+    }
+
     public createEmbedTemplate(context?: Interaction | Message): HandlerEmbed {
         const embed = new HandlerEmbed();
         if (context) embed.setContextAuthor(context);
@@ -80,6 +86,34 @@ export class HandlerReplies {
         return { embeds: [embed], files: [attachment] }
     }
 
+    public static createNSFWChannelReply(context: Interaction | Message): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-4.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
+                '*Try a different channel or make this one NSFW if it is appropriate!*'
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment], ephemeral: true }
+    }
+
+    public static createUnexpectedErrorReply(context: Interaction | Message, error: any): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! I seem to have run into an unexpected error processing your request...`,
+                `*The error has been reported and will be fixed in the future!*`,
+                '',
+                ...(error && error.message ? [`Message: \`${error.message}\``] : [])
+            ]);
+        return { embeds: [embed], files: [attachment] }
+    }
+
     // OLD
 
     public static createMessageContentReply(context: Interaction | Message, action: string): InteractionReplyOptions {
@@ -131,19 +165,6 @@ export class HandlerReplies {
                 `Sorry! I could not find \`${query}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment] }
-    }
-
-    public static createUnexpectedErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
-        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
-        const embed = new HandlerEmbed()
-            .setContextAuthor(context)
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! I seem to have run into an unexpected issue with \`${handler.toString()}\``,
-                `*${message ?? 'This error has been reported and will be fixed!'}*`
-            ]);
         return { embeds: [embed], files: [attachment] }
     }
 

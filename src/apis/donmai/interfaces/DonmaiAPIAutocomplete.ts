@@ -1,4 +1,4 @@
-export default interface DonmaiAPIAutocomplete {
+export interface DonmaiAPIAutocomplete {
     readonly type: string,
     readonly label: string,
     readonly value: string,

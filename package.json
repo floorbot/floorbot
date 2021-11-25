@@ -52,6 +52,7 @@
         "luxon": "^2.0.2",
         "mariadb": "^2.5.4",
         "markov-strings": "^3.0.1",
+        "node-cache": "^5.1.2",
         "node-schedule": "^2.0.0",
         "owoify-js": "^1.0.7",
         "probe-image-size": "^7.2.1",
