@@ -59,7 +59,7 @@ npm start                                                // Run the app
 -   [x] `/flip` & `☰ flip` - Flip a coin or text
 -   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
 -   [ ] `/markov` - Markov chain message generation
--   [ ] `/owoify` & `☰ owoify`  - Owoify a message
+-   [x] `/owoify` & `☰ owoify`  - Owoify a message
 -   [ ] `/roll` - Roll a die
 
 ### Service Commands
