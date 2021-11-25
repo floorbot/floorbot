@@ -1,6 +1,6 @@
 import { ContextMenuHandler } from '../../../../discord/handlers/abstracts/ContextMenuHandler.js';
-import { FlipMessageCommandData } from './FlipMessageCommandData.js';
 import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
+import { FlipMessageCommandData } from './FlipMessageCommandData.js';
 import { ContextMenuInteraction, Util } from 'discord.js';
 import { Flipper } from '../Flipper.js';
 

@@ -56,7 +56,7 @@ npm start                                                // Run the app
 
 -   [x] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
 -   [ ] `☰ dispute` - Dispute each other's messages
--   [ ] `/flip` & `☰ flip` - Flip a coin or text
+-   [x] `/flip` & `☰ flip` - Flip a coin or text
 -   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
 -   [ ] `/markov` - Markov chain message generation
 -   [ ] `/owoify` & `☰ owoify`  - Owoify a message
@@ -76,3 +76,9 @@ npm start                                                // Run the app
 
 -   [ ] `/osu` - [osu!](https://osu.ppy.sh/)
 -   [ ] `/rocket_league` - [Rocket League Tracker](https://rocketleague.tracker.network/) (scraping) _Unofficial_
+
+### Event commands
+
+-   [ ] `/nnn` - November
+-   [ ] `/ddd` - December
+-   [ ] `/fff` - February
