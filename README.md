@@ -60,7 +60,7 @@ npm start                                                // Run the app
 -   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
 -   [ ] `/markov` - Markov chain message generation
 -   [x] `/owoify` & `☰ owoify`  - Owoify a message
--   [ ] `/roll` - Roll a die
+-   [x] `/roll` - Roll a die
 
 ### Service Commands
 

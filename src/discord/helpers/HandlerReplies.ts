@@ -11,6 +11,12 @@ import fs from 'fs';
 
 export class HandlerReplies {
 
+    /** Temporary method to use until a better solution is implemented */
+    public getAvatar(avatar: string): HandlerAttachment {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${avatar}.png`);
+        return new HandlerAttachment(buffer, 'floorbot.png');
+    }
+
     public createEmbedTemplate(context?: Interaction | Message): HandlerEmbed {
         const embed = new HandlerEmbed();
         if (context) embed.setContextAuthor(context);
