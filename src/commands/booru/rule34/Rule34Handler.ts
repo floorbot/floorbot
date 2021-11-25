@@ -12,7 +12,7 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
 
     constructor() {
         super({ nsfw: true, data: Rule34CommandData });
-        this.replies = new BooruReplies({ apiName: 'Rule34', apiIcon: 'https://dl.airtable.com/.attachments/e0faba2e2b9f1cc1ad2b07b9ed6e63a3/9fdd81b5/512x512bb.jpg' });
+        this.replies = new BooruReplies({ apiName: 'Rule34', apiIcon: 'https://rule34.xxx/apple-touch-icon-precomposed.png' });
         this.api = new Rule34API();
     }
 
