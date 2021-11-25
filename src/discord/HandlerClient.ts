@@ -86,7 +86,7 @@ export class HandlerClient extends Client {
     }
 
     private handleError(scope: string, error: any) {
-        console.error(`[client](${scope}) failed to handle NSFW reply...`, error)
+        console.error(`[client](${scope}) Unexpected Error`, error)
     }
 
     private async onExitHook(done: () => void): Promise<void> {

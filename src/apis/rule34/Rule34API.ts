@@ -14,9 +14,10 @@ export class Rule34API {
     private static AUTOCOMPLETE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
     private static COUNT_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
-    private async request(endpoint: string, params?: [string, string | number][]): Promise<Response> {
-        const paramString = (params || []).map((param) => `${param[0]}=${param[1]}`).join('&');
-        const url = `https://rule34.xxx/${endpoint}.php?${paramString}`;
+    private async request(endpoint: string, params: [string, string | number][]): Promise<Response> {
+        const defaultParams: [string, string | number][] = [['page', 'dapi'], ['s', 'post'], ['q', 'index']];
+        const paramString = defaultParams.concat(params).map((param) => `${param[0]}=${param[1]}`).join('&');
+        const url = `https://api.rule34.xxx/${endpoint}.php?${paramString}`;
         const options = { method: 'GET', headers: new Headers() };
         return fetch(url, options);
     }
@@ -42,8 +43,9 @@ export class Rule34API {
         if (cacheKey && existing) return existing as number;
         const xml = await this.request('index', [['tags', tags], ['limit', 1]]).then(res => res.text());
         const json = await xml2js.parseStringPromise(xml);
-        if (cacheKey) Rule34API.COUNT_CACHE.set(cacheKey, json);
-        return parseInt(json.posts['$'].count);
+        const count = parseInt(json.posts['$'].count);
+        if (cacheKey) Rule34API.COUNT_CACHE.set(cacheKey, count);
+        return count;
     }
 
     public async autocomplete(tag: string = String()): Promise<Rule34APIAutocomplete[]> {
