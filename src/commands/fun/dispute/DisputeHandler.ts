@@ -103,7 +103,7 @@ export class DisputeHandler extends ContextMenuHandler {
             const embed = DisputeEmbed.getFinalEmbed(contextMenu, origMessage, disputeResults!);
             const newMessage = { embeds: [embed] };
 
-            HandlerUtil.deleteComponentsOnEnd(updatedMessage)();
+            HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
             await collection.last()!.followUp(newMessage);
         }
     }

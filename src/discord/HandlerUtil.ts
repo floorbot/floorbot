@@ -1,7 +1,9 @@
-import { Channel, Client, DMChannel, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
+import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
 import { HandlerClient } from './HandlerClient.js';
 import twemoji from 'twemoji';
+
+const { Events } = Constants;
 
 export class HandlerUtil {
 
@@ -20,18 +22,28 @@ export class HandlerUtil {
         }).catch(error => console.error(`[client] Collector failed to report error...`, error));;
     }
 
-    public static deleteComponentsOnEnd(message: Message): () => Promise<void> {
-        return async () => {
+    public static deleteComponentsOnEnd(message: Message): (collected: Collection<string, MessageComponentInteraction>, reason: string) => Promise<void> {
+        return async (_collected, reason) => {
             try {
-                message = await message.fetch();
-                if (message.deleted) return;
-                const replyOptions: InteractionReplyOptions = {
-                    ...(message.content && { content: message.content }),
-                    embeds: message.embeds,
-                    components: [],
-                    attachments: [...message.attachments.values()]
-                };
-                await message.edit(replyOptions);
+                switch (reason) {
+                    case Events.MESSAGE_DELETE:
+                    case Events.MESSAGE_BULK_DELETE:
+                    case Events.CHANNEL_DELETE:
+                    case Events.GUILD_DELETE: { return; }
+                    case 'idle':
+                    case 'time':
+                    default: {
+                        message = await message.fetch();
+                        if (message.deleted) return;
+                        const replyOptions: InteractionReplyOptions = {
+                            ...(message.content && { content: message.content }),
+                            embeds: message.embeds,
+                            components: [],
+                            attachments: [...message.attachments.values()]
+                        };
+                        await message.edit(replyOptions);
+                    }
+                }
             } catch (error) {
                 console.warn('[util] Error deleting components from collector', error)
             }
