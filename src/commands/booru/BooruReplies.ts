@@ -62,8 +62,8 @@ export class BooruReplies extends HandlerReplies {
             .setImage(data.imageURL)
             .setDescription([
                 (data.tags ? `**[${escapedTags}](${data.postURL})** ` : '') + `\`score: ${data.score ?? 0}\``,
-                ...(/\.swf$/.test(data.imageURL) ? [`\n\nSorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
-                ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`\n\nSorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
+                ...(/\.swf$/.test(data.imageURL) ? [`Sorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
+                ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
             ]);
 
         // View Online Button
