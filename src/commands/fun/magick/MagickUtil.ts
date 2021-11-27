@@ -7,6 +7,7 @@ import { ImageMagickCLIActionCartoon } from '../../../clis/image-magick/actions/
 import { ImageMagickCLIActionDeepfry } from '../../../clis/image-magick/actions/ImageMagickCLIActionDeepFry.js';
 import { ImageMagickCLIActionReverse } from '../../../clis/image-magick/actions/ImageMagickCLIActionReverse.js';
 import { ImageMagickCLIActionSketch } from '../../../clis/image-magick/actions/ImageMagickCLIActionSketch.js';
+import { ImageMagickCLIActionPetPet } from '../../../clis/image-magick/actions/ImageMagickCLIActionPetPet.js';
 import { ImageMagickCLIActionHyper } from '../../../clis/image-magick/actions/ImageMagickCLIActionHyper.js';
 import { ImageMagickCLIActionJPEG } from '../../../clis/image-magick/actions/ImageMagickCLIActionJPEG.js';
 import { ImageMagickCLIAction } from '../../../clis/image-magick/ImageMagickCLIAction.js';
@@ -25,7 +26,9 @@ export class MagickUtil {
             ['LIQUIDSCALE']: new ImageMagickCLIActionLiquidscale(path),
             ['PIXELATE']: new ImageMagickCLIActionPixelate(path),
             ['REVERSE']: new ImageMagickCLIActionReverse(path),
-            ['SKETCH']: new ImageMagickCLIActionSketch(path)
+            ['SKETCH']: new ImageMagickCLIActionSketch(path),
+
+            ['PET_PET']: new ImageMagickCLIActionPetPet(path)
         }
     }
 }
