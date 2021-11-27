@@ -1,6 +1,7 @@
 import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
 import { HandlerClient } from './HandlerClient.js';
+import { Handler } from './Handler.js';
 import twemoji from 'twemoji';
 
 const { Events } = Constants;
@@ -12,6 +13,12 @@ export class HandlerUtil {
         if (member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return true;
         if (interaction) return member.user === interaction.user;
         return false;
+    }
+
+    public static handleErrors(handler: Handler<any>): (error: any) => any {
+        return (error: any) => {
+            console.log(`[${handler.data.name}] Handler has encountered an unknown error`, error);
+        }
     }
 
     public static handleCollectorErrors(listener: (interaction: MessageComponentInteraction<any>) => Promise<any>): (interaction: MessageComponentInteraction) => Promise<void> {

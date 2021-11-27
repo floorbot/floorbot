@@ -55,8 +55,10 @@ const env = envalid.cleanEnv(process.env, {
 
     E621_USERNAME: str({ default: '', desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
     E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
-    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' })
+    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' }),
 
+
+    IMAGE_MAGICK_PATH: str({ default: '', desc: 'Path to ImageMagick cli' })
 });
 
 const poolConfig: PoolConfig = {
@@ -88,7 +90,7 @@ const client = new HandlerClient({
         new MarkovHandler(database),
         new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
-        new MagickChatInputHandler(),
+        new MagickChatInputHandler(env['IMAGE_MAGICK_PATH']),
         new MagickMessageHandler(),
         new DisputeHandler(database),
 
