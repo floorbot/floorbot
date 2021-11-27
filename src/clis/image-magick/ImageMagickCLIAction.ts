@@ -44,6 +44,7 @@ export abstract class ImageMagickCLIAction extends ImageMagickCLI {
                 case 'resize':
                 case 'encode':
                 case 'save':
+                case 'write':
                     if (!progress[part]) progress[part] = { percent: 0, counter: 0 }
                     const match = string.match(/(\d+)(?:%)/);
                     const percent = (match && match[1]) ? parseInt(match[1]) : 0;

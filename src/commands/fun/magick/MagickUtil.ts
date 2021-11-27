@@ -25,7 +25,7 @@ export class MagickUtil {
             ['LIQUIDSCALE']: new ImageMagickCLIActionLiquidscale(path),
             ['PIXELATE']: new ImageMagickCLIActionPixelate(path),
             ['REVERSE']: new ImageMagickCLIActionReverse(path),
-            ['SKETCH']: new ImageMagickCLIActionSketch(path),
+            ['SKETCH']: new ImageMagickCLIActionSketch(path)
         }
     }
 }
