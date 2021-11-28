@@ -22,7 +22,7 @@ export class MagickChatInputHandler extends ChatInputHandler {
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
         await command.deferReply();
         const input = command.options.getString('image', true);
-        const resolvedUser = HandlerUtil.resolveUser(command, input);
+        const resolvedUser = HandlerUtil.resolveUser(command, input, true);
         const resolvedEmoji = HandlerUtil.resolveEmoji(input);
         const metadata = await probe(
             !resolvedUser && !resolvedEmoji ? input : resolvedUser ?

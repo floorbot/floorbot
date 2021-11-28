@@ -7,8 +7,8 @@ export class ImageMagickCLIActionPetPet extends ImageMagickCLIAction {
     constructor(path?: string) {
         super({
             path: path,
-            label: 'Pet Pet',
-            description: 'Pet Pet'
+            label: 'PetPet',
+            description: 'PetPet'
         })
     }
 
@@ -18,50 +18,40 @@ export class ImageMagickCLIActionPetPet extends ImageMagickCLIAction {
             '-density', '1280',
             '-background', 'none',
 
+            '-delay', '5',
+            '-loop', '0',
+            '-dispose', 'previous',
 
-            metadata.url,
-            `${path.resolve()}/res/magick/pet_pet_0.png`,
-            `${path.resolve()}/res/magick/pet_pet_1.png`,
-            `${path.resolve()}/res/magick/pet_pet_2.png`,
-            `${path.resolve()}/res/magick/pet_pet_3.png`,
-            `${path.resolve()}/res/magick/pet_pet_4.png`,
-            `${path.resolve()}/res/magick/pet_pet_5.png`,
-            `${path.resolve()}/res/magick/pet_pet_6.png`,
-            '-resize', '256',
+            `${path.resolve()}/res/magick/pet_pet_0.png`,          // 0
+            `${path.resolve()}/res/magick/pet_pet_1.png`,          // 1
+            `${path.resolve()}/res/magick/pet_pet_2.png`,          // 2
+            `${path.resolve()}/res/magick/pet_pet_3.png`,          // 3
+            `${path.resolve()}/res/magick/pet_pet_4.png`,          // 4
+            `${path.resolve()}/res/magick/pet_pet_5.png`,          // 5
+            `${path.resolve()}/res/magick/pet_pet_6.png`,          // 6
+            metadata.url,                                          // 7
 
-            // The -background and -gravity dont seem to be working right
-            '-background', 'white', '-gravity', 'South',
-            '(', '-clone', '0', '-resize', '100%x100%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x95%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x90%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x85%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x90%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x95%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
-            '(', '-clone', '0', '-resize', '100%x100%', '-background', 'white', '-gravity', 'South', '-extent', '256x256+50+0', ')',
+            '(', '-clone', '7', '-resize', '500x500^', ')',        // 8 - Force input image to be min 500x500 on both axis
 
-            '(', '-clone', '8', '-clone', '1', '-flatten', ')',
-            '(', '-clone', '9', '-clone', '2', '-flatten', ')',
-            '(', '-clone', '10', '-clone', '3', '-flatten', ')',
-            '(', '-clone', '11', '-clone', '4', '-flatten', ')',
-            '(', '-clone', '12', '-clone', '5', '-flatten', ')',
-            '(', '-clone', '13', '-clone', '6', '-flatten', ')',
-            '(', '-clone', '14', '-clone', '7', '-flatten', ')',
+            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x95%', '-extent', '100%x105%', ')',           // 9
+            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x90%', '-extent', '100%x110%', ')',           // 10
+            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x85%', '-extent', '100%x115%', ')',           // 11
+            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x90%', '-extent', '100%x110%', ')',           // 12
+            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x95%', '-extent', '100%x105%', ')',           // 13
 
+            // Clone the hands and overlay them on the new image
+            '(', '-clone', '8', '-clone', '0', '-flatten', ')',
+            '(', '-clone', '9', '-clone', '1', '-flatten', ')',
+            '(', '-clone', '10', '-clone', '2', '-flatten', ')',
+            '(', '-clone', '11', '-clone', '3', '-flatten', ')',
+            '(', '-clone', '12', '-clone', '4', '-flatten', ')',
+            '(', '-clone', '13', '-clone', '5', '-flatten', ')',
+            '(', '-clone', '8', '-clone', '6', '-flatten', ')',
 
-            // '-resize', '128',
+            '-delete', '0-13',
 
-            // '(', '-clone', '0', ')',
-
-            '-delete', '0-14',
-
-            '-delay', '5', '-loop', '0',
-
-
-            // '-coalesce',
-            // '-resize', '2073600@>',
-            // '-quality', '1',
             '-monitor',
-            `gif:-`
+            `gif:-`,
         ]
     }
 }
