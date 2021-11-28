@@ -75,7 +75,7 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
-        new AnilistHandler(),
+        new AnilistHandler(redis),
         new AdminHandler(),
         new UtilsHandler(),
         new LostHandler(),
