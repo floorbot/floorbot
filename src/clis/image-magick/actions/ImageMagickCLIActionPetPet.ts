@@ -16,39 +16,46 @@ export class ImageMagickCLIActionPetPet extends ImageMagickCLIAction {
         return [
             'convert',
             '-density', '1280',
-            '-background', 'none',
 
-            '-delay', '5',
+            '-delay', '3',
             '-loop', '0',
-            '-dispose', 'previous',
 
-            `${path.resolve()}/res/magick/pet_pet_0.png`,          // 0
-            `${path.resolve()}/res/magick/pet_pet_1.png`,          // 1
-            `${path.resolve()}/res/magick/pet_pet_2.png`,          // 2
-            `${path.resolve()}/res/magick/pet_pet_3.png`,          // 3
-            `${path.resolve()}/res/magick/pet_pet_4.png`,          // 4
-            `${path.resolve()}/res/magick/pet_pet_5.png`,          // 5
-            `${path.resolve()}/res/magick/pet_pet_6.png`,          // 6
-            metadata.url,                                          // 7
+            '-background', 'black',
+            '-gravity', 'south',
 
-            '(', '-clone', '7', '-resize', '500x500^', ')',        // 8 - Force input image to be min 500x500 on both axis
+            `${path.resolve()}/res/magick/pet_pet_0.png`,                              // 0
+            `${path.resolve()}/res/magick/pet_pet_1.png`,                              // 1
+            `${path.resolve()}/res/magick/pet_pet_2.png`,                              // 2
+            `${path.resolve()}/res/magick/pet_pet_3.png`,                              // 3
+            `${path.resolve()}/res/magick/pet_pet_4.png`,                              // 4
+            `${path.resolve()}/res/magick/pet_pet_5.png`,                              // 5
+            `${path.resolve()}/res/magick/pet_pet_6.png`,                              // 6
+            metadata.url,                                                              // 7
+            '(', '-clone', '7', '-resize', '500x500^', ')',                            // 8 - Force input image to be min 500x500 on both axis
 
-            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x95%', '-extent', '100%x105%', ')',           // 9
-            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x90%', '-extent', '100%x110%', ')',           // 10
-            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x85%', '-extent', '100%x115%', ')',           // 11
-            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x90%', '-extent', '100%x110%', ')',           // 12
-            '(', '-clone', '8', '-background', 'white', '-gravity', 'south', '-resize', '100%x95%', '-extent', '100%x105%', ')',           // 13
+            '(', '-clone', '8', '-resize', '100%x85%', '-extent', '100%x117%', ')',    // 9
+            '(', '-clone', '8', '-resize', '100%x85%', '-extent', '100%x117%', ')',    // 10
+            '(', '-clone', '8', '-resize', '100%x75%', '-extent', '100%x133%', ')',    // 11
+            '(', '-clone', '8', '-resize', '100%x75%', '-extent', '100%x133%', ')',    // 12
+            '(', '-clone', '8', '-resize', '100%x85%', '-extent', '100%x117%', ')',    // 13
+            '(', '-clone', '8', '-resize', '100%x95%', '-extent', '100%x105%', ')',    // 14
 
             // Clone the hands and overlay them on the new image
-            '(', '-clone', '8', '-clone', '0', '-flatten', ')',
-            '(', '-clone', '9', '-clone', '1', '-flatten', ')',
-            '(', '-clone', '10', '-clone', '2', '-flatten', ')',
-            '(', '-clone', '11', '-clone', '3', '-flatten', ')',
-            '(', '-clone', '12', '-clone', '4', '-flatten', ')',
-            '(', '-clone', '13', '-clone', '5', '-flatten', ')',
-            '(', '-clone', '8', '-clone', '6', '-flatten', ')',
+            '(', '-clone', '8', '-clone', '0', '-flatten', ')',                        // 14
+            '(', '-clone', '9', '-clone', '1', '-flatten', ')',                        // 15
+            '(', '-clone', '10', '-clone', '2', '-flatten', ')',                       // 16
+            '(', '-clone', '11', '-clone', '3', '-flatten', ')',                       // 17
+            '(', '-clone', '12', '-clone', '4', '-flatten', ')',                       // 18
+            '(', '-clone', '13', '-clone', '5', '-flatten', ')',                       // 19
+            '(', '-clone', '14', '-clone', '6', '-flatten', ')',                       // 20
 
-            '-delete', '0-13',
+            '-delete', '0-14',
+
+            '-set', 'dispose', 'previous',
+            '-transparent-color', 'black',
+            '-transparent', 'black',
+            '-layers', 'optimize',
+            '-layers', 'coalesce',
 
             '-monitor',
             `gif:-`,
