@@ -24,11 +24,10 @@ export class MagickUtil {
             ['HYPER']: new ImageMagickCLIActionHyper(path),
             ['JPEG']: new ImageMagickCLIActionJPEG(path),
             ['LIQUIDSCALE']: new ImageMagickCLIActionLiquidscale(path),
+            ['PET_PET']: new ImageMagickCLIActionPetPet(path),
             ['PIXELATE']: new ImageMagickCLIActionPixelate(path),
             ['REVERSE']: new ImageMagickCLIActionReverse(path),
-            ['SKETCH']: new ImageMagickCLIActionSketch(path),
-
-            ['PET_PET']: new ImageMagickCLIActionPetPet(path)
+            ['SKETCH']: new ImageMagickCLIActionSketch(path)
         }
     }
 }
