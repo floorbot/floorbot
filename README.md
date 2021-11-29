@@ -57,7 +57,7 @@ npm start                                                // Run the app
 -   [x] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
 -   [ ] `☰ dispute` - Dispute each other's messages
 -   [x] `/flip` & `☰ flip` - Flip a coin or text
--   [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
+-   [x] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
 -   [ ] `/markov` - Markov chain message generation
 -   [x] `/owoify` & `☰ owoify`  - Owoify a message
 -   [x] `/roll` - Roll a die
@@ -71,6 +71,7 @@ npm start                                                // Run the app
 
 -   [ ] `/anilist` - [AniList](https://anilist.co/)
 -   [ ] `/vtuber` - [Virtual YouTuber](https://virtualyoutuber.fandom.com/wiki/Virtual_YouTuber_Wiki) (scraping) Cloudflare limitations
+-   [ ] `☰ Trace Moe` - [Trace Moe](https://trace.moe/)
 
 ### Tracker Commands
 
