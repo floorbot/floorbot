@@ -86,6 +86,19 @@ export class HandlerReplies {
         return { embeds: [embed], files: [attachment] }
     }
 
+    public createGuildOnlyReply(context: Interaction | Message): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-3.png`);
+        const attachment = new HandlerAttachment(buffer, 'floorbot.png');
+        const embed = new HandlerEmbed()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like I can only use this command in guilds!`,
+                '*Make sure you\'re using this in an appropriate guild!*'
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment], ephemeral: true }
+    }
+
     public static createNSFWChannelReply(context: Interaction | Message): InteractionReplyOptions {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-4.png`);
         const attachment = new HandlerAttachment(buffer, 'floorbot.png');

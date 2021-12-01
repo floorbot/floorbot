@@ -31,7 +31,7 @@ export class ImageMagickCLIActionPetPet extends ImageMagickCLIAction {
             `${path.resolve()}/res/magick/pet_pet_5.png`,                                 // 5
             `${path.resolve()}/res/magick/pet_pet_6.png`,                                 // 6
             metadata.url,                                                                 // 7
-            '(', '-clone', '7', '-resize', '2073600@>', '-resize', '500x500^', ')',                               // 8 - Force input image to be min 500x500 on both axis
+            '(', '-clone', '7', '-resize', '2073600@>', '-resize', '500x500^', ')',       // 8 - Force input image to be min 500x500 on both axis
 
             // -extent is equal 1 / -resize percentage
             '(', '-clone', '8', '-resize', '100%x85%', '-extent', '100%x117.65%', ')',    // 9

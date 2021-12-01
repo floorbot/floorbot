@@ -61,6 +61,7 @@ npm start                                                // Run the app
 -   [ ] `/markov` - Markov chain message generation
 -   [x] `/owoify` & `☰ owoify`  - Owoify a message
 -   [x] `/roll` - Roll a die
+-   [ ] `/calculator` - Calculator
 
 ### Service Commands
 

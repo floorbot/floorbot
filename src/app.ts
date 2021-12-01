@@ -22,6 +22,7 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
+import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
@@ -79,6 +80,7 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
+        new FloorbotHandler(),
         new AdminHandler(),
         new UtilsHandler(),
         new LostHandler(),
@@ -90,7 +92,7 @@ const client = new HandlerClient({
         new MarkovHandler(database),
         new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
-        new MagickChatInputHandler(env['IMAGE_MAGICK_PATH']),
+        new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeHandler(database),
 
