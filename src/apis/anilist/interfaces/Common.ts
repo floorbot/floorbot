@@ -1,7 +1,9 @@
+import { Character } from './Character.js';
 import { Media } from './Media';
 
 export interface Page {
     readonly pageInfo?: PageInfo,
+    readonly characters?: Character[],
     readonly media?: Media[]
 }
 

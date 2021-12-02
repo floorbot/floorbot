@@ -9,6 +9,7 @@ import fs from 'fs';
 
 export class AnilistHandler extends ChatInputHandler {
 
+    private readonly fetchCharactersPage: AniListAPIRequest;
     private readonly fetchMediaPage: AniListAPIRequest;
     private readonly replies: AniListReplies;
     private readonly api: AniListAPI;
@@ -17,6 +18,7 @@ export class AnilistHandler extends ChatInputHandler {
         super({ data: AniListCommandData, group: 'Weeb' });
         this.replies = new AniListReplies();
         this.api = new AniListAPI({ redis: redis });
+        this.fetchCharactersPage = this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/characters_page.gql`, 'utf8'));
         this.fetchMediaPage = this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8'));
     }
 
@@ -32,6 +34,14 @@ export class AnilistHandler extends ChatInputHandler {
                 const res = await this.fetchMediaPage(vars);
                 if (res.errors || !res.data.Page) return command.followUp(this.replies.createAniListErrorReply(command, res));
                 return command.followUp(this.replies.createMediaReply(command, res.data.Page));
+            }
+            case 'character': {
+                await command.deferReply();
+                const search = command.options.getString('search', true);
+                const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
+                const res = await this.fetchCharactersPage(vars);
+                if (res.errors || !res.data.Page) return command.followUp(this.replies.createAniListErrorReply(command, res));
+                return command.followUp(this.replies.createCharacterReply(command, res.data.Page));
             }
         }
         return null;

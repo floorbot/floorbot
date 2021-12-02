@@ -34,7 +34,7 @@ export class AniListReplies extends HandlerReplies {
     public createMediaReply(context: Interaction | Message, page: Page, showDescription?: boolean) {
         const media = page.media ? page.media[0] : null;
         const pageInfo = page.pageInfo;
-        if (!media || !pageInfo) throw new Error('[anilist] page does not include <pageInfo> and/or <media>')
+        if (!media || !pageInfo) throw new Error('[anilist] page does not include <pageInfo> and/or <media>');
 
         const popularity = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.POPULAR) : undefined;
         const rated = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.RATED) : undefined;
@@ -96,50 +96,50 @@ export class AniListReplies extends HandlerReplies {
         return { embeds: [embed] };
     }
 
-    public static getFuzzyDateString(fuzzy: FuzzyDate) {
-        return `<t:${Math.round(DateTime.fromObject(fuzzy).toSeconds())}:d>`;
+    public createCharacterReply(context: Interaction | Message, page: Page): InteractionReplyOptions {
+        const character = page.characters ? page.characters[0] : null;
+        const pageInfo = page.pageInfo;
+        if (!character || !pageInfo) throw new Error('[anilist] page does not include <pageInfo> and/or <character>');
+        const dateOfBirth = character.dateOfBirth ? AniListReplies.getFuzzyDateString(character.dateOfBirth, true) : null;
+        console.log(character.age)
+        const embed = this.createEmbedTemplate(context, page)
+            .setTitle(character.name ? (character.name.full || Object.values(character.name)[0] || 'Unknown name') : 'Unknown name')
+            .setDescription([
+                `Names: **${Object.values(character.name || {}).filter(name => name).join(', ') || `*unknown*`}**`,
+                `Favourites: **${character.favourites ? HandlerUtil.formatCommas(character.favourites) : '*unknown*'}**`,
+                `Gender: **${character.gender || '*unknown*'}**`,
+                `Age: **${(character.age || '*unknown*').split('-').filter(part => part).join('-')}**`,
+                `Birthday: **${dateOfBirth || '*unknown*'}**`,
+                `Blood Type: **${character.bloodType || '*unknown*'}**`
+            ]);
+
+        if (character.name) {
+            const name = character.name.full || Object.values(character.name)[0];
+            if (name) embed.setTitle(name)
+        }
+        if (character.siteUrl) embed.setURL(character.siteUrl);
+        if (character.image) embed.setThumbnail(character.image.large || character.image.medium!);
+
+        return { embeds: [embed] };
     }
 
     public static reduceDescription(description: string) {
         return Util.splitMessage(description.replace(/<\/?[^>]+(>|$)/g, ''), { char: ' ', append: '...', maxLength: 1024 })[0]!
     }
-}
 
-// public getCharacterEdgeEmbed(context: HandlerContext, customData: AniListCustomData, page: Page): HandlerEmbed {
-//     const media = page.media![0]!;
-//     const connection = media.characters!;
-//     const pageInfo = connection.pageInfo!;
-//     const edge = connection.edges![0]!;
-//     const character = edge.node!;
-//     const embed = this.getEmbedTemplate(context, customData, pageInfo);
-//
-//     if (media.title && media.coverImage) {
-//         const coverImage = media.coverImage;
-//         const coverImageUrl = coverImage.extraLarge || coverImage.large || coverImage.medium;
-//         const title = media.title.romaji || media.title.english || media.title.native;
-//         if (title && coverImageUrl) if (title) embed.setAuthor(title, coverImageUrl);
-//         if (coverImage.color) embed.setColor(parseInt(coverImage.color.substring(1), 16))
-//     }
-//     if (character.name) {
-//         const name = character.name.full || character.name.first || character.name.native;
-//         if (name) embed.setTitle(name);
-//     }
-//     if (character.siteUrl) embed.setURL(character.siteUrl);
-//     if (character.image) {
-//         const image = character.image.large || character.image.medium;
-//         if (image) embed.setThumbnail(image);
-//     }
-//
-//     const dateOfBirth = character.dateOfBirth ? this.getFuzzyDateString(character.dateOfBirth) : null;
-//
-//     embed.setDescription([
-//         ...(character.name && character.name.native ? [`Weeb Name: **${character.name.native}**`] : []),
-//         ...(character.favourites ? [`Favourites: **${Util.formatCommas(character.favourites)}**`] : []),
-//         ...(character.gender ? [`Gender: **${character.gender}**`] : []),
-//         ...(character.age ? [`Age: **${character.age}**`] : []),
-//         ...(dateOfBirth ? [`Birthday: **${dateOfBirth}**`] : []),
-//         ...(character.bloodType ? [`Blood Type: **${character.bloodType}**`] : [])
-//     ].join('\n'));
-//     if (media.coverImage && media.coverImage.color) embed.setColor(parseInt(media.coverImage.color.substring(1), 16));
-//     return embed;
-// }
+    public static getFuzzyDateString(fuzzy: FuzzyDate, string?: boolean) {
+        if (!string) return `<t:${Math.round(DateTime.fromObject(fuzzy).toSeconds())}:d>`;
+        const date = new Date();
+        if (fuzzy.day && fuzzy.month && fuzzy.year) {
+            date.setDate(fuzzy.day);
+            date.setMonth(fuzzy.month - 1);
+            date.setFullYear(fuzzy.year);
+            return `<t:${Math.round(date.getTime() / 1000)}:D>`;
+        } else if (!fuzzy.day && !fuzzy.month && !fuzzy.month) {
+            return 'unknown'
+        } else {
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            return [fuzzy.month ? months[fuzzy.month - 1] : null, fuzzy.day, fuzzy.year].filter(part => part || part === 0).join(' ')
+        }
+    }
+}
