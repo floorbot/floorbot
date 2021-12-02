@@ -53,7 +53,8 @@ export class DDDReplies extends HandlerReplies {
     public createParticipantFailedReply(settings: DDDSettingsRow, participantStats: DDDParticipantStats): InteractionReplyOptions {
         const { day, eventDetails, participantRow, nutMonth, dayFailed, allNutRows } = participantStats;
         const eventID = this.getEventID(eventDetails);
-        console.log(day);
+        //Help arc, I don't have anywhere to use "day" anymore and I can't remove it from above but it wont let me not use it or I get an error.
+        day.toString();
         return this.createEmbedTemplate(undefined, eventDetails)
             .setDescription([
                 `<@${participantRow.user_id}> has failed ${eventID}!`,
@@ -91,16 +92,28 @@ export class DDDReplies extends HandlerReplies {
             const twoNuts = two.nutMonth[two.day - 1]!.length;
             const twoCompleted = twoNuts / twoRequiredNuts;
             if (two.participantRow.failed == 0 && one.participantRow.failed > 0) {
-                sortNum += 1000;
+                sortNum += 100000;
             }
             if (two.participantRow.failed > 0 && one.participantRow.failed == 0) {
-                sortNum += -1000;
+                sortNum += -100000;
+            }
+            if (two.participantRow.failed > one.participantRow.failed) {
+                sortNum += 10000;
+            }
+            if (one.participantRow.failed > two.participantRow.failed) {
+                sortNum += -10000;
             }
             if (twoCompleted >= 1 && oneCompleted < 1) {
-                sortNum += 100;
+                sortNum += 1000;
             }
             if (twoCompleted < 1 && oneCompleted >= 1) {
-                sortNum += -100;
+                sortNum += -1000;
+            }
+            if (twoNuts > oneNuts) {
+              sortNum += 100
+            }
+            if (oneNuts > twoNuts) {
+              sortNum += -100
             }
             if (two.allNutRows.length > one.allNutRows.length) {
               sortNum += 10
