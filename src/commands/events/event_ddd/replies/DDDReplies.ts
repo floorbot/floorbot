@@ -81,13 +81,50 @@ export class DDDReplies extends HandlerReplies {
     }
 
     public createLeaderboardReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, allParticipantStats: DDDParticipantStats[]): InteractionReplyOptions {
-        allParticipantStats = allParticipantStats.sort((one, two) => one.zoneDetails.now.toMillis() - two.zoneDetails.now.toMillis());
+        allParticipantStats = allParticipantStats.sort(function(one, two) {
+            let sortNum = 0
+            const oneRequiredNuts = (one.day) * (one.day + 1) / 2;
+            const oneNuts = one.allNutRows.length;
+            const oneCompleted = oneNuts / oneRequiredNuts;
+            const twoRequiredNuts = (two.day) * (two.day + 1) / 2;
+            const twoNuts = two.allNutRows.length;
+            const twoCompleted = twoNuts / twoRequiredNuts;
+            if (two.participantRow.failed == 0 && one.participantRow.failed > 0) {
+                sortNum += 1000;
+            }
+            if (two.participantRow.failed > 0 && one.participantRow.failed == 0) {
+                sortNum += -1000;
+            }
+            if (twoCompleted >= 1 && oneCompleted < 1) {
+                sortNum += 100;
+            }
+            if (twoCompleted < 1 && oneCompleted >= 1) {
+                sortNum += -100;
+            }
+            if (two.allNutRows.length > one.allNutRows.length) {
+              sortNum += 10
+            }
+            if (one.allNutRows.length > two.allNutRows.length) {
+              sortNum += -10
+            }
+            return sortNum;
+        });
         const stringRows = allParticipantStats.map(participantStats => {
-            const day = participantStats.day;
+            let day = participantStats.day;
             const userID = participantStats.participantRow.user_id;
             const nuts = participantStats.allNutRows.length;
+            const failed = participantStats.participantRow.failed;
             const requiredNuts = (day) * (day + 1) / 2;
-            return `Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
+            let statusEmoji = '🟢'
+            if (nuts / requiredNuts < 1) {
+                statusEmoji = '🟡'
+            }
+            if (failed) {
+                statusEmoji = '🔴'
+                day = failed;
+            }
+            // return `${statusEmoji} Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
+            return `${statusEmoji} Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
         });
         return this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Leaderboard for ${command.guild.name}`)
