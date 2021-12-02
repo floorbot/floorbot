@@ -23,7 +23,8 @@ export class PresenceController {
         { type: "PLAYING", name: "on the floor" },
         { type: "PLAYING", name: "with the carpet" },
         { type: "PLAYING", name: "with ur mum" },
-        { type: "COMPETING", name: "your harem" }
+        { type: "COMPETING", name: "your harem" },
+        { type: "WATCHING", name: "for numbers" }
         // { type: "COMPETING", name: "for your love" } // "competing in"
     ];
 
