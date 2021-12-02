@@ -10,18 +10,18 @@ export class MessageReaction {
                 message.react(reactEmoji).catch(error => {
                     // User has bot blocked and permission to react is denied...
                     if (!(error instanceof DiscordAPIError) || error.httpStatus !== 403) {
-                        console.error('[message-reaction](controller) failed to react...', error)
+                        console.error('[message-reaction](controller) failed to react to [LINK]...', error)
                     }
                 });
             }
 
-			// Reacts with BorpaU when any combination of "cum" is detected
+			// Reacts with CUMDETECTED when any combination of "cum" is detected
 			if (message.content.match(/\b[c]+[u]+[m]+\b/i) != null) {
-				const reactEmoji = message.client.emojis.cache.get('915996947695935528')!;
+				const reactEmoji = message.client.emojis.cache.get('880619557373485106')!;
                 message.react(reactEmoji).catch(error => {
                     // User has bot blocked and permission to react is denied...
                     if (!(error instanceof DiscordAPIError) || error.httpStatus !== 403) {
-                        console.error('[message-reaction](controller) failed to react...', error)
+                        console.error('[message-reaction](controller) failed to react to cum...', error)
                     }
                 });
             }
