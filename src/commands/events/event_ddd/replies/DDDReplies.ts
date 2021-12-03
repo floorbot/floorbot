@@ -126,7 +126,7 @@ export class DDDReplies extends HandlerReplies {
         const stringRows = allParticipantStats.map(participantStats => {
             let day = participantStats.day;
             const userID = participantStats.participantRow.user_id;
-            const dailyNuts = participantStats.nutMonth[day - 1]!.length;
+            let dailyNuts = participantStats.nutMonth[day - 1]!.length;
             const nuts = participantStats.allNutRows.length;
             const failed = participantStats.participantRow.failed;
             let statusEmoji = '🟢'
@@ -136,6 +136,7 @@ export class DDDReplies extends HandlerReplies {
             if (failed) {
                 statusEmoji = '🔴'
                 day = failed;
+                dailyNuts = participantStats.nutMonth[day - 1]!.length;
             }
             return `${statusEmoji} Day: \`${day}\` Nuts: \`${dailyNuts}/${day}\` (\`${nuts}\` Total) <@${userID}>`
         });
