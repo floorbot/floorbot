@@ -53,13 +53,15 @@ export class DDDReplies extends HandlerReplies {
     public createParticipantFailedReply(settings: DDDSettingsRow, participantStats: DDDParticipantStats): InteractionReplyOptions {
         const { day, eventDetails, participantRow, nutMonth, dayFailed, allNutRows } = participantStats;
         const eventID = this.getEventID(eventDetails);
+        //Help arc, I don't have anywhere to use "day" anymore and I can't remove it from above but it wont let me not use it or I get an error.
+        day.toString();
         return this.createEmbedTemplate(undefined, eventDetails)
             .setDescription([
                 `<@${participantRow.user_id}> has failed ${eventID}!`,
-                `Here are their stats for day ${day}`,
+                `Here are their stats for day ${dayFailed}`,
                 '',
-                `Total Nuts: **${allNutRows.length}/${(day) * (day + 1) / 2}**`,
-                `Daily Nuts: **${nutMonth[day - 1]!.length}/${day}**`,
+                `Total Nuts: **${allNutRows.length}**`,
+                `Daily Nuts: **${nutMonth[dayFailed - 1]!.length}/${dayFailed}**`,
                 `Failed: **${dayFailed ? `Day ${dayFailed}` : '*Not Yet!*'} **`,
             ])
             .toReplyOptions({ content: settings.event_role_id ? `<@&${settings.event_role_id}>` : 'Hey Everyone!' });
@@ -83,23 +85,35 @@ export class DDDReplies extends HandlerReplies {
     public createLeaderboardReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, allParticipantStats: DDDParticipantStats[]): InteractionReplyOptions {
         allParticipantStats = allParticipantStats.sort(function(one, two) {
             let sortNum = 0
-            const oneRequiredNuts = (one.day) * (one.day + 1) / 2;
-            const oneNuts = one.allNutRows.length;
+            const oneRequiredNuts = one.day;
+            const oneNuts = one.nutMonth[one.day - 1]!.length;
             const oneCompleted = oneNuts / oneRequiredNuts;
-            const twoRequiredNuts = (two.day) * (two.day + 1) / 2;
-            const twoNuts = two.allNutRows.length;
+            const twoRequiredNuts = two.day;
+            const twoNuts = two.nutMonth[two.day - 1]!.length;
             const twoCompleted = twoNuts / twoRequiredNuts;
             if (two.participantRow.failed == 0 && one.participantRow.failed > 0) {
-                sortNum += 1000;
+                sortNum += 100000;
             }
             if (two.participantRow.failed > 0 && one.participantRow.failed == 0) {
-                sortNum += -1000;
+                sortNum += -100000;
+            }
+            if (two.participantRow.failed > one.participantRow.failed) {
+                sortNum += 10000;
+            }
+            if (one.participantRow.failed > two.participantRow.failed) {
+                sortNum += -10000;
             }
             if (twoCompleted >= 1 && oneCompleted < 1) {
-                sortNum += 100;
+                sortNum += 1000;
             }
             if (twoCompleted < 1 && oneCompleted >= 1) {
-                sortNum += -100;
+                sortNum += -1000;
+            }
+            if (twoNuts > oneNuts) {
+              sortNum += 100
+            }
+            if (oneNuts > twoNuts) {
+              sortNum += -100
             }
             if (two.allNutRows.length > one.allNutRows.length) {
               sortNum += 10
@@ -112,19 +126,18 @@ export class DDDReplies extends HandlerReplies {
         const stringRows = allParticipantStats.map(participantStats => {
             let day = participantStats.day;
             const userID = participantStats.participantRow.user_id;
+            const dailyNuts = participantStats.nutMonth[day - 1]!.length;
             const nuts = participantStats.allNutRows.length;
             const failed = participantStats.participantRow.failed;
-            const requiredNuts = (day) * (day + 1) / 2;
             let statusEmoji = '🟢'
-            if (nuts / requiredNuts < 1) {
+            if (dailyNuts / day < 1) {
                 statusEmoji = '🟡'
             }
             if (failed) {
                 statusEmoji = '🔴'
                 day = failed;
             }
-            // return `${statusEmoji} Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
-            return `${statusEmoji} Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
+            return `${statusEmoji} Day: \`${day}\` Nuts: \`${dailyNuts}/${day}\` (\`${nuts}\` Total) <@${userID}>`
         });
         return this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Leaderboard for ${command.guild.name}`)
