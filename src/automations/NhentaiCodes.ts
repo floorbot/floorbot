@@ -9,9 +9,9 @@ public static setup(client: Client): void {
 
   client.on('messageCreate', (check) => {
     const text = check.content;
-    const hentai = text.match(/\b\d{6}\b/);
+    const hentai = text.match(/(^| )\d{6}($| )/);
     if (check.author.bot) return
-      if (hentai !== null && text.match(/(^| )\d{6}($| )/)){
+    if (hentai) {
         fetch('https://nhentai.net/g/'+hentai[0]+'/')
           .then(res => {
             if(res.ok) {
