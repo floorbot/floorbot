@@ -1,5 +1,7 @@
+import { AniListAPI, AniListAPIRequest, Media, Page, PageInfo } from '../../../apis/anilist/AniListAPI.js';
 import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { AniListAPI, AniListAPIRequest } from '../../../apis/anilist/AniListAPI.js';
+import { HandlerButtonID } from '../../../discord/components/HandlerButton.js';
+import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
 import { AniListCommandData } from './AniListCommandData.js';
 import { AniListReplies } from './replies/AnilistReplies.js';
 import { CommandInteraction } from 'discord.js';
@@ -25,15 +27,32 @@ export class AnilistHandler extends ChatInputHandler {
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
 
         const subCommand = command.options.getSubcommand(true);
+        let page = 1;
 
         switch (subCommand) {
             case 'media': {
                 await command.deferReply();
                 const search = command.options.getString('search', true);
-                const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
+                const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: page };
                 const res = await this.fetchMediaPage(vars);
                 if (res.errors || !res.data.Page) return command.followUp(this.replies.createAniListErrorReply(command, res));
-                return command.followUp(this.replies.createMediaReply(command, res.data.Page));
+                const message = await command.followUp(this.replies.createMediaReply(command, res.data.Page));
+                const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+                collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
+
+                    const pageInfo = res.data.Page?.pageInfo
+
+                    await component.deferUpdate();
+                    // let page = res.data.Page ?.pageInfo ?.currentPage || 1;
+                    if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
+                    if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
+                    page = page % res.pageInfo.length;
+                    page = page >= 0 ? page : definitions.length + page;
+                    const replyOptions = this.replies.createMediaReply(command, res.data.Page);
+                    await component.editReply(replyOptions);
+                }));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+                return collector;
             }
             case 'character': {
                 await command.deferReply();

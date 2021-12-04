@@ -22,7 +22,7 @@ export interface Media {
     readonly type?: MediaType,
     readonly format?: MediaFormat,
     readonly status?: MediaStatus,
-    readonly description?: string
+    readonly description?: string,
     readonly startDate?: FuzzyDate,
     readonly endDate?: FuzzyDate,
     readonly season?: MediaSeason,

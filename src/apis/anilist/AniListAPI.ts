@@ -16,8 +16,8 @@ export * from './interfaces/Staff.js';
 
 export interface AniListResponse {
     data: {
-        Media?: Media | null
-        Page?: Page | null
+        Media: Media | null
+        Page: Page | null
     }
     errors?: {
         message: string,

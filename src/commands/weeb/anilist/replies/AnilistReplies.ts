@@ -1,5 +1,6 @@
+import { CommandInteraction, Interaction, InteractionReplyOptions, Message, MessageActionRow, Util } from 'discord.js';
 import { AniListResponse, FuzzyDate, MediaRankType, Page } from '../../../../apis/anilist/AniListAPI.js';
-import { CommandInteraction, Interaction, InteractionReplyOptions, Message, Util } from 'discord.js';
+import { HandlerButton } from '../../../../discord/components/HandlerButton.js';
 import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
 import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
 import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
@@ -93,7 +94,13 @@ export class AniListReplies extends HandlerReplies {
         } else if (media.bannerImage) {
             embed.setImage(media.bannerImage);
         }
-        return { embeds: [embed] };
+
+        const actionRow = new MessageActionRow().addComponents([
+            HandlerButton.createPreviousPageButton(),
+            HandlerButton.createNextPageButton()
+        ]);
+
+        return { embeds: [embed], components: (pageInfo.total || 1 - 1) ? [actionRow] : [] };
     }
 
     public createCharacterReply(context: Interaction | Message, page: Page): InteractionReplyOptions {
@@ -120,7 +127,12 @@ export class AniListReplies extends HandlerReplies {
         if (character.siteUrl) embed.setURL(character.siteUrl);
         if (character.image) embed.setThumbnail(character.image.large || character.image.medium!);
 
-        return { embeds: [embed] };
+        const actionRow = new MessageActionRow().addComponents([
+            HandlerButton.createPreviousPageButton(),
+            HandlerButton.createNextPageButton()
+        ]);
+
+        return { embeds: [embed], components: (pageInfo.total || 1 - 1) ? [actionRow] : [] };
     }
 
     public static reduceDescription(description: string) {
