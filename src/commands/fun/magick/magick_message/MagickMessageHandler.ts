@@ -1,116 +1,97 @@
 import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
+import { ImageMagickCLIAction, MagickProgress } from '../../../../clis/image-magick/ImageMagickCLIAction.js';
 import { ContextMenuHandler } from '../../../../discord/handlers/abstracts/ContextMenuHandler.js';
 import { MagickMessageCommandData } from './MagickMessageCommandData.js';
 import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
-import { MagickAction, MagickProgress } from '../MagickConstants.js';
-import { MagickAttachment } from '../components/MagickAttachment.js';
-import { MagickSelectMenu } from '../components/MagickSelectMenu.js';
-import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
-import { MagickEmbed } from '../components/MagickEmbed.js';
-import { ImageMagick } from '../tools/ImageMagick.js';
-import { ProbeResult } from 'probe-image-size';
-import probe from 'probe-image-size';
+import probe, { ProbeResult } from 'probe-image-size';
+import { MagickReplies } from '../MagickReplies.js';
+import { MagickUtil } from '../MagickUtil.js';
 
 export class MagickMessageHandler extends ContextMenuHandler {
 
-    constructor() {
+    private readonly actions: { [index: string]: ImageMagickCLIAction };
+    private readonly replies: MagickReplies;
+
+    constructor(path?: string) {
         super({ group: 'Fun', global: false, nsfw: false, data: MagickMessageCommandData });
+
+        this.actions = MagickUtil.makeActions(path)
+        this.replies = new MagickReplies();
     }
 
-    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
+    public async execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {
         await contextMenu.deferReply();
-        const targetMessage = contextMenu.options.getMessage('message', true) as Message;
-        let metadata: ProbeResult | null = null;
-        for (const embed of targetMessage.embeds) {
-            if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
-            if (embed.thumbnail && embed.thumbnail.url) metadata = await probe(embed.thumbnail.url).catch(() => null) || metadata;
-        }
-        for (const attachment of targetMessage.attachments.values()) {
-            metadata = await probe(attachment.url).catch(() => null) || metadata;
-        }
+        const targetMessage = contextMenu.options.getMessage('message', true);
+        const metadata = await this.probeMessage(targetMessage);
         if (!metadata) {
-            const embed = new MagickEmbed(contextMenu)
-                .setDescription(`Sorry! I could not find a valid image in that message`);
-            return contextMenu.followUp(embed.toReplyOptions({ ephemeral: true }));
+            const replyOptions = this.replies.createNoImageReply(contextMenu, targetMessage);
+            return contextMenu.followUp(replyOptions);
         }
+
         const response = await this.fetchMagickResponse(contextMenu, metadata);
-        let message = await contextMenu.followUp(response) as Message;
+        const message = await contextMenu.followUp(response);
+
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
         collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
             if (component.isSelectMenu()) {
-                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(HandlerReplies.createAdminOrOwnerReply(component));
+                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(this.replies.createAdminOrOwnerReply(component));
                 await component.deferUpdate();
-                const action = MagickAction[component.values[0]!]!;
+                const action = this.actions[component.values[0]!]!;
                 const metadata = (await probe(message.embeds[0]!.image!.url!).catch(() => null))!;
-                const embed = MagickEmbed.getProgressEmbed(component, metadata, action, {});
-                await message.edit({ embeds: [embed], components: [], files: [] });
+                const replyOptions = this.replies.createProgressReply(component, metadata, action, {});
+                await message.edit(replyOptions);
                 await message.removeAttachments();
-                const response = await this.fetchMagickResponse(component, metadata, action);
-                message = await message.edit(response);
+                const response = await this.fetchMagickResponse(component, metadata, action, message);
+                await message.edit(response);
             }
         });
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private async fetchMagickResponse(interaction: Interaction, metadata: probe.ProbeResult, action?: MagickAction): Promise<InteractionReplyOptions> {
+    private async probeMessage(message: Message): Promise<ProbeResult | null> {
+
+        let metadata: ProbeResult | null = null;
+
+        // Check all embeds for valid images
+        for (const embed of message.embeds) {
+            if (embed.thumbnail && embed.thumbnail.url) metadata = await probe(embed.thumbnail.url).catch(() => null) || metadata;
+            if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
+        }
+
+        // Check all attachments for valid images
+        for (const attachment of message.attachments.values()) {
+            metadata = await probe(attachment.url).catch(() => null) || metadata;
+        }
+
+        return metadata || null;
+    }
+
+    private async fetchMagickResponse(interaction: Interaction, metadata: ProbeResult, action?: ImageMagickCLIAction, message?: Message): Promise<InteractionReplyOptions> {
 
         // Need to convert SVG files since they dont embed
         if (metadata.type === 'svg') {
             metadata.type = 'png';
-            if (!action) action = MagickAction['HUGEMOJI'];
+            if (!action) action = this.actions['HUGEMOJI'];
         }
 
         // Command first used and not SVG
-        if (!action) {
-            const embed = MagickEmbed.getImageEmbed(interaction, metadata);
-            const actionRow = MagickSelectMenu.getMagickSelectMenu(action).toActionRow();
-            return { embeds: [embed], components: [actionRow] };
-        }
+        if (!action) return this.replies.createImageReply(interaction, { metadata: metadata, actions: this.actions });
 
-        let updateTime = 0;
-        const progress: MagickProgress = {};
-        return ImageMagick.execute(
-            action.getArgs(metadata),
-            (reject, string) => {
-                string = string.toLowerCase();
-                const part = string.split(' ')[0];
-                switch (part) {
-                    case 'classify':
-                    case 'threshold':
-                    case 'mogrify':
-                    case 'dither':
-                    case 'reduce':
-                    case 'resize':
-                    case 'encode':
-                    case 'save':
-                        if (!(interaction instanceof SelectMenuInteraction)) break;
-                        if (!progress[part]) progress[part] = { percent: 0, counter: 0 }
-                        const percent = Number(string.match(/(\d+)(?:%)/)![1]);
-                        if (percent === 100) progress[part]!.counter = progress[part]!.counter + 1;
-                        progress[part]!.percent = percent;
-                        const now = Date.now();
-                        if ((updateTime + 1000) <= now) {
-                            updateTime = now;
-                            const message = interaction.message as Message;
-                            const embed = MagickEmbed.getProgressEmbed(interaction, metadata, action!, progress);
-                            message.edit({ embeds: [embed], components: [] })
-                        }
-                        break;
-                    default:
-                        if (/^(?:\r\n|\r|\n)$/.test(string) || string.startsWith('mogrify')) break;
-                        interaction.client.emit('log', `[magick] Failed for an unknown reason: <${string}>`);
-                        return reject(string);
-                }
+        let updateTime = 0; // First update will always post
+        return action.run(metadata, (progress: MagickProgress) => {
+            const now = Date.now();
+            if ((updateTime + 1000) <= now) {
+                updateTime = now;
+                if (!(interaction instanceof SelectMenuInteraction)) return;
+                const replyOptions = this.replies.createProgressReply(interaction, metadata, action!, progress);
+                if (message) message.edit(replyOptions).catch(HandlerUtil.handleErrors(this))
             }
-        ).then((buffer: any) => {
+        }).then((buffer: Buffer) => {
             const newMetadata = probe.sync(buffer)!;
-            const actionRow = MagickSelectMenu.getMagickSelectMenu(action).toActionRow();
-            const attachment = MagickAttachment.getMagickAttachment(buffer, action!, newMetadata);
-            const embed = MagickEmbed.getImageEmbed(interaction, attachment);
-            return { embeds: [embed], components: [actionRow], files: [attachment] };
+            const replyOptions = this.replies.createImageReply(interaction, { metadata: newMetadata, action: action, actions: this.actions, buffer: buffer });
+            return replyOptions;
         }).catch((_reason) => {
-            const embed = MagickEmbed.getFailedEmbed(interaction, metadata, action!)
-            return { embeds: [embed], components: [] };
+            return this.replies.createFailedEmbed(interaction, metadata, action!);
         });
     }
 }
