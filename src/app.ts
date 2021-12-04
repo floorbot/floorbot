@@ -14,6 +14,7 @@ import MariaDB from 'mariadb';
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
+import { NhentaiCodes } from './automations/NhentaiCodes.js';
 
 // Commands
 import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
@@ -123,5 +124,6 @@ const client = new HandlerClient({
 client.once('ready', () => {
     PresenceController.setup(client);
     MessageReaction.setup(client);
+    NhentaiCodes.setup(client);
 })
 client.login(env.DISCORD_TOKEN);
