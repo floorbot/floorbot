@@ -1,29 +1,33 @@
-import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
+import { ContextMenuInteraction, Message, Interaction, InteractionReplyOptions } from 'discord.js';
 import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { TraceMoeCommandData } from './DisputeCommandData.js';
-import { DisputeEmbed } from './components/DisputeEmbed.js';
+import { TraceMoeCommandData } from './TraceMoeCommandData.js';
+import { TraceMoeAPI } from './api/TraceMoeAPI.js';
+import { TraceMoeEmbed } from './components/TraceMoeEmbed.js'
+import { TraceMoeData } from './api/interfaces/TraceMoeData.js'
 
 export class TraceMoeHandler extends ContextMenuHandler {
 
-    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
-        const origMessage = contextMenu.options.getMessage('message', true) as Message;
-        if (!origMessage.content.length) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'dispute'));
-        if (origMessage.author == contextMenu.user) return contextMenu.reply(DisputeEmbed.getSelfUsedEmbed(contextMenu));
-        if (disputeExists) return contextMenu.reply(DisputeEmbed.getAlreadyDisputedEmbed(contextMenu, disputeResultsErr!))
-        await contextMenu.deferReply();
-        const replyOptions = this.createCurrentResponse(contextMenu, origMessage);
-        const message = await contextMenu.followUp(replyOptions) as Message;
+    private readonly tracemoe: TraceMoeAPI;
+
+    constructor() {
+        super({ group: 'Fun', global: false, nsfw: false, data: TraceMoeCommandData });
+        this.tracemoe = new TraceMoeAPI();
     }
 
-    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number = 0): InteractionReplyOptions {
-        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string, targetTimestamp);
-        const actionRow: MessageActionRow = new MessageActionRow().addComponents([
-            DisputeButton.createDisputeButton(DisputeButtonID.YES),
-            DisputeButton.createDisputeButton(DisputeButtonID.NO)
-        ]);
-        return { embeds: [embed], components: [actionRow] };
+    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
+        const origMessage = contextMenu.options.getMessage('message', true) as Message;
+        if (!origMessage.attachments.first()!.url) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'trace moe'));
+        // console.log(origMessage);
+        await contextMenu.deferReply();
+        const result = await this.tracemoe.contextClick(origMessage) as TraceMoeData;
+        const replyOptions = this.createCurrentResponse(contextMenu, origMessage, result);
+        console.log(result.result[0]);
+        await contextMenu.followUp(replyOptions);
+    }
+
+    private createCurrentResponse(interaction: Interaction, message: Message, result: TraceMoeData ): InteractionReplyOptions {
+        const embed = TraceMoeEmbed.getCurrentEmbed(interaction, message, result);
+        return { embeds: [embed] };
     }
 }
