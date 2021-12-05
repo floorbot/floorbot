@@ -173,7 +173,7 @@ export class AniListReplies extends HandlerReplies {
                 ...(staff.languageV2 ? [`Language: **${staff.languageV2}**`] : []),
                 ...(staff.primaryOccupations ? [`Occupation: **${staff.primaryOccupations}**`] : []),
                 ...(staff.homeTown ? [`Home Town: **${staff.homeTown}**`] : []),
-                ...(staff.yearsActive ? [`Years Active: **${startYear || '*unknown*'} - ${endYear || 'current'}**`] : []),
+                ...(staff.yearsActive && startYear ? [`Years Active: **${startYear} - ${endYear || 'current'}**`] : []),
                 ...(totalCharacters ? [`Total Media: **${HandlerUtil.formatCommas(totalCharacters)}**`] : []),
                 ...(totalMedia ? [`Total Characters: **${HandlerUtil.formatCommas(totalMedia)}**`] : [])
             ]);
