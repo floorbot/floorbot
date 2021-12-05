@@ -18,7 +18,6 @@ export class TraceMoeReplies extends HandlerReplies {
     public async createCurrentReply(context: Interaction | Message, results: TraceMoeData[], page: number = 0): Promise<InteractionReplyOptions> {
         const result = results[page]!;
         if (!result) throw { result, page };
-        console.log(result);
         const aniTitle = result.anilist.title.romaji;
         const aniListID = result.anilist.id;
         const episode = result.episode;
