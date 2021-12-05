@@ -24,10 +24,12 @@ export class TraceMoeReplies extends HandlerReplies {
             .setTitle(`${aniTitle}`)
             .setDescription(`There is a ${simularity} percent chance that this comes from episode ${episode} of ${aniTitle}.`)
             .setURL(`https://anilist.co/anime/${aniListID}`);
+        const attachment = this.createAttachmentTemplate(`${result.video}`);
+        embed.setImage(attachment.getEmbedUrl());
         const actionRow = new MessageActionRow().addComponents([
             HandlerButton.createPreviousPageButton(),
             HandlerButton.createNextPageButton(),
         ]);
-        return { embeds: [embed], components: [actionRow] };
+        return { embeds: [embed], components: [actionRow], attachments: [], files: [attachment] };
     }
 }
