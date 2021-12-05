@@ -28,7 +28,7 @@ export class TraceMoeHandler extends ContextMenuHandler {
             return contextMenu.followUp(replyOptions);
         }
         const result = await this.tracemoe.fetchTraceMoeData(metadata.url);
-        const replyOptions = this.replies.createCurrentReply(contextMenu, result, page);
+        const replyOptions = await this.replies.createCurrentReply(contextMenu, result, page);
         const message = await contextMenu.followUp(replyOptions) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
@@ -37,7 +37,7 @@ export class TraceMoeHandler extends ContextMenuHandler {
             if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
             page = page % result.length;
             page = page >= 0 ? page : result.length + page;
-            const replyOptions = this.replies.createCurrentReply(contextMenu, result, page);
+            const replyOptions = await this.replies.createCurrentReply(contextMenu, result, page);
             await component.editReply(replyOptions);
         }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));

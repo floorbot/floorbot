@@ -3,6 +3,7 @@ import { HandlerReplies } from "../../../discord/helpers/HandlerReplies.js";
 import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
 import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
 import { Interaction, InteractionReplyOptions, Message, MessageActionRow } from "discord.js";
+import fetch from 'node-fetch';
 import humanizeDuration from 'humanize-duration';
 
 export class TraceMoeReplies extends HandlerReplies {
@@ -14,25 +15,31 @@ export class TraceMoeReplies extends HandlerReplies {
         return embed
     }
 
-    public createCurrentReply(context: Interaction | Message, results: TraceMoeData[], page: number = 0): InteractionReplyOptions {
+    public async createCurrentReply(context: Interaction | Message, results: TraceMoeData[], page: number = 0): Promise<InteractionReplyOptions> {
         const result = results[page]!;
         if (!result) throw { result, page };
         const aniTitle = result.anilist.title.romaji;
         const aniListID = result.anilist.id;
         const episode = result.episode;
-        const simularity = (result.similarity * 100).toFixed(2);
+        const similarity = (result.similarity * 100).toFixed(2);
         const from = humanizeDuration(Math.round(result.from) * 1000);
         const embed = this.createEmbedTemplate(context, { page: page + 1, pages: results.length })
             .setTitle(`${aniTitle}`)
-            .addField('Episode: ', `${episode}`)
-            .addField('Time: ', `${from}`)
-            .addField('Simularity: ', `${simularity}%`)
-            .setURL(`https://anilist.co/anime/${aniListID}`);
+        //Only add fields if data exists
+        if(episode)     embed.addField('Episode: ', `${episode}`)
+        if(from)        embed.addField('Time: ', `${from}`)
+        if(similarity)  embed.addField('Similarity: ', `${similarity}%`)
+        const aniListURL = `https://anilist.co/anime/${aniListID}`;
+        //Create attachment of video. Use "l" in size parameter for large video
         const attachment = this.createAttachmentTemplate(`${result.video}&size=l`);
         const actionRow = new MessageActionRow().addComponents([
             HandlerButton.createPreviousPageButton(),
             HandlerButton.createNextPageButton(),
         ]);
+        //Verify anilist link works
+        await fetch(aniListURL).then(res => {
+            if(res.ok) embed.setURL(aniListURL);
+        });
         return { embeds: [embed], components: [actionRow], attachments: [], files: [attachment] };
     }
 }
