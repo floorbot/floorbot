@@ -24,7 +24,7 @@ export class TraceMoeReplies extends HandlerReplies {
             .setTitle(`${aniTitle}`)
             .setDescription(`There is a ${simularity} percent chance that this comes from episode ${episode} of ${aniTitle}.`)
             .setURL(`https://anilist.co/anime/${aniListID}`);
-        const attachment = this.createAttachmentTemplate(`${result.video}`);
+        const attachment = this.createAttachmentTemplate(`${result.video}&size=l`);
         embed.setImage(attachment.getEmbedUrl());
         const actionRow = new MessageActionRow().addComponents([
             HandlerButton.createPreviousPageButton(),
