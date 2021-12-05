@@ -7,7 +7,7 @@ export type StaffConnection = Connection<StaffEdge, Staff>;
 
 export interface Staff {
     readonly id: number,
-    readonly name?: string,
+    readonly name?: StaffName,
     readonly languageV2?: string,
     readonly image?: StaffImage,
     readonly description?: string,
@@ -16,7 +16,7 @@ export interface Staff {
     readonly dateOfBirth?: FuzzyDate,
     readonly dateOfDeath?: FuzzyDate,
     readonly age?: number,
-    readonly yearsActive?: number[],
+    readonly yearsActive?: [number, number | undefined],
     readonly homeTown?: string,
     readonly bloodType?: string,
     readonly isFavourite: boolean,
@@ -31,6 +31,16 @@ export interface Staff {
     readonly submissionNotes?: string,
     readonly favourites?: number,
     readonly modNotes: string
+}
+
+export interface StaffName {
+    readonly first?: string,
+    readonly middle?: string,
+    readonly last?: string,
+    readonly full?: string,
+    readonly native?: string,
+    readonly alternative?: string[],
+    readonly userPreferred?: string
 }
 
 export interface StaffEdge {

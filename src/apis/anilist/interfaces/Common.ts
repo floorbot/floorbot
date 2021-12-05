@@ -1,10 +1,12 @@
 import { Character } from './Character.js';
+import { Staff } from './Staff.js';
 import { Media } from './Media';
 
 export interface Page {
     readonly pageInfo?: PageInfo,
     readonly characters?: Character[],
-    readonly media?: Media[]
+    readonly media?: Media[],
+    readonly staff?: Staff[]
 }
 
 export interface PageInfo {

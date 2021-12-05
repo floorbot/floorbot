@@ -17,10 +17,11 @@ query($page: Int, $id: Int, $search: String) {
             favourites
             siteUrl
             name {
-                first
-                last
                 full
                 native
+                first
+                middle
+                last
             }
             gender
             age

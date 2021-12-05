@@ -33,13 +33,13 @@ export interface CharacterEdge {
 }
 
 export interface CharacterName {
-    readonly first?: string
-    readonly middle?: string
-    readonly last?: string
-    readonly full?: string
-    readonly native?: string
-    readonly alternative?: string[]
-    readonly alternativeSpoiler?: string[]
+    readonly first?: string,
+    readonly middle?: string,
+    readonly last?: string,
+    readonly full?: string,
+    readonly native?: string,
+    readonly alternative?: string[],
+    readonly alternativeSpoiler?: string[],
     readonly userPreferred?: string
 }
 
