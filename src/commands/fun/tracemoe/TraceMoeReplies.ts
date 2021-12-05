@@ -3,7 +3,7 @@ import { HandlerReplies } from "../../../discord/helpers/HandlerReplies.js";
 import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
 import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
 import { Interaction, InteractionReplyOptions, Message, MessageActionRow } from "discord.js";
-import fetch from 'node-fetch';
+import urlExist from 'url-exist';
 import humanizeDuration from 'humanize-duration';
 
 export class TraceMoeReplies extends HandlerReplies {
@@ -18,6 +18,7 @@ export class TraceMoeReplies extends HandlerReplies {
     public async createCurrentReply(context: Interaction | Message, results: TraceMoeData[], page: number = 0): Promise<InteractionReplyOptions> {
         const result = results[page]!;
         if (!result) throw { result, page };
+        console.log(result);
         const aniTitle = result.anilist.title.romaji;
         const aniListID = result.anilist.id;
         const episode = result.episode;
@@ -37,9 +38,8 @@ export class TraceMoeReplies extends HandlerReplies {
             HandlerButton.createNextPageButton(),
         ]);
         //Verify anilist link works
-        await fetch(aniListURL).then(res => {
-            if(res.ok) embed.setURL(aniListURL);
-        });
+        const exists = await urlExist(aniListURL);
+        if (exists) embed.setURL(aniListURL);
         return { embeds: [embed], components: [actionRow], attachments: [], files: [attachment] };
     }
 }
