@@ -1,33 +1,32 @@
-import { ContextMenuInteraction, Message, Interaction, InteractionReplyOptions } from 'discord.js';
 import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { TraceMoeAPI } from '../../../apis/tracemoe/TraceMoeAPI.js';
 import { TraceMoeCommandData } from './TraceMoeCommandData.js';
-import { TraceMoeAPI } from './api/TraceMoeAPI.js';
-import { TraceMoeEmbed } from './components/TraceMoeEmbed.js'
-import { TraceMoeData } from './api/interfaces/TraceMoeData.js'
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { TraceMoeReplies } from './TraceMoeReplies.js';
+import { ContextMenuInteraction } from 'discord.js';
 
 export class TraceMoeHandler extends ContextMenuHandler {
 
     private readonly tracemoe: TraceMoeAPI;
+    private readonly replies: TraceMoeReplies;
 
     constructor() {
         super({ group: 'Fun', global: false, nsfw: false, data: TraceMoeCommandData });
+        this.replies = new TraceMoeReplies();
         this.tracemoe = new TraceMoeAPI();
     }
 
-    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
-        const origMessage = contextMenu.options.getMessage('message', true) as Message;
-        if (!origMessage.attachments.first()!.url) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'trace moe'));
-        // console.log(origMessage);
+    public async execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {
         await contextMenu.deferReply();
-        const result = await this.tracemoe.contextClick(origMessage) as TraceMoeData;
-        const replyOptions = this.createCurrentResponse(contextMenu, origMessage, result);
-        console.log(result.result[0]);
+        const targetMessage = contextMenu.options.getMessage('message', true);
+        const metadata = await HandlerUtil.probeMessage(targetMessage);
+        if (!metadata) {
+            const replyOptions = HandlerReplies.createMessageContentReply(contextMenu, 'trace moe');
+            return contextMenu.followUp(replyOptions);
+        }
+        const result = await this.tracemoe.fetchTraceMoeData(metadata.url);
+        const replyOptions = this.replies.createCurrentReply(contextMenu, result);
         await contextMenu.followUp(replyOptions);
-    }
-
-    private createCurrentResponse(interaction: Interaction, message: Message, result: TraceMoeData ): InteractionReplyOptions {
-        const embed = TraceMoeEmbed.getCurrentEmbed(interaction, message, result);
-        return { embeds: [embed] };
     }
 }

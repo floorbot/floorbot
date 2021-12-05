@@ -1,7 +1,7 @@
 export interface TraceMoeData {
     readonly frameCount: number,
     readonly error: string,
-    readonly result: Array<{
+    readonly result: {
         readonly anilist: {
             readonly id: number,
             readonly idMal: number,
@@ -10,7 +10,7 @@ export interface TraceMoeData {
                 readonly romaji: string,
                 readonly english: string
             },
-            readonly synonyms: Array<string>,
+            readonly synonyms: string[],
             readonly isAdult: boolean
         },
         readonly filename: string,
@@ -20,5 +20,5 @@ export interface TraceMoeData {
         readonly similarity: number,
         readonly video: string,
         readonly image: string
-    }>
+    }[]
 }
