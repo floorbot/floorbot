@@ -3,6 +3,7 @@ import { HandlerReplies } from "../../../discord/helpers/HandlerReplies.js";
 import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
 import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
 import { Interaction, InteractionReplyOptions, Message, MessageActionRow } from "discord.js";
+import humanizeDuration from 'humanize-duration';
 
 export class TraceMoeReplies extends HandlerReplies {
 
@@ -20,12 +21,14 @@ export class TraceMoeReplies extends HandlerReplies {
         const aniListID = result.anilist.id;
         const episode = result.episode;
         const simularity = (result.similarity * 100).toFixed(2);
+        const from = humanizeDuration(Math.round(result.from) * 1000);
         const embed = this.createEmbedTemplate(context, { page: page + 1, pages: results.length })
             .setTitle(`${aniTitle}`)
-            .setDescription(`There is a ${simularity} percent chance that this comes from episode ${episode} of ${aniTitle}.`)
+            .addField('Episode: ', `${episode}`)
+            .addField('Time: ', `${from}`)
+            .addField('Simularity: ', `${simularity}%`)
             .setURL(`https://anilist.co/anime/${aniListID}`);
         const attachment = this.createAttachmentTemplate(`${result.video}&size=l`);
-        embed.setImage(attachment.getEmbedUrl());
         const actionRow = new MessageActionRow().addComponents([
             HandlerButton.createPreviousPageButton(),
             HandlerButton.createNextPageButton(),
