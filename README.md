@@ -38,11 +38,11 @@ npm start                                                // Run the app
 
 ### Global Commands
 
-- [ ] `/floorbot`
-  - [ ] `/floorbot commands` - Add or remove commands from a guild
-  - [ ] `/floorbot about` - Get the bots ping/invite link
-  - [ ] `/floorbot screenshare` - Generate a screenshare link
-  - [ ] `/floorbot guild` - Display stats from the current
+-   [ ] `/floorbot`
+    -   [ ] `/floorbot commands` - Add or remove commands from a guild
+    -   [x] `/floorbot about` - Get the bots ping/invite link and guild info
+    -   [x] `/floorbot screenshare` - Generate a screenshare link
+
 
 ### Booru Commands
 
@@ -54,13 +54,14 @@ npm start                                                // Run the app
 
 ### Fun Commands
 
-- [x] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
-- [ ] `☰ dispute` - Dispute each other's messages
-- [x] `/flip` & `☰ flip` - Flip a coin or text
-- [ ] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
-- [ ] `/markov` - Markov chain message generation
-- [x] `/owoify` & `☰ owoify` - Owoify a message
-- [x] `/roll` - Roll a die
+-   [x] `/define` - [Urban Dictionary](https://www.urbandictionary.com/)
+-   [ ] `☰ dispute` - Dispute each other's messages
+-   [x] `/flip` & `☰ flip` - Flip a coin or text
+-   [x] `/magick` & `☰ magick` - [ImageMagick](https://imagemagick.org/index.php)
+-   [ ] `/markov` - Markov chain message generation
+-   [x] `/owoify` & `☰ owoify`  - Owoify a message
+-   [x] `/roll` - Roll a die
+-   [ ] `/calculator` - Calculator
 
 ### Service Commands
 

@@ -1,48 +1,77 @@
-import { CommandInteraction, Guild, Message, MessageActionRow, MessageButton, Constants, InteractionReplyOptions, SelectMenuInteraction, ApplicationCommand, Interaction } from 'discord.js';
+import { ApplicationCommand, CommandInteraction, Constants, Guild, Message, SelectMenuInteraction, VoiceChannel } from 'discord.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { FloorbotButtonID, FloorbotReplies } from './FloorbotReplies.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { FloorbotCommandData } from './FloorbotCommandData.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { Handler } from '../../../discord/Handler.js';
-import { AdminCommandData } from './AdminCommandData.js';
-import { AdminSelectMenu } from './AdminSelectMenu.js';
-import { AdminEmbed } from './AdminEmbed.js';
-
-const { MessageButtonStyles, ApplicationCommandTypes } = Constants;
 
 export type HandlerMap = Map<Handler<any>, ApplicationCommand | undefined>;
 export type GroupHandlerMap = Map<string, HandlerMap>;
 
-export class AdminHandler extends ChatInputHandler {
+const { ApplicationCommandTypes } = Constants;
+
+export class FloorbotHandler extends ChatInputHandler {
+
+    private readonly replies: FloorbotReplies;
 
     constructor() {
-        super({ group: 'Global', global: true, nsfw: false, data: AdminCommandData });
+        super({ group: 'Global', global: true, nsfw: false, data: FloorbotCommandData });
+        this.replies = new FloorbotReplies();
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
-        const subCommand = command.options.getSubcommand();
         const { guild, member } = command;
-        if (!guild) return command.reply(new AdminEmbed(command).setDescription(`Sorry! You can only use this command in a guild!`).toReplyOptions());
-        if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
+        const subCommand = command.options.getSubcommand();
+
         switch (subCommand) {
+            case 'about': {
+                let aboutReplyOptions = this.replies.createAboutReply(command);
+                const message = await command.reply({ ...aboutReplyOptions, fetchReply: true });
+                aboutReplyOptions = this.replies.createAboutReply(command, message);
+                const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return undefined; });
+                const guildReplyOptions = this.replies.createGuildReply(command, guild, bans);
+
+                await command.editReply(aboutReplyOptions);
+                const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+                collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
+                    await component.deferUpdate();
+                    switch (component.customId) {
+                        case FloorbotButtonID.ABOUT: return component.editReply(aboutReplyOptions);
+                        case FloorbotButtonID.GUILD: return component.editReply(guildReplyOptions);
+                        default: throw new Error(`[floorbot] Unknown component id <${component.customId}>`);
+                    }
+                }));
+                collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+                break;
+            }
+            case 'screenshare': {
+                if (!member) return command.reply(this.replies.createGuildOnlyReply(command));
+                const channel = command.options.getChannel('channel') || member.voice.channel;
+                if (!channel || !(channel instanceof VoiceChannel)) return command.reply(this.replies.createNoVoiceChannelReply(command));
+                return command.reply(this.replies.createScreenshareReply(command, channel));
+            }
             case 'commands': {
+                if (!guild) return command.reply(this.replies.createGuildOnlyReply(command));
+                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(this.replies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 let groupComponent: SelectMenuInteraction | undefined = undefined;
                 let commandsComponent: SelectMenuInteraction | undefined = undefined;
                 let groupHandlerMap = await this.fetchHandlerMap(guild);
-                const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent);
+                const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
                 let message = await command.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
-                collector.on('collect', async (component) => {
+                collector.on('collect', HandlerUtil.handleCollectorErrors(async (component) => {
                     if (!HandlerUtil.isAdminOrOwner(member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     if (component.isSelectMenu() && component.customId === 'groups') {
                         await component.deferUpdate();
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isSelectMenu() && component.customId === 'commands') {
                         await component.deferUpdate();
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent = component);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent = component);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isButton()) {
@@ -60,14 +89,13 @@ export class AdminHandler extends ChatInputHandler {
                             }
                         }
                         groupHandlerMap = await this.fetchHandlerMap(guild);
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
                         message = await (<Message>component.message).edit(response);
                     }
-                });
+                }));
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 return message;
             }
-            default: throw command;
         }
     }
 
@@ -80,24 +108,10 @@ export class AdminHandler extends ChatInputHandler {
                 const appCommand = appCommands.find(appCommand => this.isCorrectHandler(handler, appCommand));
                 if (!appCommand) {
                     const posted = await client.application.commands.create(handler.data);
-                    client.emit('log', `[setup](${handler.toString()}) Posted missing global command to discord <${posted.id}>`)
+                    client.emit('log', `[setup](${handler.toString()}) Posted missing global command to discord <${posted.id}>`);
                 }
             }
         }
-    }
-
-    private createResponse(interaction: Interaction<'cached'>, groupHandlerMap: GroupHandlerMap, groupComponent?: SelectMenuInteraction, commandsComponent?: SelectMenuInteraction): InteractionReplyOptions {
-        return {
-            embeds: [AdminEmbed.createCommandsEmbed(interaction, groupHandlerMap)],
-            components: [
-                AdminSelectMenu.createGroupsSelectMenu(groupHandlerMap, groupComponent).toActionRow(),
-                ...(groupComponent ? [AdminSelectMenu.createHandlerSelectMenu(groupHandlerMap, groupComponent, commandsComponent).toActionRow()] : []),
-                ...(commandsComponent && commandsComponent.values.length ? [new MessageActionRow().addComponents([
-                    new MessageButton().setLabel('Enable Commands').setStyle(MessageButtonStyles.SUCCESS).setCustomId('enable'),
-                    new MessageButton().setLabel('Disable Commands').setStyle(MessageButtonStyles.DANGER).setCustomId('disable')
-                ])] : [])
-            ]
-        };
     }
 
     private async fetchHandlerMap(guild: Guild): Promise<GroupHandlerMap> {

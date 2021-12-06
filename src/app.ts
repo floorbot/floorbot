@@ -14,7 +14,11 @@ import Redis from 'ioredis';
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
+<<<<<<< HEAD
+import { BotUpdater } from './automations/BotUpdater.js';
+=======
 import { NhentaiCodes } from './automations/NhentaiCodes.js';
+>>>>>>> main
 
 // Commands
 import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
@@ -23,14 +27,16 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
+<<<<<<< HEAD
+import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
+=======
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
+>>>>>>> main
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
-import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
-import { AdminHandler } from './commands/global/admin/AdminHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
@@ -80,8 +86,7 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
-        new AdminHandler(),
-        new UtilsHandler(),
+        new FloorbotHandler(),
         new LostHandler(),
         new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),
@@ -91,7 +96,7 @@ const client = new HandlerClient({
         new MarkovHandler(database),
         new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
-        new MagickChatInputHandler(env['IMAGE_MAGICK_PATH']),
+        new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeHandler(database),
         new TraceMoeHandler(redis),
@@ -125,6 +130,7 @@ const client = new HandlerClient({
 client.once('ready', () => {
     PresenceController.setup(client);
     MessageReaction.setup(client);
+    BotUpdater.update(client);
     NhentaiCodes.setup(client);
 });
 client.login(env.DISCORD_TOKEN);
