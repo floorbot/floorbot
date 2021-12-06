@@ -1,4 +1,4 @@
-import { ApplicationCommand, CommandInteraction, Constants, Guild, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageButton, SelectMenuInteraction, VoiceChannel } from 'discord.js';
+import { ApplicationCommand, CommandInteraction, Constants, Guild, Message, SelectMenuInteraction, VoiceChannel } from 'discord.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { FloorbotButtonID, FloorbotReplies } from './FloorbotReplies.js';
@@ -6,13 +6,11 @@ import { HandlerClient } from '../../../discord/HandlerClient.js';
 import { FloorbotCommandData } from './FloorbotCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { Handler } from '../../../discord/Handler.js';
-import { AdminSelectMenu } from './AdminSelectMenu.js';
-import { AdminEmbed } from './AdminEmbed.js';
 
 export type HandlerMap = Map<Handler<any>, ApplicationCommand | undefined>;
 export type GroupHandlerMap = Map<string, HandlerMap>;
 
-const { ApplicationCommandTypes, MessageButtonStyles } = Constants;
+const { ApplicationCommandTypes } = Constants;
 
 export class FloorbotHandler extends ChatInputHandler {
 
@@ -32,7 +30,7 @@ export class FloorbotHandler extends ChatInputHandler {
                 let aboutReplyOptions = this.replies.createAboutReply(command);
                 const message = await command.reply({ ...aboutReplyOptions, fetchReply: true });
                 aboutReplyOptions = this.replies.createAboutReply(command, message);
-                const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return undefined });
+                const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return undefined; });
                 const guildReplyOptions = this.replies.createGuildReply(command, guild, bans);
 
                 await command.editReply(aboutReplyOptions);
@@ -40,8 +38,8 @@ export class FloorbotHandler extends ChatInputHandler {
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
                     await component.deferUpdate();
                     switch (component.customId) {
-                        case FloorbotButtonID.ABOUT: return component.editReply(aboutReplyOptions)
-                        case FloorbotButtonID.GUILD: return component.editReply(guildReplyOptions)
+                        case FloorbotButtonID.ABOUT: return component.editReply(aboutReplyOptions);
+                        case FloorbotButtonID.GUILD: return component.editReply(guildReplyOptions);
                         default: throw new Error(`[floorbot] Unknown component id <${component.customId}>`);
                     }
                 }));
@@ -61,19 +59,19 @@ export class FloorbotHandler extends ChatInputHandler {
                 let groupComponent: SelectMenuInteraction | undefined = undefined;
                 let commandsComponent: SelectMenuInteraction | undefined = undefined;
                 let groupHandlerMap = await this.fetchHandlerMap(guild);
-                const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent);
+                const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
                 let message = await command.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component) => {
                     if (!HandlerUtil.isAdminOrOwner(member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     if (component.isSelectMenu() && component.customId === 'groups') {
                         await component.deferUpdate();
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isSelectMenu() && component.customId === 'commands') {
                         await component.deferUpdate();
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent = component);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent = component);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isButton()) {
@@ -91,7 +89,7 @@ export class FloorbotHandler extends ChatInputHandler {
                             }
                         }
                         groupHandlerMap = await this.fetchHandlerMap(guild);
-                        const response = this.createResponse(command, groupHandlerMap, groupComponent, commandsComponent);
+                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
                         message = await (<Message>component.message).edit(response);
                     }
                 }));
@@ -110,24 +108,10 @@ export class FloorbotHandler extends ChatInputHandler {
                 const appCommand = appCommands.find(appCommand => this.isCorrectHandler(handler, appCommand));
                 if (!appCommand) {
                     const posted = await client.application.commands.create(handler.data);
-                    client.emit('log', `[setup](${handler.toString()}) Posted missing global command to discord <${posted.id}>`)
+                    client.emit('log', `[setup](${handler.toString()}) Posted missing global command to discord <${posted.id}>`);
                 }
             }
         }
-    }
-
-    private createResponse(interaction: Interaction<'cached'>, groupHandlerMap: GroupHandlerMap, groupComponent?: SelectMenuInteraction, commandsComponent?: SelectMenuInteraction): InteractionReplyOptions {
-        return {
-            embeds: [AdminEmbed.createCommandsEmbed(interaction, groupHandlerMap)],
-            components: [
-                AdminSelectMenu.createGroupsSelectMenu(groupHandlerMap, groupComponent).toActionRow(),
-                ...(groupComponent ? [AdminSelectMenu.createHandlerSelectMenu(groupHandlerMap, groupComponent, commandsComponent).toActionRow()] : []),
-                ...(commandsComponent && commandsComponent.values.length ? [new MessageActionRow().addComponents([
-                    new MessageButton().setLabel('Enable Commands').setStyle(MessageButtonStyles.SUCCESS).setCustomId('enable'),
-                    new MessageButton().setLabel('Disable Commands').setStyle(MessageButtonStyles.DANGER).setCustomId('disable')
-                ])] : [])
-            ]
-        };
     }
 
     private async fetchHandlerMap(guild: Guild): Promise<GroupHandlerMap> {

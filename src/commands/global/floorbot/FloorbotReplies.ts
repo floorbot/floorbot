@@ -1,7 +1,8 @@
-import { Client, Collection, Constants, Guild, GuildBan, Interaction, InteractionReplyOptions, Message, MessageActionRow, VoiceChannel } from 'discord.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
+import { Client, Collection, Constants, Guild, GuildBan, Interaction, InteractionReplyOptions, Message, MessageActionRow, SelectMenuInteraction, VoiceChannel } from 'discord.js';
+import { HandlerButton, HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { GroupHandlerMap } from './FloorbotHandler.js';
 import humanizeDuration from 'humanize-duration';
 
 const { MessageButtonStyles } = Constants;
@@ -11,16 +12,67 @@ export const FloorbotButtonID = {
         GUILD: 'guild',
         ABOUT: 'about'
     }
-}
+};
 
 export class FloorbotReplies extends HandlerReplies {
 
-    constructor() {
-        super();
-    }
-
     private getInviteLink(client: Client): string {
         return client.generateInvite({ scopes: ['bot', 'applications.commands'] });
+    }
+
+    public createCommandsReply(context: Interaction | Message, groupHandlerMap: GroupHandlerMap, groupComponent?: SelectMenuInteraction, commandsComponent?: SelectMenuInteraction): InteractionReplyOptions {
+        const embed = this.createEmbedTemplate(context);
+        if (context.guild) embed.setTitle(`Commands for ${context.guild.name}`);
+        groupHandlerMap.forEach((handlerMap, group) => {
+            const lines: string[] = [];
+            handlerMap.forEach((appCommand, handler) => {
+                const description = 'description' in handler.data ? handler.data.description : '*Context Menu Command*';
+                lines.push(`${appCommand ? '🟢' : '🔴'} \`${handler.toString()}${handler.nsfw ? '\*' : ''}\` - *${description}*`);
+            });
+            embed.addField(`${group} Commands`, lines.join('\n'), false);
+        });
+
+
+        const groupSelectMenu = this.createSelectMenuTemplate()
+            .setCustomId('groups')
+            .setPlaceholder('Select a command group')
+            .addOptions([...groupHandlerMap.keys()].map(group => {
+                return {
+                    label: `${group} Commands`,
+                    value: group,
+                    default: groupComponent && group === groupComponent.values[0]
+                };
+            }));
+
+        let handlerSelectMenu = this.createSelectMenuTemplate();
+        if (groupComponent) {
+            const group = groupComponent.values[0]!;
+            const handlers = [...groupHandlerMap.get(group)!.keys()];
+            handlerSelectMenu.setCustomId('commands');
+            handlerSelectMenu.setPlaceholder(`Select ${group.toLowerCase()} commands`);
+            for (const [index, handler] of handlers.entries()) {
+                const description = 'description' in handler.data ? handler.data.description : '*No Description*';
+                handlerSelectMenu.addOptions({
+                    label: handler.toString(),
+                    value: index.toString(),
+                    description: description,
+                    default: commandsComponent && commandsComponent.values.includes(index.toString())
+                });
+            }
+            handlerSelectMenu.setMaxValues(handlerSelectMenu.options.length);
+        }
+
+        return {
+            embeds: [embed],
+            components: [
+                groupSelectMenu.toActionRow(),
+                ...(groupComponent ? [handlerSelectMenu.toActionRow()] : []),
+                ...(commandsComponent && commandsComponent.values.length ? [new MessageActionRow().addComponents([
+                    new HandlerButton().setLabel('Enable Commands').setStyle(MessageButtonStyles.SUCCESS).setCustomId('enable'),
+                    new HandlerButton().setLabel('Disable Commands').setStyle(MessageButtonStyles.DANGER).setCustomId('disable')
+                ])] : [])
+            ]
+        };
     }
 
     public createAboutReply(context: Interaction | Message, replyMessage?: Message): InteractionReplyOptions {
@@ -64,7 +116,7 @@ export class FloorbotReplies extends HandlerReplies {
                 `Stickers: **${guild.stickers.cache.size}**`,
                 `NSFW Level: **${HandlerUtil.capitalizeString(guild.nsfwLevel)}**`,
                 `Bans: **${bans ? bans.size : '*administrator permission*'}**`
-            ])
+            ]);
         if (guild.icon) embed.setThumbnail(guild.iconURL({ dynamic: true })!);
         if (guild.splash) embed.setImage(`${guild.splashURL({ size: 4096 })}`);
 

@@ -40,9 +40,8 @@ npm start                                                // Run the app
 
 -   [ ] `/floorbot`
     -   [ ] `/floorbot commands` - Add or remove commands from a guild
-    -   [ ] `/floorbot about` - Get the bots ping/invite link
-    -   [ ] `/floorbot screenshare` - Generate a screenshare link
-    -   [ ] `/floorbot guild` - Display stats from the current
+    -   [x] `/floorbot about` - Get the bots ping/invite link and guild info
+    -   [x] `/floorbot screenshare` - Generate a screenshare link
 
 ### Booru Commands
 
