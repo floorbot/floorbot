@@ -22,10 +22,10 @@ export class TraceMoeReplies extends HandlerReplies {
     }
 
     public createLoadingReply(contextMenu: ContextMenuInteraction): InteractionReplyOptions {
-        return this.createEmbedTemplate(contextMenu)
+        const embed = this.createEmbedTemplate(contextMenu)
             .setTitle('Trace Moe Loading...')
-            .setDescription('*Please wait while I upload the scene!*')
-            .toReplyOptions();
+            .setDescription('*Please wait while I upload the scene!*');
+        return { embeds: [embed], components: [], attachments: [], files: [] };
     }
 
     public createTraceMoeErrorReply(context: Interaction | Message, res: TraceMoeResponse): InteractionReplyOptions {
