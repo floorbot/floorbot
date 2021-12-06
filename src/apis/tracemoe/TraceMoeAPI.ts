@@ -3,12 +3,16 @@ import { TraceMoeResponse } from './interfaces/TraceMoeData.js';
 import fetch, { Headers } from 'node-fetch';
 import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
+import { Redis } from 'ioredis';
 
 export { TraceMoeResponse, TraceMoeResult };
 
-export interface TraceMoeRateLimit {
-    perMonth: number,
-    perMinute: number
+export interface TraceMoeConstructorOptions {
+    readonly redis: Redis,
+    readonly rateLimit?: {
+        readonly perMonth: number;
+        readonly perMinute: number;
+    };
 }
 
 export class TraceMoeAPI {
@@ -18,22 +22,35 @@ export class TraceMoeAPI {
     private readonly limiter: Bottleneck;
 
     //free tier is only 60 calls/minute and 1000 calls a month
-    constructor(apiLimits: TraceMoeRateLimit = { perMonth: 1000, perMinute: 60 }) {
-
+    constructor(options: TraceMoeConstructorOptions) {
+        const rateLimit = options.rateLimit || { perMonth: 1000, perMinute: 60 };
+        let { redis } = options;
         // Creates a monthly (31 day) limit of specified requests (api limits)
         const monthlyLimit = new Bottleneck({
             id: `tracemoe-month`, maxConcurrent: 10, minTime: 0,
-            reservoir: Math.floor(apiLimits.perMonth / 31),
+            reservoir: Math.floor(rateLimit.perMonth / 31),
             reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31,
-            reservoirRefreshAmount: Math.floor(apiLimits.perMonth / 31)
+            reservoirRefreshAmount: Math.floor(rateLimit.perMonth / 31)
         });
 
         // Creates a minutely (60 second) limit of specified requests (api limits)
         this.limiter = new Bottleneck({
             id: `tracemoe-minute`, maxConcurrent: 10, minTime: 0,
-            reservoir: apiLimits.perMinute,
+            reservoir: rateLimit.perMinute,
             reservoirRefreshInterval: 1000 * 60,
-            reservoirRefreshAmount: apiLimits.perMinute
+            reservoirRefreshAmount: rateLimit.perMinute,
+
+            highWater: 10, // Same as maxConcurrent
+            strategy: Bottleneck.strategy.OVERFLOW,
+
+            ...(redis && redis.options && {
+                datastore: 'ioredis',
+                clearDatastore: false,
+                clientOptions: {
+                    host: redis.options.host,
+                    port: redis.options.port
+                }
+            })
         });
 
         this.limiter.chain(monthlyLimit);

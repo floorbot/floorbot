@@ -9,13 +9,13 @@ import { ProbeResult } from "probe-image-size";
 
 export interface TraceMoePageData {
     page: number,
-    pages: number
+    pages: number;
 }
 
 export class TraceMoeReplies extends HandlerReplies {
 
     public override createEmbedTemplate(context: Interaction | Message, pageData?: TraceMoePageData): HandlerEmbed {
-        const embed = super.createEmbedTemplate(context)
+        const embed = super.createEmbedTemplate(context);
         if (pageData) embed.setFooter(`${pageData.page + 1}/${pageData.pages} - Powered by Trace Moe`);
         else embed.setFooter(`Powered by Trace Moe`);
         return embed;
@@ -27,8 +27,8 @@ export class TraceMoeReplies extends HandlerReplies {
         const embed = this.createEmbedTemplate(context)
             .setTitle('Trace Moe Error')
             .setThumbnail(attachment.getEmbedUrl())
-            .setDescription(res.error || 'Unknown reason...')
-        return { embeds: [embed], files: [attachment] }
+            .setDescription(res.error || 'Unknown reason...');
+        return { embeds: [embed], files: [attachment] };
     }
 
     public createTraceMoeReply(context: Interaction | Message, metadata: ProbeResult, result: TraceMoeResult, pageData: TraceMoePageData): InteractionReplyOptions {

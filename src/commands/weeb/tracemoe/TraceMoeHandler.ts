@@ -6,16 +6,17 @@ import { TraceMoeCommandData } from './TraceMoeCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { TraceMoeReplies } from './TraceMoeReplies.js';
 import { ContextMenuInteraction } from 'discord.js';
+import { Redis } from 'ioredis';
 
 export class TraceMoeHandler extends ContextMenuHandler {
 
     private readonly tracemoe: TraceMoeAPI;
     private readonly replies: TraceMoeReplies;
 
-    constructor() {
+    constructor(redis: Redis) {
         super({ group: 'Weeb', global: false, nsfw: false, data: TraceMoeCommandData });
         this.replies = new TraceMoeReplies();
-        this.tracemoe = new TraceMoeAPI();
+        this.tracemoe = new TraceMoeAPI({ redis });
     }
 
     public async execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {

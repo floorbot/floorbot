@@ -5,11 +5,11 @@ console.log = consolePrettifier(console.log);
 import { HandlerClient } from './discord/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
 import BetterSqlit3 from 'better-sqlite3';
-// import RedisMock from 'ioredis-mock';
+import RedisMock from 'ioredis-mock';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import MariaDB from 'mariadb';
-// import Redis from 'ioredis';
+import Redis from 'ioredis';
 
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
@@ -73,7 +73,7 @@ const poolConfig: PoolConfig = {
 
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
 const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
-// const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
+const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
@@ -94,28 +94,28 @@ const client = new HandlerClient({
         new MagickChatInputHandler(env['IMAGE_MAGICK_PATH']),
         new MagickMessageHandler(),
         new DisputeHandler(database),
-        new TraceMoeHandler(),
+        new TraceMoeHandler(redis),
 
         new DefineHandler(),
         new Rule34Handler()
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
             const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
             return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
             const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
             return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }
+            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
             return new E621Handler(envAuth);
         }
@@ -126,5 +126,5 @@ client.once('ready', () => {
     PresenceController.setup(client);
     MessageReaction.setup(client);
     NhentaiCodes.setup(client);
-})
+});
 client.login(env.DISCORD_TOKEN);
