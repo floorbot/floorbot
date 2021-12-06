@@ -1,5 +1,6 @@
 import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
+import probe, { ProbeResult } from 'probe-image-size';
 import { HandlerClient } from './HandlerClient.js';
 import { Handler } from './Handler.js';
 import twemoji from 'twemoji';
@@ -144,5 +145,23 @@ export class HandlerUtil {
         const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
         const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
         return `${firstLetter}${secondLetter}`
+    }
+
+    public static async probeMessage(message: Message): Promise<ProbeResult | null> {
+
+        let metadata: ProbeResult | null = null;
+
+        // Check all embeds for valid images
+        for (const embed of message.embeds) {
+            if (embed.thumbnail && embed.thumbnail.url) metadata = await probe(embed.thumbnail.url).catch(() => null) || metadata;
+            if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
+        }
+
+        // Check all attachments for valid images
+        for (const attachment of message.attachments.values()) {
+            metadata = await probe(attachment.url).catch(() => null) || metadata;
+        }
+
+        return metadata || null;
     }
 }
