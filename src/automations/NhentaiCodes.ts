@@ -1,4 +1,4 @@
-import { Client, } from 'discord.js';
+import { Client } from 'discord.js';
 import fetch from "node-fetch";
 
 export class NhentaiCodes {
