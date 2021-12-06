@@ -58,7 +58,6 @@
         "probe-image-size": "^7.2.2",
         "twemoji": "^13.1.0",
         "tzdata": "^1.0.29",
-        "url-exist": "^3.0.0",
         "xml2js": "^0.4.23"
     }
 }

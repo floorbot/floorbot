@@ -1,7 +1,10 @@
-import { TraceMoeData } from './interfaces/TraceMoeData.js'
+import { TraceMoeResult } from './interfaces/TraceMoeResult.js';
+import { TraceMoeResponse } from './interfaces/TraceMoeData.js';
 import fetch, { Headers } from 'node-fetch';
 import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
+
+export { TraceMoeResponse, TraceMoeResult };
 
 export interface TraceMoeRateLimit {
     perMonth: number,
@@ -10,8 +13,9 @@ export interface TraceMoeRateLimit {
 
 export class TraceMoeAPI {
 
+    private static TRACE_MOE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
+
     private readonly limiter: Bottleneck;
-    private static DEFINE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
     //free tier is only 60 calls/minute and 1000 calls a month
     constructor(apiLimits: TraceMoeRateLimit = { perMonth: 1000, perMinute: 60 }) {
@@ -35,25 +39,21 @@ export class TraceMoeAPI {
         this.limiter.chain(monthlyLimit);
     }
 
-    private async request(params: [string, string | number][], headers?: Headers): Promise<TraceMoeData[]> {
-        const paramString = params.map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
-        const url = `https://api.trace.moe/search?anilistInfo&${paramString}`;
-        const options = { method: 'GET', headers: headers || new Headers() };
-        return fetch(url, options).then((res: any) => res.json()).then((json) => json.result);
+    private async request(params: [string, string | number][], headers?: Headers): Promise<any> {
+        return this.limiter.schedule(() => {
+            const paramString = params.map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
+            const url = `https://api.trace.moe/search?anilistInfo&${paramString}`;
+            const options = { method: 'GET', headers: headers || new Headers() };
+            return fetch(url, options).then((res: any) => res.json());
+        });
     }
 
-    public async fetchTraceMoeData(url: string): Promise<TraceMoeData[]> {
-        const cacheKey = url.toLowerCase();
-        const existing = TraceMoeAPI.DEFINE_CACHE.get(cacheKey);
-        if (existing) return existing as TraceMoeData[];
-        return this.limiter.schedule({ expiration: 1000 * 60 }, () => {
-            const params: [string, string | number][] = [['url', url]];
-            return this.request(params)
-              .then(res => { return res ?? []})
-              .then(res => {
-                  if (cacheKey) TraceMoeAPI.DEFINE_CACHE.set(cacheKey, res);
-                  return res;
-              });
-        });
+    public async fetchTraceMoeData(url: string): Promise<TraceMoeResponse> {
+        const existing = TraceMoeAPI.TRACE_MOE_CACHE.get(url);
+        if (existing) return existing as TraceMoeResponse;
+        const params: [string, string | number][] = [['url', url]];
+        const res = await this.request(params);
+        TraceMoeAPI.TRACE_MOE_CACHE.set(url, res);
+        return res as TraceMoeResponse;
     }
 }
