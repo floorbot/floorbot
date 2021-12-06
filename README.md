@@ -70,7 +70,7 @@ npm start                                                // Run the app
 ### Weeb Commands
 
 - [ ] `/anilist` - [AniList](https://anilist.co/)
-- [ ] `☰ trac moe` - [Trace Moe](https://trace.moe/)
+- [x] `☰ trace moe` - [Trace Moe](https://trace.moe/)
 - [ ] `/vtuber` - [Virtual YouTuber](https://virtualyoutuber.fandom.com/wiki/Virtual_YouTuber_Wiki) (scraping) Cloudflare limitations
 
 ### Tracker Commands
