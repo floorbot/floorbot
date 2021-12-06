@@ -14,6 +14,7 @@ import MariaDB from 'mariadb';
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
+import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
 import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
@@ -28,8 +29,6 @@ import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
-import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
-import { AdminHandler } from './commands/global/admin/AdminHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
@@ -81,8 +80,6 @@ const client = new HandlerClient({
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FloorbotHandler(),
-        new AdminHandler(),
-        new UtilsHandler(),
         new LostHandler(),
         new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),
@@ -101,21 +98,21 @@ const client = new HandlerClient({
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
             const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
             return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
             const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
             return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }
+            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
             if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
             return new E621Handler(envAuth);
         }
@@ -125,5 +122,6 @@ const client = new HandlerClient({
 client.once('ready', () => {
     PresenceController.setup(client);
     MessageReaction.setup(client);
-})
+    BotUpdater.update(client);
+});
 client.login(env.DISCORD_TOKEN);
