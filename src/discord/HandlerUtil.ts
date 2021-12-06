@@ -1,5 +1,6 @@
 import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
+import probe, { ProbeResult } from 'probe-image-size';
 import { HandlerClient } from './HandlerClient.js';
 import { Handler } from './Handler.js';
 import twemoji from 'twemoji';
@@ -18,14 +19,14 @@ export class HandlerUtil {
     public static handleErrors(handler: Handler<any>): (error: any) => any {
         return (error: any) => {
             console.log(`[${handler.data.name}] Handler has encountered an unknown error`, error);
-        }
+        };
     }
 
     public static handleCollectorErrors(listener: (interaction: MessageComponentInteraction<any>) => Promise<any>): (interaction: MessageComponentInteraction) => Promise<void> {
         return (interaction: MessageComponentInteraction) => listener(interaction).catch(async error => {
             console.error(`[client] Collector has run into an error...`, error);
             const replyOptions = HandlerReplies.createUnexpectedErrorReply(interaction, error);
-            await interaction.followUp(replyOptions)
+            await interaction.followUp(replyOptions);
         }).catch(error => console.error(`[client] Collector failed to report error...`, error));;
     }
 
@@ -52,9 +53,9 @@ export class HandlerUtil {
                     }
                 }
             } catch (error) {
-                console.warn('[util] Error deleting components from collector', error)
+                console.warn('[util] Error deleting components from collector', error);
             }
-        }
+        };
     }
 
     public static toggleMessageComponents(message: Message, disabled: boolean): void {
@@ -81,7 +82,7 @@ export class HandlerUtil {
         return Math.round((degrees) * 9 / 5 + 32);
     }
 
-    public static resolveEmoji(string: string): { string: string, imageURL: string } | null {
+    public static resolveEmoji(string: string): { string: string, imageURL: string; } | null {
         const png = /<:[^:]+:(\d+)>/g.exec(string);
         if (png) return { string: string, imageURL: `https://cdn.discordapp.com/emojis/${png[1]}.png` };
         const gif = /<a:[^:]+:(\d+)>/g.exec(string);
@@ -125,7 +126,7 @@ export class HandlerUtil {
 
     public static resolveMember(context: Interaction | Message, string: string, allowBot: boolean = false): GuildMember | null {
         string = string.toLowerCase();
-        const { channel, member } = <{ channel: GuildChannel, member: GuildMember }>context;
+        const { channel, member } = <{ channel: GuildChannel, member: GuildMember; }>context;
         if (channel instanceof GuildChannel) {
             if (string === 'me' && (allowBot || (member && !member.user.bot))) return member;
             return channel.members.find((member: GuildMember) => {
@@ -143,6 +144,24 @@ export class HandlerUtil {
         if (!countryCode.codePointAt(0) || !countryCode.codePointAt(1)) return null;
         const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
         const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
-        return `${firstLetter}${secondLetter}`
+        return `${firstLetter}${secondLetter}`;
+    }
+
+    public static async probeMessage(message: Message): Promise<ProbeResult | null> {
+
+        let metadata: ProbeResult | null = null;
+
+        // Check all embeds for valid images
+        for (const embed of message.embeds) {
+            if (embed.thumbnail && embed.thumbnail.url) metadata = await probe(embed.thumbnail.url).catch(() => null) || metadata;
+            if (embed.image && embed.image.url) metadata = await probe(embed.image.url).catch(() => null) || metadata;
+        }
+
+        // Check all attachments for valid images
+        for (const attachment of message.attachments.values()) {
+            metadata = await probe(attachment.url).catch(() => null) || metadata;
+        }
+
+        return metadata || null;
     }
 }

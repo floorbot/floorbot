@@ -5,16 +5,20 @@ console.log = consolePrettifier(console.log);
 import { HandlerClient } from './discord/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
 import BetterSqlit3 from 'better-sqlite3';
-// import RedisMock from 'ioredis-mock';
+import RedisMock from 'ioredis-mock';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import MariaDB from 'mariadb';
-// import Redis from 'ioredis';
+import Redis from 'ioredis';
 
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
+<<<<<<< HEAD
 import { BotUpdater } from './automations/BotUpdater.js';
+=======
+import { NhentaiCodes } from './automations/NhentaiCodes.js';
+>>>>>>> main
 
 // Commands
 import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
@@ -23,7 +27,11 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
+<<<<<<< HEAD
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
+=======
+import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
+>>>>>>> main
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
@@ -57,7 +65,6 @@ const env = envalid.cleanEnv(process.env, {
     E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
     E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' }),
 
-
     IMAGE_MAGICK_PATH: str({ default: '', desc: 'Path to ImageMagick cli' })
 });
 
@@ -72,7 +79,7 @@ const poolConfig: PoolConfig = {
 
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
 const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
-// const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
+const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
@@ -92,6 +99,7 @@ const client = new HandlerClient({
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeHandler(database),
+        new TraceMoeHandler(redis),
 
         new DefineHandler(),
         new Rule34Handler()
@@ -123,5 +131,6 @@ client.once('ready', () => {
     PresenceController.setup(client);
     MessageReaction.setup(client);
     BotUpdater.update(client);
+    NhentaiCodes.setup(client);
 });
 client.login(env.DISCORD_TOKEN);
