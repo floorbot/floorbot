@@ -1,4 +1,4 @@
-import { Interaction, InteractionReplyOptions, Message, MessageActionRow } from "discord.js";
+import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageActionRow } from "discord.js";
 import { TraceMoeResponse, TraceMoeResult } from "../../../apis/tracemoe/TraceMoeAPI.js";
 import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
 import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
@@ -19,6 +19,13 @@ export class TraceMoeReplies extends HandlerReplies {
         if (pageData) embed.setFooter(`${pageData.page + 1}/${pageData.pages} - Powered by Trace Moe`);
         else embed.setFooter(`Powered by Trace Moe`);
         return embed;
+    }
+
+    public createLoadingReply(contextMenu: ContextMenuInteraction): InteractionReplyOptions {
+        return this.createEmbedTemplate(contextMenu)
+            .setTitle('Trace Moe Loading...')
+            .setDescription('*Please wait while I upload the scene!*')
+            .toReplyOptions();
     }
 
     public createTraceMoeErrorReply(context: Interaction | Message, res: TraceMoeResponse): InteractionReplyOptions {

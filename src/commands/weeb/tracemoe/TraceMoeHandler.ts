@@ -40,7 +40,7 @@ export class TraceMoeHandler extends ContextMenuHandler {
         const message = await contextMenu.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
-            await component.deferUpdate();
+            await component.reply(this.replies.createLoadingReply(contextMenu));
             if (component.customId === HandlerButtonID.NEXT_PAGE) pageData.page++;
             if (component.customId === HandlerButtonID.PREVIOUS_PAGE) pageData.page--;
             pageData.page = pageData.page % pageData.pages;
