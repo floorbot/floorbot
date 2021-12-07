@@ -26,7 +26,7 @@ export class UrbanDictionaryAPI {
         const existing = UrbanDictionaryAPI.DEFINE_CACHE.get(cacheKey);
         if (existing) return existing as UrbanDictionaryAPIData[];
         return await this.request('define', [['term', term]])
-            .then(res => { return res.list ?? []})
+            .then(res => { return res.list ?? []; })
             .then(res => {
                 if (cacheKey) UrbanDictionaryAPI.DEFINE_CACHE.set(cacheKey, res);
                 return res;

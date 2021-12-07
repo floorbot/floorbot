@@ -26,7 +26,7 @@ export class E621Handler extends BooruHandler implements Autocomplete {
             return {
                 name: [...tags, tag.name].join('+'),
                 value: [...tags, tag.name].join('+')
-            }
+            };
         });
         return interaction.respond(options);
     }
@@ -36,7 +36,7 @@ export class E621Handler extends BooruHandler implements Autocomplete {
         if (!('file' in post)) {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(tags);
-            const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count } });
+            const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count }; });
             return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
         }
         const postURL = `https://e621.net/posts/${post.id}`;

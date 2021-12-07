@@ -34,7 +34,7 @@ export class Rule34API {
                 offset: json.posts['$'].offset
             },
             ...json.posts.post[0]['$']
-        }
+        };
     }
 
     public async count(tags: string = String()): Promise<number> {

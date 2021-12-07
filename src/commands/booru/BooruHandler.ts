@@ -9,11 +9,11 @@ export interface BooruHandlerOptions {
 }
 
 export interface BooruSuggestionData {
-    readonly suggestions: Array<{
-        readonly name: string,
+    readonly suggestions: {
+        readonly name: string;
         readonly count: number;
-    }>,
-    readonly tags: string,
+    }[];
+    readonly tags: string;
     readonly url404: string | null;
 }
 

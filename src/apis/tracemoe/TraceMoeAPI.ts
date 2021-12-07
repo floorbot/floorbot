@@ -8,7 +8,7 @@ import { Redis } from 'ioredis';
 export { TraceMoeResponse, TraceMoeResult };
 
 export interface TraceMoeConstructorOptions {
-    readonly redis: Redis,
+    readonly redis: Redis;
     readonly rateLimit?: {
         readonly perMonth: number;
         readonly perMinute: number;

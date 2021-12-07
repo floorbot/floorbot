@@ -26,7 +26,7 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
             return {
                 name: [...tags, tag.value].join('+'),
                 value: [...tags, tag.value].join('+')
-            }
+            };
         });
         return interaction.respond(options);
     }
@@ -36,7 +36,7 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
         if (!post) {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(tags);
-            const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total } });
+            const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total }; });
             return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
         }
         const postURL = `https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;

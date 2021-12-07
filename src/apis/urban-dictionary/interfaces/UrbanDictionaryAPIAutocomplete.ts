@@ -1,4 +1,4 @@
 export interface UrbanDictionaryAPIAutocomplete {
-    readonly preview: string,
-    readonly term: string
+    readonly preview: string;
+    readonly term: string;
 }

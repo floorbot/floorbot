@@ -8,9 +8,9 @@ import NodeCache from 'node-cache';
 export { DonmaiAPIAutocomplete, DonmaiAPIError, DonmaiAPICount, DonmaiAPIPost };
 
 export interface DonmaiAPIAuth {
-    username: string,
-    apiKey: string,
-    userAgent?: string
+    username: string;
+    apiKey: string;
+    userAgent?: string;
 }
 
 export class DonmaiAPI {

@@ -1,5 +1,5 @@
 export interface DonmaiAPIError {
-    readonly success: boolean,
-    readonly message: string,
-    readonly backtrace: Array<string>
+    readonly success: boolean;
+    readonly message: string;
+    readonly backtrace: Array<string>;
 }

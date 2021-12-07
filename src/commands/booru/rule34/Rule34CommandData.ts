@@ -13,4 +13,4 @@ export const Rule34CommandData: ChatInputApplicationCommandData = {
         required: false,
         name: 'tags',
     }]
-}
+};

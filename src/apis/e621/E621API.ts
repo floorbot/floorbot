@@ -8,9 +8,9 @@ import NodeCache from 'node-cache';
 export { E621APIAutocomplete, E621APIError, E621APIPost, E621APITag };
 
 export interface E621APIAuth {
-    username: string,
-    apiKey: string,
-    userAgent: string
+    username: string;
+    apiKey: string;
+    userAgent: string;
 }
 
 export class E621API {

@@ -7,8 +7,8 @@ import { HandlerReplies } from '../../discord/helpers/HandlerReplies.js';
 const { MessageButtonStyles } = Constants;
 
 export interface BooruReplyConstructorOptions {
-    readonly apiName: string,
-    readonly apiIcon: string
+    readonly apiName: string;
+    readonly apiIcon: string;
 }
 
 export class BooruReplies extends HandlerReplies {
@@ -67,7 +67,7 @@ export class BooruReplies extends HandlerReplies {
             ]);
 
         // View Online Button
-        const viewOnlineButton = HandlerButton.createViewOnlineButton(data.postURL)
+        const viewOnlineButton = HandlerButton.createViewOnlineButton(data.postURL);
 
         // Recycle Button
         const recycleButton = this.createButtonTemplate()
@@ -90,7 +90,7 @@ export class BooruReplies extends HandlerReplies {
                     recycleButton
                 ])
             ]
-        }
+        };
     }
 }
 
@@ -99,26 +99,26 @@ export const BooruButtonID = {
         REPEAT: 'repeat',
         RECYCLE: 'recycle'
     }
-}
+};
 
 export const BooruSelectMenuID = {
     ...HandlerSelectMenuID, ...{
         SUGGESTIONS: 'suggestions'
     }
-}
+};
 
 export interface BooruImageData {
     tags: string | null,
     imageURL: string,
     postURL: string,
-    score: number | null
+    score: number | null;
 }
 
 export interface BooruSuggestionData {
     readonly suggestions: Array<{
         readonly name: string,
-        readonly count: number
+        readonly count: number;
     }>,
     readonly tags: string,
-    readonly url404: string | null
+    readonly url404: string | null;
 }
