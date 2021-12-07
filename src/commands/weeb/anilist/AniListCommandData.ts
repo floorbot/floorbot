@@ -43,4 +43,4 @@ export const AniListCommandData: ChatInputApplicationCommandData = {
             type: ApplicationCommandOptionTypes.STRING
         }]
     }]
-}
+};
