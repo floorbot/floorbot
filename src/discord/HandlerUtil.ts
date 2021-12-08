@@ -1,4 +1,4 @@
-import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User } from 'discord.js';
+import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User, Util, SplitOptions } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import { HandlerClient } from './HandlerClient.js';
@@ -7,7 +7,27 @@ import twemoji from 'twemoji';
 
 const { Events } = Constants;
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export class HandlerUtil {
+
+    public static shortenMessage(message: string, options: SplitOptions = {}): string {
+        const short = Util.splitMessage(message, { maxLength: 512, char: '', append: '...', ...options })[0];
+        if (!short) throw new Error('[HandlerUtil] Failed to shorten message');
+        return short;
+    }
+
+    public static isNonEmptyArray<T>(array: T[]): array is NonEmptyArray<T> {
+        return array.length > 0;
+    }
+
+    public static resolveArrayPage<T>(array: NonEmptyArray<T>, page: number): T {
+        page = page % array.length;
+        page = page >= 0 ? page : array.length + page;
+        const value = array[page];
+        if (!value) throw new Error('[HandlerUtil] Failed to resolve array page');
+        return value;
+    }
 
     public static isAdminOrOwner(member: GuildMember, interaction?: Interaction): boolean {
         if (member.client instanceof HandlerClient && member.client.ownerIds.includes(member.id)) return true;

@@ -1,7 +1,7 @@
-import { BooruBuilderSuggestionData } from "./BooruBuilderInterfaces";
-import { ActionRowBuilder, ComponentID } from "../ActionRowBuilder";
-import { SelectMenuBuilder } from "../SelectMenuBuilder";
-import { ButtonBuilder } from "../ButtonBuilder";
+import { ActionRowBuilder, ComponentID } from "../../discord/builders/ActionRowBuilder.js";
+import { SelectMenuBuilder } from "../../discord/builders/SelectMenuBuilder.js";
+import { BooruBuilderSuggestionData } from "./BooruBuilderInterfaces.js";
+import { ButtonBuilder } from "../../discord/builders/ButtonBuilder.js";
 import { Constants, Util } from "discord.js";
 
 const { MessageButtonStyles } = Constants;

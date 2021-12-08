@@ -1,9 +1,9 @@
-import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
-import { ActionRowBuilder } from './ActionRowBuilder';
+import { MessageButton, MessageButtonOptions } from 'discord.js';
+import { ActionRowBuilder } from './ActionRowBuilder.js';
 
-export class SelectMenuBuilder<T = string> extends MessageSelectMenu {
+export class ButtonBuilder<T = string> extends MessageButton {
 
-    constructor(data?: MessageSelectMenu | MessageSelectMenuOptions) {
+    constructor(data?: MessageButton | MessageButtonOptions) {
         super(data);
     }
 

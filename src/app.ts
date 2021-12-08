@@ -36,6 +36,7 @@ import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
+import { ReplyBuilder } from './discord/builders/ReplyBuilder.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -128,3 +129,9 @@ client.once('ready', () => {
     NhentaiCodes.setup(client);
 });
 client.login(env.DISCORD_TOKEN);
+
+
+
+const reply = new ReplyBuilder()
+    .addUnexpectedErrorEmbed('test');
+console.log(reply);

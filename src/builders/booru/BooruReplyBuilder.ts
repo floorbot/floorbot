@@ -1,24 +1,31 @@
-import { BooruBuilderAPIData, BooruBuilderImageData, BooruBuilderSuggestionData } from "./BooruBuilderInterfaces";
-import { BooruSuggestionData } from "../../commands/booru/BooruReplies";
-import { BooruActionRowBuilder } from "./BooruActionRowBuilder";
-import { InteractionReplyOptions, Util } from "discord.js";
-import { Context, ReplyBuilder } from "../ReplyBuilder";
-import { BooruEmbedBuilder } from "./BooruEmbedBuilder";
+import { BooruBuilderAPIData, BooruBuilderImageData, BooruBuilderSuggestionData } from "./BooruBuilderInterfaces.js";
+import { BuilderContext } from "../../discord/builders/BuilderInterfaces.js";
+import { BooruSuggestionData } from "../../commands/booru/BooruReplies.js";
+import { ReplyBuilder } from "../../discord/builders/ReplyBuilder.js";
+import { EmbedBuilder } from "../../discord/builders/EmbedBuilder.js";
+import { BooruActionRowBuilder } from "./BooruActionRowBuilder.js";
+import { Util } from "discord.js";
 
 export class BooruReplyBuilder extends ReplyBuilder {
 
-    private readonly apiData: BooruBuilderAPIData;
-    private readonly context: Context;
+    private readonly apiName: string;
+    private readonly apiIcon: string;
 
-    constructor(context: Context, apiData: BooruBuilderAPIData, replyOptions?: InteractionReplyOptions) {
-        super(replyOptions);
-        this.apiData = apiData;
-        this.context = context;
+    constructor(context: BuilderContext, apiData: BooruBuilderAPIData) {
+        super(context);
+        this.apiName = apiData.apiName;
+        this.apiIcon = apiData.apiIcon;
+    }
+
+    protected override createEmbedBuilder(): EmbedBuilder {
+        const embed = super.createEmbedBuilder();
+        embed.setFooter(`Powered by ${this.apiName}`, this.apiIcon);
+        return embed;
     }
 
     public addSuggestionEmbed(data: BooruBuilderSuggestionData): this {
         const suggestionString = data.suggestions.map(tag => `${Util.escapeMarkdown(tag.name)} \`${tag.count} posts\``).join('\n');
-        const embed = new BooruEmbedBuilder(this.context, this.apiData)
+        const embed = this.createEmbedBuilder()
             .setDescription([
                 `No posts found for \`${data.tags}\``,
                 ...(data.suggestions.length ? [
@@ -28,7 +35,7 @@ export class BooruReplyBuilder extends ReplyBuilder {
             ]);
         if (data.url404 && data.suggestions.length) embed.setThumbnail(data.url404);
         if (data.url404 && !data.suggestions.length) embed.setImage(data.url404);
-        return this.addEmbeds(embed);
+        return this.addEmbed(embed);
     }
 
     public addSuggestionActionRow(data: BooruSuggestionData): this {
@@ -39,14 +46,14 @@ export class BooruReplyBuilder extends ReplyBuilder {
 
     public addImageEmbed(data: BooruBuilderImageData): this {
         const escapedTags = data.tags ? Util.escapeMarkdown(data.tags).replace(/\+/g, ' ') : String();
-        const embed = new BooruEmbedBuilder(this.context, this.apiData)
+        const embed = this.createEmbedBuilder()
             .setImage(data.imageURL)
             .setDescription([
                 (data.tags ? `**[${escapedTags}](${data.postURL})** ` : '') + `\`score: ${data.score ?? 0}\``,
                 ...(/\.swf$/.test(data.imageURL) ? [`Sorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
                 ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
             ]);
-        return this.addEmbeds(embed);
+        return this.addEmbed(embed);
     }
 
     public addImageActionRow(data: BooruBuilderImageData): this {

@@ -1,5 +1,5 @@
 import { Constants, MessageActionRow, MessageActionRowOptions } from 'discord.js';
-import { ButtonBuilder } from './ButtonBuilder';
+import { ButtonBuilder } from './ButtonBuilder.js';
 
 const { MessageButtonStyles } = Constants;
 
