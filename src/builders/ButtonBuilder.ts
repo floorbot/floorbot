@@ -1,8 +1,9 @@
-import { MessageSelectMenu, MessageSelectMenuOptions, MessageActionRow } from 'discord.js';
+import { MessageButton, MessageButtonOptions } from 'discord.js';
+import { ActionRowBuilder } from './ActionRowBuilder';
 
-export class SelectMenuBuilder<T = string> extends MessageSelectMenu {
+export class ButtonBuilder<T = string> extends MessageButton {
 
-    constructor(data?: MessageSelectMenu | MessageSelectMenuOptions) {
+    constructor(data?: MessageButton | MessageButtonOptions) {
         super(data);
     }
 
@@ -25,7 +26,7 @@ export class SelectMenuBuilder<T = string> extends MessageSelectMenu {
         return JSON.parse(id);
     }
 
-    public toActionRow(): MessageActionRow {
-        return new MessageActionRow().addComponents(this);
+    public toActionRow(): ActionRowBuilder {
+        return new ActionRowBuilder().addComponents(this);
     }
 }

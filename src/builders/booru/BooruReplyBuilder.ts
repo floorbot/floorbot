@@ -1,33 +1,22 @@
-import { BooruImageData, BooruSuggestionData } from "../interfaces/BooruInterfaces";
-import { EmbedBuilder } from "../../builders/EmbedBuilder";
-import { EmbedFactory } from "../EmbedFactory";
-import { Context } from "../ReplyFactory";
-import { Util } from "discord.js";
+import { BooruBuilderAPIData, BooruBuilderImageData, BooruBuilderSuggestionData } from "./BooruBuilderInterfaces";
+import { InteractionReplyOptions, Util } from "discord.js";
+import { Context, ReplyBuilder } from "../ReplyBuilder";
+import { BooruEmbedBuilder } from "./BooruEmbedBuilder";
 
-export interface BooruEmbedFactoryOptions {
-    readonly apiName: string;
-    readonly apiIcon: string;
-}
+export class BooruReplyBuilder extends ReplyBuilder {
 
-export class BooruEmbedFactory extends EmbedFactory {
+    private readonly apiData: BooruBuilderAPIData;
+    private readonly context: Context;
 
-    public readonly apiName: string;
-    public readonly apiIcon: string;
-
-    constructor(context: Context, options: BooruEmbedFactoryOptions) {
-        super(context);
-        this.apiName = options.apiName;
-        this.apiIcon = options.apiIcon;
+    constructor(context: Context, apiData: BooruBuilderAPIData, replyOptions?: InteractionReplyOptions) {
+        super(replyOptions);
+        this.apiData = apiData;
+        this.context = context;
     }
 
-    public override createEmbedTemplate(): EmbedBuilder {
-        return new EmbedBuilder()
-            .setFooter(`Powered by ${this.apiName}`, this.apiIcon);
-    }
-
-    public createSuggestionEmbed(data: BooruSuggestionData): EmbedBuilder {
+    public addSuggestionEmbed(data: BooruBuilderSuggestionData): this {
         const suggestionString = data.suggestions.map(tag => `${Util.escapeMarkdown(tag.name)} \`${tag.count} posts\``).join('\n');
-        const embed = this.createEmbedTemplate()
+        const embed = new BooruEmbedBuilder(this.context, this.apiData)
             .setDescription([
                 `No posts found for \`${data.tags}\``,
                 ...(data.suggestions.length ? [
@@ -37,17 +26,18 @@ export class BooruEmbedFactory extends EmbedFactory {
             ]);
         if (data.url404 && data.suggestions.length) embed.setThumbnail(data.url404);
         if (data.url404 && !data.suggestions.length) embed.setImage(data.url404);
-        return embed;
+        return this.addEmbeds(embed);
     }
 
-    public createImageEmbed(data: BooruImageData): EmbedBuilder {
+    public addImageEmbed(data: BooruBuilderImageData): this {
         const escapedTags = data.tags ? Util.escapeMarkdown(data.tags).replace(/\+/g, ' ') : String();
-        return this.createEmbedTemplate()
+        const embed = new BooruEmbedBuilder(this.context, this.apiData)
             .setImage(data.imageURL)
             .setDescription([
                 (data.tags ? `**[${escapedTags}](${data.postURL})** ` : '') + `\`score: ${data.score ?? 0}\``,
                 ...(/\.swf$/.test(data.imageURL) ? [`Sorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
                 ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
             ]);
+        return this.addEmbeds(embed);
     }
 }
