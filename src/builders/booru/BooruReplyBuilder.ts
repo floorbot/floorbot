@@ -1,4 +1,6 @@
 import { BooruBuilderAPIData, BooruBuilderImageData, BooruBuilderSuggestionData } from "./BooruBuilderInterfaces";
+import { BooruSuggestionData } from "../../commands/booru/BooruReplies";
+import { BooruActionRowBuilder } from "./BooruActionRowBuilder";
 import { InteractionReplyOptions, Util } from "discord.js";
 import { Context, ReplyBuilder } from "../ReplyBuilder";
 import { BooruEmbedBuilder } from "./BooruEmbedBuilder";
@@ -29,6 +31,12 @@ export class BooruReplyBuilder extends ReplyBuilder {
         return this.addEmbeds(embed);
     }
 
+    public addSuggestionActionRow(data: BooruSuggestionData): this {
+        const actionRow = new BooruActionRowBuilder()
+            .addSuggestionSelectMenu(data);
+        return this.addActionRow(actionRow);
+    }
+
     public addImageEmbed(data: BooruBuilderImageData): this {
         const escapedTags = data.tags ? Util.escapeMarkdown(data.tags).replace(/\+/g, ' ') : String();
         const embed = new BooruEmbedBuilder(this.context, this.apiData)
@@ -39,5 +47,13 @@ export class BooruReplyBuilder extends ReplyBuilder {
                 ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
             ]);
         return this.addEmbeds(embed);
+    }
+
+    public addImageActionRow(data: BooruBuilderImageData): this {
+        const actionRow = new BooruActionRowBuilder()
+            .addViewOnlineButton(data.imageURL)
+            .addRepeatButton()
+            .addRecycleButton();
+        return this.addActionRow(actionRow);
     }
 }
