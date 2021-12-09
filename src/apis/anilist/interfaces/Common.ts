@@ -1,12 +1,14 @@
 import { Character } from './Character.js';
+import { Studio } from './Studio.js';
 import { Staff } from './Staff.js';
 import { Media } from './Media';
 
 export interface AniListResponse {
     data: {
-        Media: Media | null;
-        Staff: Staff | null;
         Character: Character | null;
+        Studio: Studio | null;
+        Staff: Staff | null;
+        Media: Media | null;
         Page: Page | null;
     };
     errors?: AniListError[];
@@ -24,6 +26,7 @@ export interface AniListError {
 export interface Page {
     readonly pageInfo?: PageInfo;
     readonly characters?: Character[];
+    readonly studios?: Studio[];
     readonly media?: Media[];
     readonly staff?: Staff[];
 }

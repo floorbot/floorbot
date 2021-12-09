@@ -31,7 +31,7 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
         const search = command.options.getString('search', true);
         const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
         let res = await this.fetchAniListData(subCommand, vars);
-        const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res);
+        const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res, search);
         if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
         const message = await command.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
@@ -44,7 +44,7 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
             vars.page = vars.page % totalPages;
             vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
             res = await this.fetchAniListData(subCommand, vars);
-            const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res);
+            const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res, search);
             if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
             return await component.editReply(replyOptions);
         }));
@@ -63,6 +63,10 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
             }
             case AniListSubCommand.STAFF: {
                 const query = fs.readFileSync(`${path.resolve()}/res/queries/staff_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+            case AniListSubCommand.STUDIO: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/studios_page.gql`, 'utf8');
                 return this.api.request(query, vars);
             }
         }

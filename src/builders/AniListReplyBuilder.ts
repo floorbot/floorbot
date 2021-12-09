@@ -1,4 +1,4 @@
-import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, Page, PageInfo, Staff } from "../apis/anilist/AniListAPI.js";
+import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, Page, PageInfo, Staff, Studio } from "../apis/anilist/AniListAPI.js";
 import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
@@ -17,20 +17,24 @@ export class AniListReplyBuilder extends ReplyBuilder {
         return embed;
     }
 
-    public addAniListEmbeds(res: AniListResponse): this {
+    public addAniListEmbeds(res: AniListResponse, search?: string): this {
         if (res.errors) {
             res.errors.forEach(error => this.addAniListErrorEmbed(error));
         } else if (res.data) {
-            const { Media, Character, Staff, Page } = res.data;
-            if (Media) { this.addMediaEmbed(Media); }
-            if (Character) { this.addCharacterEmbed(Character); }
-            if (Staff) { this.addStaffEmbed(Staff); }
+            const { Media, Character, Staff, Studio, Page } = res.data;
+            if (Media) this.addMediaEmbed(Media);
+            if (Character) this.addCharacterEmbed(Character);
+            if (Staff) this.addStaffEmbed(Staff);
+            if (Studio) this.addStudioEmbed(Studio);
             if (Page) {
-                const { media, characters, staff, pageInfo } = Page;
-                if (media) { media.forEach(media => this.addMediaEmbed(media, pageInfo)); }
-                if (characters) { characters.forEach(character => this.addCharacterEmbed(character, pageInfo)); }
-                if (staff) { staff.forEach(staff => this.addStaffEmbed(staff, pageInfo)); }
+                const { media, characters, staff, studios, pageInfo } = Page;
+                if (media) media.forEach(media => this.addMediaEmbed(media, pageInfo));
+                if (characters) characters.forEach(character => this.addCharacterEmbed(character, pageInfo));
+                if (staff) staff.forEach(staff => this.addStaffEmbed(staff, pageInfo));
+                if (studios) studios.forEach(studio => this.addStudioEmbed(studio, pageInfo));
+                if (!((media && media.length) || (characters && characters.length) || (staff && staff.length) || (studios && studios.length))) this.addNotFoundEmbed(search);
             }
+            if (!(Media || Character || Staff || Studio || Page)) this.addNotFoundEmbed(search);
         }
         return this;
     }
@@ -43,7 +47,8 @@ export class AniListReplyBuilder extends ReplyBuilder {
         if (staff) { staff.forEach(staff => { if (staff.siteUrl) siteURLs.push(staff.siteUrl); }); }
         const siteURL = siteURLs.length === 1 ? siteURLs[0] : undefined;
         const totalPages = pageInfo ? pageInfo.total || 0 : 0;
-        return this.addPageActionRow(siteURL, undefined, totalPages <= 1);
+        if (totalPages) return this.addPageActionRow(siteURL, undefined, totalPages <= 1);
+        return this;
     }
 
     public addAniListErrorEmbed(error: AniListError): this {
@@ -162,11 +167,24 @@ export class AniListReplyBuilder extends ReplyBuilder {
                 ...(occupations.length ? [`Occupations: **${occupations.join(', ')}**`] : []),
                 ...(staff.homeTown ? [`Home Town: **${staff.homeTown}**`] : []),
                 ...(staff.yearsActive && startYear ? [`Years Active: **${startYear} - ${endYear || 'current'}**`] : []),
-                ...(totalCharacters ? [`Total Media: **${HandlerUtil.formatCommas(totalCharacters)}**`] : []),
-                ...(totalMedia ? [`Total Characters: **${HandlerUtil.formatCommas(totalMedia)}**`] : [])
+                ...(totalCharacters ? [`Total Characters: **${HandlerUtil.formatCommas(totalCharacters)}**`] : []),
+                ...(totalMedia ? [`Total Media: **${HandlerUtil.formatCommas(totalMedia)}**`] : [])
             ]);
         if (staff.siteUrl) embed.setURL(staff.siteUrl);
         if (staff.image) embed.setThumbnail(staff.image.large || staff.image.medium!);
+        return this.addEmbed(embed);
+    }
+
+    public addStudioEmbed(studio: Studio, pageInfo?: PageInfo): this {
+        const totalMedia = studio.media?.pageInfo?.total || 0;
+        const embed = this.createEmbedBuilder(pageInfo)
+            .setTitle(studio.name)
+            .setDescription([
+                `Animation Studio: **${studio.isAnimationStudio ? 'yes' : 'no'}**`,
+                ...(studio.favourites ? [`Favourites: **${HandlerUtil.formatCommas(studio.favourites)}**`] : []),
+                ...(totalMedia ? [`Total Characters: **${HandlerUtil.formatCommas(totalMedia)}**`] : [])
+            ]);
+        if (studio.siteUrl) embed.setURL(studio.siteUrl);
         return this.addEmbed(embed);
     }
 

@@ -1,0 +1,26 @@
+query($page: Int, $id: Int, $search: String) {
+    Page(page: $page, perPage: 1) {
+        pageInfo {
+            currentPage
+            total
+            lastPage
+            hasNextPage
+        }
+        studios(id: $id, search: $search) {
+            id
+            name
+            isAnimationStudio
+            media {
+                pageInfo {
+                    total
+                    perPage
+                    currentPage
+                    lastPage
+                    hasNextPage
+                }
+            }
+            siteUrl
+            favourites
+        }
+    }
+}

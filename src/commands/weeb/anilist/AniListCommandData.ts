@@ -4,6 +4,7 @@ const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
 export enum AniListSubCommand {
     CHARACTER = 'character',
+    STUDIO = 'studio',
     STAFF = 'staff',
     MEDIA = 'media'
 }
@@ -40,6 +41,16 @@ export const AniListCommandData: ChatInputApplicationCommandData = {
             name: 'search',
             required: true,
             description: 'Search for a staff member!',
+            type: ApplicationCommandOptionTypes.STRING
+        }]
+    }, {
+        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        name: AniListSubCommand.STUDIO,
+        description: 'Search for a studio!',
+        options: [{
+            name: 'search',
+            required: true,
+            description: 'Search for a studio!',
             type: ApplicationCommandOptionTypes.STRING
         }]
     }]

@@ -10,7 +10,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
 
     protected context?: BuilderContext;
 
-    public attachments?: AttachmentBuilder[];
+    public files?: AttachmentBuilder[];
     public components?: ActionRowBuilder[];
     public embeds?: EmbedBuilder[];
     public content?: string | null;
@@ -53,8 +53,8 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addAttachments(...attachments: AttachmentBuilder[]): this {
-        if (!this.attachments) this.attachments = [];
-        this.attachments.push(...attachments);
+        if (!this.files) this.files = [];
+        this.files.push(...attachments);
         return this;
     }
 
@@ -99,13 +99,13 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return { embeds: [embed], files: [attachment] };
     }
 
-    public addNotFoundEmbed(query: string, message?: string): this {
+    public addNotFoundEmbed(query?: string, message?: string): this {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-3.png`);
         const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
-                `Sorry! I could not find \`${query}\``,
+                `Sorry! I could not find any results for \`${query || 'your query'}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
         this.addAttachment(attachment);
