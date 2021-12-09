@@ -6,57 +6,57 @@ import { User } from './User';
 export type StaffConnection = Connection<StaffEdge, Staff>;
 
 export interface Staff {
-    readonly id: number,
-    readonly name?: StaffName,
-    readonly languageV2?: string,
-    readonly image?: StaffImage,
-    readonly description?: string,
-    readonly primaryOccupations?: string[],
-    readonly gender?: string,
-    readonly dateOfBirth?: FuzzyDate,
-    readonly dateOfDeath?: FuzzyDate,
-    readonly age?: number,
-    readonly yearsActive?: [number, number | undefined],
-    readonly homeTown?: string,
-    readonly bloodType?: string,
-    readonly isFavourite: boolean,
-    readonly isFavouriteBlocked: boolean,
-    readonly siteUrl?: string,
-    readonly staffMedia?: MediaConnection,
-    readonly characters?: CharacterConnection,
-    readonly characterMedia?: MediaConnection,
-    readonly staff?: Staff,
-    readonly submitter?: User,
-    readonly submissionStatus?: number,
-    readonly submissionNotes?: string,
-    readonly favourites?: number,
-    readonly modNotes: string
+    readonly id: number;
+    readonly name?: StaffName | null;
+    readonly languageV2?: string | null;
+    readonly image?: StaffImage | null;
+    readonly description?: string | null;
+    readonly primaryOccupations?: string[];
+    readonly gender?: string | null;
+    readonly dateOfBirth?: FuzzyDate;
+    readonly dateOfDeath?: FuzzyDate;
+    readonly age?: number | null;
+    readonly yearsActive?: [number, number | undefined];
+    readonly homeTown?: string | null;
+    readonly bloodType?: string | null;
+    readonly isFavourite: boolean;
+    readonly isFavouriteBlocked: boolean;
+    readonly siteUrl?: string | null;
+    readonly staffMedia?: MediaConnection;
+    readonly characters?: CharacterConnection;
+    readonly characterMedia?: MediaConnection;
+    readonly staff?: Staff;
+    readonly submitter?: User;
+    readonly submissionStatus?: number | null;
+    readonly submissionNotes?: string | null;
+    readonly favourites?: number | null;
+    readonly modNotes: string | null;
 }
 
 export interface StaffName {
-    readonly first?: string,
-    readonly middle?: string,
-    readonly last?: string,
-    readonly full?: string,
-    readonly native?: string,
-    readonly alternative?: string[],
-    readonly userPreferred?: string
+    readonly first?: string | null;
+    readonly middle?: string | null;
+    readonly last?: string | null;
+    readonly full?: string | null;
+    readonly native?: string | null;
+    readonly alternative?: string[];
+    readonly userPreferred?: string | null;
 }
 
 export interface StaffEdge {
-    readonly node?: Staff,
-    readonly id?: number,
-    readonly role?: string,
-    readonly favouriteOrder?: number
+    readonly node?: Staff;
+    readonly id?: number | null;
+    readonly role?: string | null;
+    readonly favouriteOrder?: number | null;
 }
 
 export interface StaffImage {
-    readonly large?: string,
-    readonly medium?: string
+    readonly large?: string | null;
+    readonly medium?: string | null;
 }
 
 export interface StaffRoleType {
-    readonly voiceActor?: Staff
-    readonly StaffRoleType?: string,
-    readonly dubGroup?: string
+    readonly voiceActor?: Staff | null;
+    readonly StaffRoleType?: string | null;
+    readonly dubGroup?: string | null;
 }

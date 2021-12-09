@@ -2,8 +2,8 @@ import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/An
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
+import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { AniListReplies } from './AnilistReplies.js';
 import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
@@ -11,12 +11,10 @@ import fs from 'fs';
 
 export class AnilistHandler extends ChatInputHandler {
 
-    private readonly replies: AniListReplies;
     private readonly api: AniListAPI;
 
     constructor(redis: Redis) {
         super({ data: AniListCommandData, group: 'Weeb' });
-        this.replies = new AniListReplies();
         this.api = new AniListAPI({ redis: redis });
     }
 
@@ -26,7 +24,8 @@ export class AnilistHandler extends ChatInputHandler {
         const search = command.options.getString('search', true);
         const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
         let res = await this.fetchAniListData(subCommand, vars);
-        const replyOptions = this.replies.createAniListReply(command, subCommand, res);
+        const replyOptions = new AniListReplyBuilder().addAniListEmbeds(res);
+        if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
         const message = await command.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
@@ -38,7 +37,8 @@ export class AnilistHandler extends ChatInputHandler {
             vars.page = vars.page % totalPages;
             vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
             res = await this.fetchAniListData(subCommand, vars);
-            const replyOptions = this.replies.createAniListReply(command, subCommand, res);
+            const replyOptions = new AniListReplyBuilder().addAniListEmbeds(res);
+            if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
             return await component.editReply(replyOptions);
         }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));

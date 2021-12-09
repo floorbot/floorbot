@@ -23,19 +23,21 @@ export class ActionRowBuilder extends MessageActionRow {
         return this.addComponents(button);
     }
 
-    public addPreviousPageButton(page?: number): this {
+    public addPreviousPageButton(currentPage?: number, disabled?: boolean): this {
         const button = new ButtonBuilder()
             .setCustomId(ComponentID.PREVIOUS_PAGE)
-            .setLabel(page === undefined ? 'Previous' : `Page ${page}`)
+            .setLabel(currentPage === undefined ? 'Previous' : `Page ${currentPage - 1}`)
             .setStyle(MessageButtonStyles.PRIMARY);
+        if (disabled) button.setDisabled(disabled);
         return this.addComponents(button);
     }
 
-    public addNextPageButton(page?: number): this {
+    public addNextPageButton(currentPage?: number, disabled?: boolean): this {
         const button = new ButtonBuilder()
             .setCustomId(ComponentID.NEXT_PAGE)
-            .setLabel(page === undefined ? 'Next' : `Page ${page}`)
+            .setLabel(currentPage === undefined ? 'Next' : `Page ${currentPage + 1}`)
             .setStyle(MessageButtonStyles.PRIMARY);
+        if (disabled) button.setDisabled(disabled);
         return this.addComponents(button);
     }
 

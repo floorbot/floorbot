@@ -1,11 +1,11 @@
-import { Media, MediaVariables } from './interfaces/Media';
-import { Page } from './interfaces/Common';
+import { AniListResponse } from './interfaces/Common';
+import { MediaVariables } from './interfaces/Media';
 import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
 import { Redis } from 'ioredis';
 import fetch from 'node-fetch';
 
-export * from './interfaces/Common.js'
+export * from './interfaces/Common.js';
 
 // THESE ARE COMPLETED TYPES (EXCLUDING QUERY VARS)
 export * from './interfaces/Character.js';
@@ -13,33 +13,17 @@ export * from './interfaces/Studio.js';
 export * from './interfaces/Media.js';
 export * from './interfaces/Staff.js';
 
-
-export interface AniListResponse {
-    data: {
-        Media: Media | null
-        Page: Page | null
-    }
-    errors?: {
-        message: string,
-        status: number,
-        locations: {
-            line: number,
-            column: number
-        }[]
-    }[]
-}
-
 export type QueryVars = MediaVariables & {
     page?: number,
-    perPage?: number
+    perPage?: number;
 };
 
 export interface AniListAPIConstructorOptions {
     readonly redis: Redis,
     readonly rateLimit?: {
         readonly reservoir: number,
-        readonly refresh: number
-    }
+        readonly refresh: number;
+    };
 }
 
 export type AniListAPIRequest = (variables: QueryVars) => Promise<AniListResponse>;
@@ -82,7 +66,7 @@ export class AniListAPI {
                 body: JSON.stringify({ query: query, variables: variables }),
                 headers: { 'Content-Type': 'application/json' },
             }).then(res => res.json());
-        })
+        });
     }
 
     /** Create a request function with predefined gql with caching */
@@ -95,6 +79,6 @@ export class AniListAPI {
             const res = this.request(query, variables);
             cache.set(cacheKey, res);
             return res;
-        }
+        };
     }
 }

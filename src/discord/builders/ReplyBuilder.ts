@@ -76,11 +76,11 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return embed;
     }
 
-    public addPageActionRow(link?: string): this {
+    public addPageActionRow(link?: string, currentPage?: number, disabled?: boolean): this {
         const actionRow = new ActionRowBuilder();
         if (link) actionRow.addViewOnlineButton(link);
-        actionRow.addPreviousPageButton();
-        actionRow.addNextPageButton();
+        actionRow.addPreviousPageButton(currentPage, disabled);
+        actionRow.addNextPageButton(currentPage, disabled);
         return this.addActionRow(actionRow);
     }
 

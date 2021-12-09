@@ -10,81 +10,81 @@ import { ReviewConnection } from './Review';
 export type MediaConnection = Connection<MediaEdge, Media>;
 
 export interface MediaVariables {
-    readonly id?: number,
-    readonly search?: string,
-    readonly type?: MediaType
+    readonly id?: number;
+    readonly search?: string;
+    readonly type?: MediaType;
 }
 
 export interface Media {
-    readonly id: number,
-    readonly idMal?: number,
-    readonly title?: MediaTitle,
-    readonly type?: MediaType,
-    readonly format?: MediaFormat,
-    readonly status?: MediaStatus,
-    readonly description?: string,
-    readonly startDate?: FuzzyDate,
-    readonly endDate?: FuzzyDate,
-    readonly season?: MediaSeason,
-    readonly seasonYear?: number,
-    readonly seasonInt?: number,
-    readonly episodes?: number,
-    readonly duration?: number,
-    readonly chapters?: number,
-    readonly volumes?: number,
-    readonly countryOfOrigin?: string, // ISO 3166-1 alpha-2 country code
-    readonly isLicensed?: boolean,
-    readonly source?: MediaSource,
-    readonly hashtag?: string,
-    readonly trailer?: MediaTrailer,
-    readonly updatedAt?: number,
-    readonly coverImage?: MediaCoverImage,
-    readonly bannerImage?: string,
-    readonly genres?: string[],
-    readonly synonyms?: string[],
-    readonly averageScore?: number,
-    readonly meanScore?: number,
-    readonly popularity?: number,
-    readonly isLocked?: boolean,
-    readonly trending?: number,
-    readonly favourites?: number,
-    readonly tags?: string[],
-    readonly relations?: MediaConnection,
-    readonly characters?: CharacterConnection,
-    readonly staff?: StaffConnection,
-    readonly studios?: StudioConnection,
-    readonly isFavourite: boolean,
-    readonly isAdult?: boolean,
-    readonly nextAiringEpisode?: AiringSchedule,
-    readonly airingSchedule?: AiringScheduleConnection,
-    readonly trends?: MediaTrendConnection,
-    readonly externalLinks?: MediaExternalLink[],
-    readonly streamingEpisodes?: MediaStreamingEpisode[],
-    readonly rankings?: MediaRank[],
-    readonly mediaListEntry?: MediaList
-    readonly reviews?: ReviewConnection,
-    readonly recommendations?: RecommendationConnection
-    readonly stats?: MediaStats,
-    readonly siteUrl?: string,
-    readonly autoCreateForumThread?: boolean,
-    readonly isRecommendationBlocked?: boolean,
-    readonly modNotes?: string
+    readonly id: number;
+    readonly idMal?: number | null;
+    readonly title?: MediaTitle;
+    readonly type?: MediaType;
+    readonly format?: MediaFormat;
+    readonly status?: MediaStatus;
+    readonly description?: string | null;
+    readonly startDate?: FuzzyDate;
+    readonly endDate?: FuzzyDate;
+    readonly season?: MediaSeason;
+    readonly seasonYear?: number | null;
+    readonly seasonInt?: number | null;
+    readonly episodes?: number | null;
+    readonly duration?: number | null;
+    readonly chapters?: number | null;
+    readonly volumes?: number | null;
+    readonly countryOfOrigin?: string | null; // ISO 3166-1 alpha-2 country code
+    readonly isLicensed?: boolean | null;
+    readonly source?: MediaSource;
+    readonly hashtag?: string | null;
+    readonly trailer?: MediaTrailer;
+    readonly updatedAt?: number | null;
+    readonly coverImage?: MediaCoverImage;
+    readonly bannerImage?: string | null;
+    readonly genres?: string[];
+    readonly synonyms?: string[];
+    readonly averageScore?: number | null;
+    readonly meanScore?: number | null;
+    readonly popularity?: number | null;
+    readonly isLocked?: boolean;
+    readonly trending?: number | null;
+    readonly favourites?: number | null;
+    readonly tags?: string[];
+    readonly relations?: MediaConnection;
+    readonly characters?: CharacterConnection;
+    readonly staff?: StaffConnection;
+    readonly studios?: StudioConnection;
+    readonly isFavourite: boolean | null;
+    readonly isAdult?: boolean | null;
+    readonly nextAiringEpisode?: AiringSchedule;
+    readonly airingSchedule?: AiringScheduleConnection;
+    readonly trends?: MediaTrendConnection;
+    readonly externalLinks?: MediaExternalLink[];
+    readonly streamingEpisodes?: MediaStreamingEpisode[];
+    readonly rankings?: MediaRank[];
+    readonly mediaListEntry?: MediaList;
+    readonly reviews?: ReviewConnection;
+    readonly recommendations?: RecommendationConnection;
+    readonly stats?: MediaStats;
+    readonly siteUrl?: string | null;
+    readonly autoCreateForumThread?: boolean | null;
+    readonly isRecommendationBlocked?: boolean | null;
+    readonly modNotes?: string | null;
 }
 
 export interface MediaEdge {
-    readonly node?: Media,
-    readonly id?: number,
-    readonly relationType?: MediaRelation,
-    readonly isMainStudio?: boolean,
-    readonly characters?: Character[],
-    readonly characterRole?: CharacterRole,
-    readonly characterNme?: string,
-    readonly roleNotes?: string,
-    readonly dubGroup?: string,
-    readonly staffRole?: string,
-    readonly voiceActors?: Staff[]
-    readonly voiceActorRoles?: StaffRoleType[]
-    readonly favouriteOrder?: number
+    readonly node?: Media;
+    readonly id?: number;
+    readonly relationType?: MediaRelation;
+    readonly isMainStudio?: boolean | null;
+    readonly characters?: Character[];
+    readonly characterRole?: CharacterRole;
+    readonly characterNme?: string | null;
+    readonly roleNotes?: string | null;
+    readonly dubGroup?: string | null;
+    readonly staffRole?: string | null;
+    readonly voiceActors?: Staff[];
+    readonly voiceActorRoles?: StaffRoleType[];
+    readonly favouriteOrder?: number | null;
 }
 
 export enum MediaRelation {
@@ -104,10 +104,10 @@ export enum MediaRelation {
 }
 
 export interface MediaTitle {
-    readonly romaji?: string
-    readonly english?: string
-    readonly native?: string,
-    readonly userPreferred?: string
+    readonly romaji?: string | null;
+    readonly english?: string | null;
+    readonly native?: string | null;
+    readonly userPreferred?: string | null;
 }
 
 export enum MediaType {
@@ -156,40 +156,40 @@ export enum MediaSource {
 }
 
 export interface MediaTrailer {
-    readonly id?: string,
-    readonly site?: 'youtube' | 'dailymotion',
-    readonly thumbnail?: string
+    readonly id?: string | null;
+    readonly site?: 'youtube' | 'dailymotion' | null;
+    readonly thumbnail?: string | null;
 }
 
 export interface MediaCoverImage {
-    readonly extraLarge?: string,
-    readonly large?: string,
-    readonly medium?: string,
-    readonly color?: string,
+    readonly extraLarge?: string | null;
+    readonly large?: string | null;
+    readonly medium?: string | null;
+    readonly color?: string | null;
 }
 
 export interface MediaExternalLink {
-    readonly id: number
-    readonly url: string
-    readonly site: string
+    readonly id: number;
+    readonly url: string;
+    readonly site: string;
 }
 
 export interface MediaStreamingEpisode {
-    readonly title?: string
-    readonly thumbnail?: string
-    readonly url?: string
-    readonly site?: string
+    readonly title?: string | null;
+    readonly thumbnail?: string | null;
+    readonly url?: string | null;
+    readonly site?: string | null;
 }
 
 export interface MediaRank {
-    readonly id: number,
-    readonly rank: number,
-    readonly type: MediaRankType,
-    readonly format: MediaFormat,
-    readonly year?: number,
-    readonly season?: MediaSeason,
-    readonly allTime?: boolean,
-    readonly context?: string
+    readonly id: number;
+    readonly rank: number;
+    readonly type: MediaRankType;
+    readonly format: MediaFormat;
+    readonly year?: number | null;
+    readonly season?: MediaSeason;
+    readonly allTime?: boolean | null;
+    readonly context?: string | null;
 }
 
 export enum MediaRankType {
@@ -198,18 +198,18 @@ export enum MediaRankType {
 }
 
 export interface MediaStats {
-    readonly scoreDistribution?: ScoreDistribution[],
-    readonly statusDistribution?: StatusDistribution[]
+    readonly scoreDistribution?: ScoreDistribution[];
+    readonly statusDistribution?: StatusDistribution[];
 }
 
 export interface ScoreDistribution {
-    readonly score?: number,
-    readonly amount?: number
+    readonly score?: number | null;
+    readonly amount?: number | null;
 }
 
 export interface StatusDistribution {
-    readonly status?: MediaListStatus,
-    readonly amount?: number
+    readonly status?: MediaListStatus;
+    readonly amount?: number | null;
 }
 
 export enum MediaListStatus {
@@ -218,5 +218,5 @@ export enum MediaListStatus {
     COMPLETED = 'COMPLETED',
     DROPPED = 'DROPPED',
     PAUSED = 'PAUSED',
-    REPEATING = 'REPEATING',
+    REPEATING = 'REPEATING'
 }
