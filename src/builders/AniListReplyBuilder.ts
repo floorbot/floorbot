@@ -62,7 +62,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
                 `Locations: *${error.locations.length}*`,
                 `Message: *${error.message}*`
             ]);
-        this.addAttachment(attachment);
+        this.addFile(attachment);
         this.addEmbed(embed);
         return this;
     }

@@ -48,11 +48,11 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
-    public addAttachment(attachment: AttachmentBuilder): this {
-        return this.addAttachments(attachment);
+    public addFile(attachment: AttachmentBuilder): this {
+        return this.addFile(attachment);
     }
 
-    public addAttachments(...attachments: AttachmentBuilder[]): this {
+    public addFiles(...attachments: AttachmentBuilder[]): this {
         if (!this.files) this.files = [];
         this.files.push(...attachments);
         return this;
@@ -108,7 +108,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 `Sorry! I could not find any results for \`${query || 'your query'}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
-        this.addAttachment(attachment);
+        this.addFiles(attachment);
         this.addEmbed(embed);
         return this;
     }
