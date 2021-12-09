@@ -1,9 +1,9 @@
 import { AniListResponse, Character, FuzzyDate, Media, MediaRankType, PageInfo, Staff } from '../../../apis/anilist/AniListAPI.js';
 import { Interaction, InteractionReplyOptions, Message, MessageActionRow, Util } from 'discord.js';
-import { HandlerButton } from '../../../discord/components/HandlerButton.js';
-import { HandlerEmbed } from '../../../discord/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
+import { HandlerEmbed } from '../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { AniListSubCommand } from './AniListCommandData.js';
 import { DateTime } from 'luxon';
 

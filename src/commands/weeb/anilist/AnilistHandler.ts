@@ -1,8 +1,8 @@
 import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/AniListAPI.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
-import { HandlerButtonID } from '../../../discord/components/HandlerButton.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { AniListReplies } from './AnilistReplies.js';
 import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';

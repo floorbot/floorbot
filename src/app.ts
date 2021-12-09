@@ -15,7 +15,6 @@ import Redis from 'ioredis';
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
 import { NhentaiCodes } from './automations/NhentaiCodes.js';
-import { ClientLogger } from './automations/ClientLogger.js';
 import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
@@ -29,8 +28,6 @@ import { AnilistHandler } from './commands/weeb/anilist/AnilistHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
-import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
