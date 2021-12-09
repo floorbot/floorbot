@@ -16,7 +16,7 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
 
     constructor(redis: Redis) {
         super({ data: AniListCommandData, group: 'Weeb' });
-        this.api = new AniListAPI({ redis: redis });
+        this.api = new AniListAPI({ redis });
     }
 
     public async autocomplete(_autocomplete: AutocompleteInteraction<CacheType>): Promise<any> {

@@ -54,6 +54,7 @@ export class TraceMoeReplies extends HandlerReplies {
             HandlerButton.createViewOnlineButton(`https://anilist.co/anime/${anilistID}`),
             HandlerButton.createPreviousPageButton(),
             HandlerButton.createNextPageButton(),
+            new HandlerButton().setStyle('SECONDARY').setCustomId('anilist').setLabel('AniList')
         ]);
 
         return { embeds: [embed], components: [actionRow], attachments: [], files: [attachment] };
