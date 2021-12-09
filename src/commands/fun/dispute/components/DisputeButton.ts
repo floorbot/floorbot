@@ -1,4 +1,4 @@
-import { HandlerButton, HandlerButtonID } from '../../../../discord/components/HandlerButton.js';
+import { HandlerButton, HandlerButtonID } from '../../../../discord/helpers/components/HandlerButton.js';
 import { Constants, MessageButton, MessageButtonOptions } from 'discord.js';
 
 const { MessageButtonStyles } = Constants;

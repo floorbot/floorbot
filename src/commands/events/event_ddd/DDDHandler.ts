@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { DDDButtonID, DDDReplies } from './replies/DDDReplies.js';
-import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';
@@ -20,7 +20,7 @@ export class DDDHandler extends ChatInputHandler {
     private readonly replies: DDDReplies;
 
     constructor(db: HandlerDB) {
-        super({ data: DDDCommandData, group: 'Event', global: false, nsfw: false });
+        super({ data: DDDCommandData, group: 'Events', global: false, nsfw: false });
         this.replies = new DDDReplies({ eventName: 'Destroy Dick December', eventAcronym: 'DDD' });
         this.database = new DDDDatabase(db);
     }
@@ -92,7 +92,8 @@ export class DDDHandler extends ChatInputHandler {
         switch (subCommand) {
             case 'leaderboard': {
                 await command.deferReply();
-                const allParticipantRows = await this.database.fetchAllParticipants(eventDetails.year);
+                const partialSettingsRow = { guild_id: guild.id, year: eventDetails.year };
+                const allParticipantRows = await this.database.fetchAllParticipants(partialSettingsRow);
                 const allParticipantStats = [];
                 for (const participantRow of allParticipantRows) {
                     const allNutRows = await this.database.fetchAllNuts(participantRow);

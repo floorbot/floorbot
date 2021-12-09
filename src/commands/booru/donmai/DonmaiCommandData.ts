@@ -15,6 +15,6 @@ export const DonmaiCommandData = {
                 required: false,
                 name: 'tags'
             }]
-        }
+        };
     }
-}
+};

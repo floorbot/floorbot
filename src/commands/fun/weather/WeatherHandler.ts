@@ -1,14 +1,14 @@
 import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
 import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
 import { WeatherButton, WeatherButtonID } from './components/WeatherButton.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
 import { WeatherDatabase, WeatherLinkRow } from './db/WeatherDatabase.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 import { WeatherEmbed } from './components/WeatherEmbed.js';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;

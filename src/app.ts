@@ -1,4 +1,8 @@
-import { HandlerClient } from './discord/handler/HandlerClient.js';
+import consolePrettifier from './lib/ConsolePrettifier.js';
+console.error = consolePrettifier(console.error);
+console.log = consolePrettifier(console.log);
+
+import { HandlerClient } from './discord/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
 import BetterSqlit3 from 'better-sqlite3';
 import RedisMock from 'ioredis-mock';
@@ -10,6 +14,9 @@ import Redis from 'ioredis';
 // Internal tasks
 import { PresenceController } from './automations/PresenceController.js';
 import { MessageReaction } from './automations/MessageReaction.js';
+import { NhentaiCodes } from './automations/NhentaiCodes.js';
+import { ClientLogger } from './automations/ClientLogger.js';
+import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
 import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
@@ -19,19 +26,20 @@ import { MagickMessageHandler } from './commands/fun/magick/magick_message/Magic
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
 import { AnilistHandler } from './commands/weeb/anilist/AnilistHandler.js';
+import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
+import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
+import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
-import { UtilsHandler } from './commands/global/utils/UtilsHandler.js';
-import { AdminHandler } from './commands/global/admin/AdminHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
+import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
-import { LostHandler } from './commands/temp/lost/LostHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
-import { ClientLogger } from './automations/ClientLogger.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -53,8 +61,9 @@ const env = envalid.cleanEnv(process.env, {
 
     E621_USERNAME: str({ default: '', desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
     E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
-    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' })
+    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' }),
 
+    IMAGE_MAGICK_PATH: str({ default: '', desc: 'Path to ImageMagick cli' })
 });
 
 const poolConfig: PoolConfig = {
@@ -75,11 +84,9 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
+        new FloorbotHandler(),
         new AnilistHandler(redis),
-        new AdminHandler(),
-        new UtilsHandler(),
         new LostHandler(),
-        new DefineHandler(redis),
         new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),
         new FlipMessageHandler(),
@@ -88,35 +95,41 @@ const client = new HandlerClient({
         new MarkovHandler(database),
         new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
-        new MagickChatInputHandler(),
+        new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeHandler(database),
+        new TraceMoeHandler(redis),
 
-        // These are good... probably...
-        new Rule34Handler(redis)
+        new DefineHandler(),
+        new Rule34Handler()
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {
-            const details = { subDomain: 'danbooru', nsfw: true };
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new DonmaiHandler(details, redis, auth);
+            const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
+            return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const details = { subDomain: 'safebooru', nsfw: false };
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY }
+            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
             const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            return new DonmaiHandler(details, redis, auth);
+            const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
+            return new DonmaiHandler(options);
         },
         (_client: HandlerClient) => {
-            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env] invalid or missing e621 credentials!');
-            return new E621Handler(redis, envAuth);
+            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
+            if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
+            return new E621Handler(envAuth);
         }
     ]
 });
 
-ClientLogger.setup(client);
-client.once('ready', () => { PresenceController.setup(client); })
+client.once('ready', () => {
+    PresenceController.setup(client);
+    MessageReaction.setup(client);
+    BotUpdater.update(client);
+    NhentaiCodes.setup(client);
+});
 client.login(env.DISCORD_TOKEN);
-MessageReaction(client);

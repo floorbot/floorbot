@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, MessageEmbedOptions, Interaction, InteractionReplyOptions, GuildMember, Util } from 'discord.js';
-import { HandlerAttachment } from '../../../../discord/components/HandlerAttachment.js';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
+import { HandlerAttachment } from '../../../../discord/helpers/components/HandlerAttachment.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
 import { DisputeResults } from '../DisputeDatabase.js'
 import { readFileSync } from 'fs';
 // import humanizeDuration from 'humanize-duration';

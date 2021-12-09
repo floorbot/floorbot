@@ -1,11 +1,10 @@
 import { CommandInteraction, Constants, Interaction, InteractionReplyOptions, Message, MessageActionRow } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../../discord/components/HandlerButton.js';
+import { HandlerButton, HandlerButtonID } from '../../../../discord/helpers/components/HandlerButton.js';
+import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
 import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from '../DDDUtil.js';
 import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from '../db/DDDDatabase.js';
-import { HandlerEmbed } from '../../../../discord/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../../helpers/HandlerReplies.js';
-import { DateTime } from 'luxon';
+import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
 
 const { MessageButtonStyles } = Constants;
 
@@ -54,13 +53,15 @@ export class DDDReplies extends HandlerReplies {
     public createParticipantFailedReply(settings: DDDSettingsRow, participantStats: DDDParticipantStats): InteractionReplyOptions {
         const { day, eventDetails, participantRow, nutMonth, dayFailed, allNutRows } = participantStats;
         const eventID = this.getEventID(eventDetails);
+        //Help arc, I don't have anywhere to use "day" anymore and I can't remove it from above but it wont let me not use it or I get an error.
+        day.toString();
         return this.createEmbedTemplate(undefined, eventDetails)
             .setDescription([
                 `<@${participantRow.user_id}> has failed ${eventID}!`,
-                `Here are their stats for day ${day}`,
+                `Here are their stats for day ${dayFailed}`,
                 '',
-                `Total Nuts: **${allNutRows.length}/${(day) * (day + 1) / 2}**`,
-                `Daily Nuts: **${nutMonth[day - 1]!.length}/${day}**`,
+                `Total Nuts: **${allNutRows.length}**`,
+                `Daily Nuts: **${nutMonth[dayFailed - 1]!.length}/${dayFailed}**`,
                 `Failed: **${dayFailed ? `Day ${dayFailed}` : '*Not Yet!*'} **`,
             ])
             .toReplyOptions({ content: settings.event_role_id ? `<@&${settings.event_role_id}>` : 'Hey Everyone!' });
@@ -82,13 +83,62 @@ export class DDDReplies extends HandlerReplies {
     }
 
     public createLeaderboardReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, allParticipantStats: DDDParticipantStats[]): InteractionReplyOptions {
-        allParticipantStats = allParticipantStats.sort((one, two) => one.zoneDetails.now.toMillis() - two.zoneDetails.now.toMillis());
+        allParticipantStats = allParticipantStats.sort(function(one, two) {
+            let sortNum = 0
+            const oneRequiredNuts = one.day;
+            const oneNuts = one.nutMonth[one.day - 1]!.length;
+            const oneCompleted = oneNuts / oneRequiredNuts;
+            const twoRequiredNuts = two.day;
+            const twoNuts = two.nutMonth[two.day - 1]!.length;
+            const twoCompleted = twoNuts / twoRequiredNuts;
+            if (two.participantRow.failed == 0 && one.participantRow.failed > 0) {
+                sortNum += 100000;
+            }
+            if (two.participantRow.failed > 0 && one.participantRow.failed == 0) {
+                sortNum += -100000;
+            }
+            if (two.participantRow.failed > one.participantRow.failed) {
+                sortNum += 10000;
+            }
+            if (one.participantRow.failed > two.participantRow.failed) {
+                sortNum += -10000;
+            }
+            if (twoCompleted >= 1 && oneCompleted < 1) {
+                sortNum += 1000;
+            }
+            if (twoCompleted < 1 && oneCompleted >= 1) {
+                sortNum += -1000;
+            }
+            if (twoNuts > oneNuts) {
+              sortNum += 100
+            }
+            if (oneNuts > twoNuts) {
+              sortNum += -100
+            }
+            if (two.allNutRows.length > one.allNutRows.length) {
+              sortNum += 10
+            }
+            if (one.allNutRows.length > two.allNutRows.length) {
+              sortNum += -10
+            }
+            return sortNum;
+        });
         const stringRows = allParticipantStats.map(participantStats => {
-            const day = participantStats.day;
+            let day = participantStats.day;
             const userID = participantStats.participantRow.user_id;
+            let dailyNuts = participantStats.nutMonth[day - 1]!.length;
             const nuts = participantStats.allNutRows.length;
-            const requiredNuts = (day) * (day + 1) / 2;
-            return `Day: \`${day}\` Nuts: \`${nuts}/${requiredNuts}\` <@${userID}>`
+            const failed = participantStats.participantRow.failed;
+            let statusEmoji = '🟢'
+            if (dailyNuts / day < 1) {
+                statusEmoji = '🟡'
+            }
+            if (failed) {
+                statusEmoji = '🔴'
+                day = failed;
+                dailyNuts = participantStats.nutMonth[day - 1]!.length;
+            }
+            return `${statusEmoji} Day: \`${day}\` Nuts: \`${dailyNuts}/${day}\` (\`${nuts}\` Total) <@${userID}>`
         });
         return this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Leaderboard for ${command.guild.name}`)
@@ -103,10 +153,6 @@ export class DDDReplies extends HandlerReplies {
     }
 
     public createSettingsReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, settings: DDDSettingsRow, participants: DDDParticipantRow[]): InteractionReplyOptions {
-        const now = DateTime.now();
-        const year = now.month <= 12 ? now.year : now.year + 1;
-        const starts = DateTime.fromObject({ year: year, month: 12, day: 1, hour: 0 });
-        const stops = DateTime.fromObject({ year: year, month: 12, day: 31, hour: 24 });
         const eventID = this.getEventID(eventDetails);
         const embed = this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Settings for ${command.guild.name}`)
@@ -118,8 +164,8 @@ export class DDDReplies extends HandlerReplies {
                 `**Participants:** ${HandlerUtil.formatCommas(participants.length)}`,
                 '',
                 `**Time until ${eventID}:**`,
-                `**Starts:** <t:${Math.round(starts.toSeconds())}:R>`,
-                `**Stops:** <t:${Math.round(stops.toSeconds())}:R>`,
+                `**Starts:** (${eventDetails.startDate.zone.name}) <t:${Math.round(eventDetails.startDate.toSeconds())}:R>`,
+                `**Stops:** (${eventDetails.stopDate.zone.name}) <t:${Math.round(eventDetails.stopDate.toSeconds())}:R>`,
                 '',
                 '__Please Note__:',
                 ' - *The event role can be customised (e.g. rename, hoist, colour)*',

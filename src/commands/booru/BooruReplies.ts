@@ -1,14 +1,14 @@
 import { Constants, Interaction, InteractionReplyOptions, Message, MessageActionRow, Util } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../discord/components/HandlerButton.js';
-import { HandlerSelectMenuID } from '../../discord/components/HandlerSelectMenu.js';
-import { HandlerEmbed } from '../../discord/components/HandlerEmbed.js';
-import { HandlerReplies } from '../../helpers/HandlerReplies.js';
+import { HandlerButton, HandlerButtonID } from '../../discord/helpers/components/HandlerButton.js';
+import { HandlerSelectMenuID } from '../../discord/helpers/components/HandlerSelectMenu.js';
+import { HandlerEmbed } from '../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerReplies } from '../../discord/helpers/HandlerReplies.js';
 
 const { MessageButtonStyles } = Constants;
 
 export interface BooruReplyConstructorOptions {
-    readonly apiName: string,
-    readonly apiIcon: string
+    readonly apiName: string;
+    readonly apiIcon: string;
 }
 
 export class BooruReplies extends HandlerReplies {
@@ -62,12 +62,12 @@ export class BooruReplies extends HandlerReplies {
             .setImage(data.imageURL)
             .setDescription([
                 (data.tags ? `**[${escapedTags}](${data.postURL})** ` : '') + `\`score: ${data.score ?? 0}\``,
-                ...(/\.swf$/.test(data.imageURL) ? [`\n\nSorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
-                ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`\n\nSorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
+                ...(/\.swf$/.test(data.imageURL) ? [`Sorry! This is a flash file 🙃\n*click the [link](${data.postURL}) to view in browser*`] : []),
+                ...(/(\.webm)|(\.mp4)/.test(data.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${data.postURL}) to view in browser*`] : [])
             ]);
 
         // View Online Button
-        const viewOnlineButton = HandlerButton.createViewOnlineButton(data.postURL)
+        const viewOnlineButton = HandlerButton.createViewOnlineButton(data.postURL);
 
         // Recycle Button
         const recycleButton = this.createButtonTemplate()
@@ -90,7 +90,7 @@ export class BooruReplies extends HandlerReplies {
                     recycleButton
                 ])
             ]
-        }
+        };
     }
 }
 
@@ -99,26 +99,26 @@ export const BooruButtonID = {
         REPEAT: 'repeat',
         RECYCLE: 'recycle'
     }
-}
+};
 
 export const BooruSelectMenuID = {
     ...HandlerSelectMenuID, ...{
         SUGGESTIONS: 'suggestions'
     }
-}
+};
 
 export interface BooruImageData {
     tags: string | null,
     imageURL: string,
     postURL: string,
-    score: number | null
+    score: number | null;
 }
 
 export interface BooruSuggestionData {
     readonly suggestions: Array<{
         readonly name: string,
-        readonly count: number
+        readonly count: number;
     }>,
     readonly tags: string,
-    readonly url404: string | null
+    readonly url404: string | null;
 }

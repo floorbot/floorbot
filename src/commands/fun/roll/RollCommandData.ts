@@ -4,7 +4,7 @@ const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
 export const RollCommandData: ChatInputApplicationCommandData = {
     name: 'roll',
-    description: 'Roll dice (up to 25 types)',
+    description: 'Roll some dice',
     type: ApplicationCommandTypes.CHAT_INPUT,
     options: [{
         type: ApplicationCommandOptionTypes.STRING,

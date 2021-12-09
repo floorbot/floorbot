@@ -1,4 +1,4 @@
-import { ChatInputHandler } from '../../../../discord/handler/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { OwoifyChatInputCommandData } from './OwoifyChatInputCommandData.js';
 import { CommandInteraction, Util } from 'discord.js';
 import owoify from 'owoify-js';

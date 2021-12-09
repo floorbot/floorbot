@@ -1,10 +1,10 @@
 import { CommandInteraction, Message, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handler/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { MarkovButton, MarkovButtonType } from './components/MarkovButton.js';
-import { HandlerClient } from '../../../discord/handler/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/handler/HandlerUtil.js';
-import { HandlerReplies } from '../../../helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';

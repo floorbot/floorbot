@@ -1,4 +1,4 @@
-import { HandlerDatabase, HandlerDB } from '../../../../helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../../discord/helpers/HandlerDatabase.js';
 import WeatherLinkRow from './interfaces/WeatherLinkRow.js';
 import { Guild, GuildMember, User } from 'discord.js';
 import { GeocodeData } from '../api/OpenWeatherAPI.js';

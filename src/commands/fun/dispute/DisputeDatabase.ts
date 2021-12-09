@@ -1,4 +1,4 @@
-import { HandlerDatabase, HandlerDB } from '../../../helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
 import { Message, Interaction, User } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
