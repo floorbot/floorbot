@@ -21,9 +21,14 @@ export class HandlerUtil {
         return array.length > 0;
     }
 
+    public static resolvePage(page: number, pages: number): number {
+        page = page % pages;
+        page = page >= 0 ? page : pages + page;
+        return page;
+    }
+
     public static resolveArrayPage<T>(array: NonEmptyArray<T>, page: number): T {
-        page = page % array.length;
-        page = page >= 0 ? page : array.length + page;
+        page = HandlerUtil.resolvePage(page, array.length);
         const value = array[page];
         if (!value) throw new Error('[HandlerUtil] Failed to resolve array page');
         return value;

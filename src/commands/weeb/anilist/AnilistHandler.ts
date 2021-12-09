@@ -1,15 +1,16 @@
 import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/AniListAPI.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
+import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
+import { AutocompleteInteraction, CacheType, CommandInteraction } from 'discord.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
 import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
 
-export class AnilistHandler extends ChatInputHandler {
+export class AnilistHandler extends ChatInputHandler implements Autocomplete {
 
     private readonly api: AniListAPI;
 
@@ -18,13 +19,19 @@ export class AnilistHandler extends ChatInputHandler {
         this.api = new AniListAPI({ redis: redis });
     }
 
+    public async autocomplete(_autocomplete: AutocompleteInteraction<CacheType>): Promise<any> {
+        console.log('[anilist] autocomplete needs to be implemented...');
+        // Probably just show a list and return the ID
+        return;
+    }
+
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
         await command.deferReply();
         const subCommand = command.options.getSubcommand(true) as AniListSubCommand;
         const search = command.options.getString('search', true);
         const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
         let res = await this.fetchAniListData(subCommand, vars);
-        const replyOptions = new AniListReplyBuilder().addAniListEmbeds(res);
+        const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res);
         if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
         const message = await command.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
@@ -37,7 +44,7 @@ export class AnilistHandler extends ChatInputHandler {
             vars.page = vars.page % totalPages;
             vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
             res = await this.fetchAniListData(subCommand, vars);
-            const replyOptions = new AniListReplyBuilder().addAniListEmbeds(res);
+            const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res);
             if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
             return await component.editReply(replyOptions);
         }));
