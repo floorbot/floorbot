@@ -69,6 +69,8 @@ export class AniListReplyBuilder extends ReplyBuilder {
         const nextAiring = media.nextAiringEpisode;
         const mainStudioEdge = media.studios && media.studios.edges ? media.studios.edges.find(edge => edge.isMain) : null;
         const mainStudio = mainStudioEdge ? mainStudioEdge.node ?? null : null;
+        const startDate = media.startDate ? AniListReplyBuilder.getFuzzyDateString(media.startDate) : null;
+        const endDate = media.endDate ? AniListReplyBuilder.getFuzzyDateString(media.endDate) : null;
         if (media.title) {
             const title = media.title.romaji || media.title.english || media.title.native;
             if (title) embed.setTitle(`${title} ${(media.isAdult ?? false) ? '(18+)' : ''}`);
@@ -100,8 +102,8 @@ export class AniListReplyBuilder extends ReplyBuilder {
             ...(media.episodes ? [`Episodes: ** ${nextAiring ? nextAiring.episode - 1 : media.episodes} /${media.episodes}**`] : []),
             ...(media.chapters ? [`Chapters: **${media.chapters}**`] : []),
             ...(media.volumes ? [`Volumes: **${media.volumes}**`] : []),
-            `Started: **${media.startDate ? AniListReplyBuilder.getFuzzyDateString(media.startDate) : 'unknown'}**`,
-            `Ended: **${media.endDate ? AniListReplyBuilder.getFuzzyDateString(media.endDate) : 'unknown'}**`,
+            `Started: **${startDate ? startDate : 'unknown'}**`,
+            `Ended: **${endDate ? endDate : 'unknown'}**`,
             ...(media.season ? media.seasonYear ?
                 [`Season: **[${HandlerUtil.capitalizeString(media.season)}](https://anilist.co/search/anime?year=${media.seasonYear}%25&season=${media.season})**`] :
                 [`Season: **${HandlerUtil.capitalizeString(media.season)}**`] : [])
@@ -129,8 +131,8 @@ export class AniListReplyBuilder extends ReplyBuilder {
             .setDescription([
                 `Names: **${Object.values(character.name || {}).filter(name => name).join(', ') || `*unknown*`}**`,
                 ...(character.favourites ? [`Favourites: **${HandlerUtil.formatCommas(character.favourites)}**`] : []),
-                ...(character.gender ? [`Gender: **${character.gender}**`] : []),
                 ...(character.age ? [`Age: **${character.age.split('-').filter(part => part).join('-')}**`] : []),
+                ...(character.gender ? [`Gender: **${character.gender}**`] : []),
                 ...(dateOfBirth ? [`Birthday: **${character.bloodType}**`] : []),
                 ...(character.bloodType ? [`Blood Type: **${character.bloodType}**`] : [])
             ]);
@@ -145,18 +147,19 @@ export class AniListReplyBuilder extends ReplyBuilder {
         const [startYear, endYear] = staff.yearsActive || [];
         const totalMedia = staff.staffMedia?.pageInfo?.total || 0;
         const totalCharacters = staff.characters?.pageInfo?.total || 0;
+        const occupations = staff.primaryOccupations || [];
         const embed = this.createEmbedBuilder(pageInfo)
             .setTitle(staff.name ? (staff.name.full || Object.values(staff.name)[0] || 'Unknown name') : 'Unknown name')
             .setDescription([
                 `Names: **${Object.values(staff.name || {}).filter(name => name).join(', ') || `*unknown*`}**`,
                 ...(staff.favourites ? [`Favourites: **${HandlerUtil.formatCommas(staff.favourites)}**`] : []),
                 ...(staff.age ? [`Age: **${staff.age}**`] : []),
-                ...(staff.gender ? [`Age: **${staff.gender}**`] : []),
+                ...(staff.gender ? [`Gender: **${staff.gender}**`] : []),
                 ...(staff.dateOfBirth && dateOfBirth ? [`Born: **${dateOfBirth}**`] : []),
                 ...(staff.dateOfDeath && dateOfDeath ? [`Died: **${dateOfDeath}**`] : []),
                 ...(staff.bloodType ? [`Blood Type: **${staff.bloodType}**`] : []),
                 ...(staff.languageV2 ? [`Language: **${staff.languageV2}**`] : []),
-                ...(staff.primaryOccupations ? [`Occupation: **${staff.primaryOccupations}**`] : []),
+                ...(occupations.length ? [`Occupations: **${occupations.join(', ')}**`] : []),
                 ...(staff.homeTown ? [`Home Town: **${staff.homeTown}**`] : []),
                 ...(staff.yearsActive && startYear ? [`Years Active: **${startYear} - ${endYear || 'current'}**`] : []),
                 ...(totalCharacters ? [`Total Media: **${HandlerUtil.formatCommas(totalCharacters)}**`] : []),
