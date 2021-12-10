@@ -1,42 +1,29 @@
+import { Page, PageInfo } from './Page.js';
 import { Character } from './Character.js';
 import { Studio } from './Studio.js';
 import { Staff } from './Staff.js';
+import { User } from './User.js';
 import { Media } from './Media';
 
 export interface AniListResponse {
-    data: {
-        Character: Character | null;
-        Studio: Studio | null;
-        Staff: Staff | null;
-        Media: Media | null;
-        Page: Page | null;
+    readonly data: {
+        readonly Character: Character | null;
+        readonly Studio: Studio | null;
+        readonly Staff: Staff | null;
+        readonly Media: Media | null;
+        readonly User: User | null;
+        readonly Page: Page | null;
     };
-    errors?: AniListError[];
+    readonly errors?: AniListError[];
 }
 
 export interface AniListError {
-    message: string,
-    status: number,
-    locations: {
-        line: number,
-        column: number;
+    readonly message: string,
+    readonly status: number,
+    readonly locations: {
+        readonly line: number,
+        readonly column: number;
     }[];
-}
-
-export interface Page {
-    readonly pageInfo?: PageInfo;
-    readonly characters?: Character[];
-    readonly studios?: Studio[];
-    readonly media?: Media[];
-    readonly staff?: Staff[];
-}
-
-export interface PageInfo {
-    readonly total?: number | null;
-    readonly perPage?: number | null;
-    readonly currentPage?: number | null;
-    readonly lastPage?: number | null;
-    readonly hasNextPage?: boolean | null;
 }
 
 export interface FuzzyDate {

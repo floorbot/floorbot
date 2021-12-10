@@ -48,7 +48,7 @@ export interface Media {
     readonly isLocked?: boolean;
     readonly trending?: number | null;
     readonly favourites?: number | null;
-    readonly tags?: string[];
+    readonly tags?: MediaTag[];
     readonly relations?: MediaConnection;
     readonly characters?: CharacterConnection;
     readonly staff?: StaffConnection;
@@ -219,4 +219,16 @@ export enum MediaListStatus {
     DROPPED = 'DROPPED',
     PAUSED = 'PAUSED',
     REPEATING = 'REPEATING'
+}
+
+export interface MediaTag {
+    readonly id: number;
+    readonly name: string;
+    readonly description?: string | null;
+    readonly category?: string | null;
+    readonly rank?: number | null;
+    readonly isGeneralSpoiler?: boolean | null;
+    readonly isMediaSpoiler?: boolean | null;
+    readonly isAdult?: boolean | null;
+    readonly userId?: number | null;
 }
