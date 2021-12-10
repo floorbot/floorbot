@@ -6,7 +6,8 @@ export enum AniListSubCommand {
     CHARACTER = 'character',
     STUDIO = 'studio',
     STAFF = 'staff',
-    MEDIA = 'media'
+    MEDIA = 'media',
+    USER = 'user'
 }
 
 export const AniListCommandData: ChatInputApplicationCommandData = {
@@ -14,6 +15,16 @@ export const AniListCommandData: ChatInputApplicationCommandData = {
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'All your AniList needs!',
     options: [{
+        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        name: AniListSubCommand.USER,
+        description: 'Search for a user!',
+        options: [{
+            name: 'search',
+            required: true,
+            description: 'Search for a user!',
+            type: ApplicationCommandOptionTypes.STRING
+        }]
+    }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
         name: AniListSubCommand.MEDIA,
         description: 'Search for an anime or manga!',

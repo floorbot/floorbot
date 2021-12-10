@@ -1,7 +1,6 @@
-import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, Staff, Studio } from "../apis/anilist/AniListAPI.js";
+import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, MediaStatus, ModRole, Page, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
 import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
-import { Page, PageInfo } from "../apis/anilist/interfaces/Page.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
 import { DateTime } from "luxon";
 
@@ -22,27 +21,36 @@ export class AniListReplyBuilder extends ReplyBuilder {
         if (res.errors) {
             res.errors.forEach(error => this.addAniListErrorEmbed(error));
         } else if (res.data) {
-            const { Media, Character, Staff, Studio, Page } = res.data;
+            const { User, Media, Staff, Studio, Character, Page } = res.data;
+            if (User) this.addUserEmbed(User);
             if (Media) this.addMediaEmbed(Media);
-            if (Character) this.addCharacterEmbed(Character);
             if (Staff) this.addStaffEmbed(Staff);
             if (Studio) this.addStudioEmbed(Studio);
+            if (Character) this.addCharacterEmbed(Character);
             if (Page) {
-                const { media, characters, staff, studios, pageInfo } = Page;
+                const { users, media, staff, studios, characters, pageInfo } = Page;
+                if (users) users.forEach(user => this.addUserEmbed(user, pageInfo));
                 if (media) media.forEach(media => this.addMediaEmbed(media, pageInfo));
-                if (characters) characters.forEach(character => this.addCharacterEmbed(character, pageInfo));
                 if (staff) staff.forEach(staff => this.addStaffEmbed(staff, pageInfo));
                 if (studios) studios.forEach(studio => this.addStudioEmbed(studio, pageInfo));
-                if (!((media && media.length) || (characters && characters.length) || (staff && staff.length) || (studios && studios.length))) this.addNotFoundEmbed(search);
+                if (characters) characters.forEach(character => this.addCharacterEmbed(character, pageInfo));
+                if (!(
+                    (users && users.length) ||
+                    (media && media.length) ||
+                    (staff && staff.length) ||
+                    (studios && studios.length) ||
+                    (characters && characters.length)
+                )) this.addNotFoundEmbed(search);
             }
-            if (!(Media || Character || Staff || Studio || Page)) this.addNotFoundEmbed(search);
+            if (!(User || Media || Staff || Studio || Character || Page)) this.addNotFoundEmbed(search);
         }
         return this;
     }
 
     public addAniListPageActionRow(Page: Page): this {
         const siteURLs: string[] = [];
-        const { media, characters, staff, pageInfo } = Page;
+        const { users, media, characters, staff, pageInfo } = Page;
+        if (users) { users.forEach(user => { if (user.siteUrl) siteURLs.push(user.siteUrl); }); }
         if (media) { media.forEach(media => { if (media.siteUrl) siteURLs.push(media.siteUrl); }); }
         if (characters) { characters.forEach(character => { if (character.siteUrl) siteURLs.push(character.siteUrl); }); }
         if (staff) { staff.forEach(staff => { if (staff.siteUrl) siteURLs.push(staff.siteUrl); }); }
@@ -66,6 +74,40 @@ export class AniListReplyBuilder extends ReplyBuilder {
         this.addFile(attachment);
         this.addEmbed(embed);
         return this;
+    }
+
+    public addUserEmbed(user: User, pageInfo?: PageInfo): this {
+        const modRoles = user.moderatorRoles && user.moderatorRoles.length ? user.moderatorRoles : null;
+        const totalFavouriteAnime = user.favourites?.anime?.pageInfo?.total || 0;
+        const totalFavouriteManga = user.favourites?.manga?.pageInfo?.total || 0;
+        const totalFavouriteCharacters = user.favourites?.characters?.pageInfo?.total || 0;
+        const totalFavouriteStaff = user.favourites?.staff?.pageInfo?.total || 0;
+        const totalFavouriteStudios = user.favourites?.studios?.pageInfo?.total || 0;
+        const descriptionLines = [
+            ...(user.createdAt ? [`Account Created: **<t:${user.createdAt}:d>**`] : []),
+            ...(user.updatedAt ? [`Account Updated: **<t:${user.updatedAt}:d>**`] : []),
+            ...(modRoles ? [`Moderator Roles: **${modRoles.map(modRole => AniListReplyBuilder.formatEnums(modRole)).join('**, **')}**`] : []),
+            ...(user.donatorTier ? [
+                `Donator Tier: **${user.donatorTier}**`,
+                ...(user.donatorBadge ? [`Donator Badge: **${user.donatorBadge}**`] : [])
+            ] : []),
+            ...(totalFavouriteAnime ? [`Favourite Anime: **${totalFavouriteAnime}**`] : []),
+            ...(totalFavouriteManga ? [`Favourite Manga: **${totalFavouriteManga}**`] : []),
+            ...(totalFavouriteCharacters ? [`Favourite Characters: **${totalFavouriteCharacters}**`] : []),
+            ...(totalFavouriteStaff ? [`Favourite Staff: **${totalFavouriteStaff}**`] : []),
+            ...(totalFavouriteStudios ? [`Favourite Studios: **${totalFavouriteStudios}**`] : []),
+        ];
+        const embed = this.createEmbedBuilder(pageInfo)
+            .setTitle(user.name);
+        if (descriptionLines.length) embed.setDescription(descriptionLines);
+        if (user.siteUrl) embed.setURL(user.siteUrl);
+        if (user.bannerImage) embed.setImage(user.bannerImage);
+        if (user.avatar) {
+            const avatar = user.avatar;
+            const avatarURL = avatar.large || avatar.medium;
+            if (avatarURL) embed.setThumbnail(avatarURL);
+        }
+        return this.addEmbed(embed);
     }
 
     public addMediaEmbed(media: Media, pageInfo?: PageInfo, showDescription?: boolean): this {
@@ -201,6 +243,33 @@ export class AniListReplyBuilder extends ReplyBuilder {
         } else {
             var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
             return [fuzz.month ? months[fuzz.month - 1] : null, fuzz.day, fuzz.year].filter(part => part || part === 0).join(' ');
+        }
+    }
+
+    private static formatEnums(value: ModRole | MediaStatus): string {
+        switch (value) {
+            case ModRole.ADMIN: return 'Admin';
+            case ModRole.ANIME_DATA: return 'Anime Data';
+            case ModRole.COMMUNITY: return 'Community';
+            case ModRole.DEVELOPER: return 'Developer';
+            case ModRole.DISCORD_COMMUNITY: return 'Discord Community';
+            case ModRole.LEAD_ANIME_DATA: return 'Lead Anime Data';
+            case ModRole.LEAD_COMMUNITY: return 'Lead Community';
+            case ModRole.LEAD_DEVELOPER: return 'Lead Developer';
+            case ModRole.LEAD_MANGA_DATA: return 'Lead Manga Data';
+            case ModRole.LEAD_SOCIAL_MEDIA: return 'Lead Social Media';
+            case ModRole.MANGA_DATA: return 'Manga Data';
+            case ModRole.RETIRED: return 'Retired';
+            case ModRole.SOCIAL_MEDIA: return 'Social Media';
+            case MediaStatus.CANCELLED: return 'Cancelled';
+            case MediaStatus.FINISHED: return 'Finished';
+            case MediaStatus.HIATUS: return 'Hiatus';
+            case MediaStatus.NOT_YET_RELEASED: return 'Not Yet Released';
+            case MediaStatus.RELEASING: return 'Releasing';
+            default: {
+                console.log(`[support] unknown anilist enum value <${value}>`);
+                return value;
+            }
         }
     }
 }

@@ -9,9 +9,12 @@ export * from './interfaces/Common.js';
 
 // THESE ARE COMPLETED TYPES (EXCLUDING QUERY VARS)
 export * from './interfaces/Character.js';
+export * from './interfaces/Activity.js';
 export * from './interfaces/Studio.js';
 export * from './interfaces/Media.js';
 export * from './interfaces/Staff.js';
+export * from './interfaces/User.js';
+export * from './interfaces/Page.js';
 
 export type QueryVars = MediaVariables & {
     page?: number,

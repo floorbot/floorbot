@@ -9,7 +9,7 @@ export interface User {
     readonly name: string;
     readonly about?: string | null;
     readonly avatar?: UserAvatar;
-    readonly bannerImage?: String | null;
+    readonly bannerImage?: string | null;
     readonly isFollowing?: boolean | null;
     readonly isFollower?: boolean | null;
     readonly isBlocked?: boolean | null;

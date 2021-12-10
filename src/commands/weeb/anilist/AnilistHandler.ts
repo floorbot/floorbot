@@ -53,6 +53,10 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
 
     private async fetchAniListData(subCommand: AniListSubCommand, vars: QueryVars): Promise<AniListResponse> {
         switch (subCommand) {
+            case AniListSubCommand.USER: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/user_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
             case AniListSubCommand.MEDIA: {
                 const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
                 return this.api.request(query, vars);
