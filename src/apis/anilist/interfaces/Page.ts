@@ -1,3 +1,4 @@
+import { ActivityUnion } from "./Activity.js";
 import { Character } from "./Character.js";
 import { Studio } from "./Studio.js";
 import { Media } from "./Media.js";
@@ -6,6 +7,7 @@ import { User } from "./User.js";
 
 export interface Page {
     readonly pageInfo?: PageInfo;
+    readonly activities?: ActivityUnion[];
     readonly characters?: Character[];
     readonly studios?: Studio[];
     readonly media?: Media[];

@@ -1,3 +1,4 @@
+import { ActivityUnion } from './Activity.js';
 import { Page, PageInfo } from './Page.js';
 import { Character } from './Character.js';
 import { Studio } from './Studio.js';
@@ -7,6 +8,7 @@ import { Media } from './Media';
 
 export interface AniListResponse {
     readonly data: {
+        readonly Activity: ActivityUnion | null;
         readonly Character: Character | null;
         readonly Studio: Studio | null;
         readonly Staff: Staff | null;
