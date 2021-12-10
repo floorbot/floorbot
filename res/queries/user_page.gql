@@ -85,60 +85,24 @@ query($page: Int, $id: Int, $search: String) {
                     minutesWatched
                     chaptersRead
                     volumesRead
-                    formats {
+                    formats(limit: 6, sort: COUNT_DESC) {
                         count
                         format
                     }
-                    statuses {
+                    statuses(sort: COUNT_DESC) {
                         count
                         status
                     }
-                    scores {
-                        count
-                        score
-                    }
-                    lengths {
-                        count
-                        length
-                    }
-                    releaseYears {
-                        count
-                        releaseYear
-                    }
-                    startYears {
-                        count
-                        startYear
-                    }
-                    genres {
+                    genres(limit: 6, sort: COUNT_DESC) {
                         count
                         genre
                     }
-                    tags {
+                    tags(limit: 6, sort: COUNT_DESC) {
                         count
                         tag {
                             id
-                        }
-                    }
-                    countries {
-                        count
-                        country
-                    }
-                    voiceActors {
-                        count
-                        voiceActor {
-                            id
-                        }
-                    }
-                    staff {
-                        count
-                        staff {
-                            id
-                        }
-                    }
-                    studios {
-                        count
-                        studio {
-                            id
+                            name
+                            isAdult
                         }
                     }
                 }
@@ -149,60 +113,24 @@ query($page: Int, $id: Int, $search: String) {
                     minutesWatched
                     chaptersRead
                     volumesRead
-                    formats {
+                    formats(limit: 6, sort: COUNT_DESC) {
                         count
                         format
                     }
-                    statuses {
+                    statuses(sort: COUNT_DESC) {
                         count
                         status
                     }
-                    scores {
-                        count
-                        score
-                    }
-                    lengths {
-                        count
-                        length
-                    }
-                    releaseYears {
-                        count
-                        releaseYear
-                    }
-                    startYears {
-                        count
-                        startYear
-                    }
-                    genres {
+                    genres(limit: 6, sort: COUNT_DESC) {
                         count
                         genre
                     }
-                    tags {
+                    tags(limit: 6, sort: COUNT_DESC) {
                         count
                         tag {
                             id
-                        }
-                    }
-                    countries {
-                        count
-                        country
-                    }
-                    voiceActors {
-                        count
-                        voiceActor {
-                            id
-                        }
-                    }
-                    staff {
-                        count
-                        staff {
-                            id
-                        }
-                    }
-                    studios {
-                        count
-                        studio {
-                            id
+                            name
+                            isAdult
                         }
                     }
                 }

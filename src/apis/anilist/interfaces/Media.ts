@@ -223,7 +223,7 @@ export enum MediaListStatus {
 
 export interface MediaTag {
     readonly id: number;
-    readonly name: string;
+    readonly name?: string;
     readonly description?: string | null;
     readonly category?: string | null;
     readonly rank?: number | null;

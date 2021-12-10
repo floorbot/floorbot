@@ -1,8 +1,9 @@
-import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, MediaStatus, ModRole, Page, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
+import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, Page, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
 import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
 import { DateTime } from "luxon";
+import humanizeDuration from "humanize-duration";
 
 export class AniListReplyBuilder extends ReplyBuilder {
 
@@ -49,11 +50,12 @@ export class AniListReplyBuilder extends ReplyBuilder {
 
     public addAniListPageActionRow(Page: Page): this {
         const siteURLs: string[] = [];
-        const { users, media, characters, staff, pageInfo } = Page;
-        if (users) { users.forEach(user => { if (user.siteUrl) siteURLs.push(user.siteUrl); }); }
-        if (media) { media.forEach(media => { if (media.siteUrl) siteURLs.push(media.siteUrl); }); }
-        if (characters) { characters.forEach(character => { if (character.siteUrl) siteURLs.push(character.siteUrl); }); }
-        if (staff) { staff.forEach(staff => { if (staff.siteUrl) siteURLs.push(staff.siteUrl); }); }
+        const { users, media, staff, studios, characters, pageInfo } = Page;
+        if (users) users.forEach(user => { if (user.siteUrl) siteURLs.push(user.siteUrl); });
+        if (media) media.forEach(media => { if (media.siteUrl) siteURLs.push(media.siteUrl); });
+        if (staff) staff.forEach(staff => { if (staff.siteUrl) siteURLs.push(staff.siteUrl); });
+        if (studios) studios.forEach(studio => { if (studio.siteUrl) siteURLs.push(studio.siteUrl); });
+        if (characters) characters.forEach(character => { if (character.siteUrl) siteURLs.push(character.siteUrl); });
         const siteURL = siteURLs.length === 1 ? siteURLs[0] : undefined;
         const totalPages = pageInfo ? pageInfo.total || 0 : 0;
         if (totalPages) return this.addPageActionRow(siteURL, undefined, totalPages <= 1);
@@ -106,6 +108,103 @@ export class AniListReplyBuilder extends ReplyBuilder {
             const avatar = user.avatar;
             const avatarURL = avatar.large || avatar.medium;
             if (avatarURL) embed.setThumbnail(avatarURL);
+        }
+        if (user.statistics) {
+            const { anime, manga } = user.statistics;
+            if (anime && anime.count) {
+                embed.addField('Anime Stats', [
+                    `Total Anime: **${anime.count}**`,
+                    ...(anime.episodesWatched ? [
+                        `Episodes: **${HandlerUtil.formatCommas(anime.episodesWatched)}**`,
+                        `Average Eps: **${HandlerUtil.formatCommas(Math.round(anime.episodesWatched / (anime.count || 1)))}**`
+                    ] : []),
+                    ...(anime.minutesWatched ? [`Watched: **${humanizeDuration(anime.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
+                    ...(anime.meanScore ? [`Mean Score: **${anime.meanScore}**`] : []),
+                    ...(anime.standardDeviation ? [`Std deviation: **${anime.standardDeviation}**`] : []),
+
+                ], true);
+                if (anime.formats) {
+                    const lines = [];
+                    for (const stat of anime.formats) {
+                        if (!stat.count || !stat.format) continue;
+                        const enumName = AniListReplyBuilder.formatEnums(stat.format);
+                        lines.push(`${enumName}: **${stat.count}**`);
+                    }
+                    if (lines.length) embed.addField('Formats', lines, true);
+                }
+                if (anime.statuses) {
+                    const lines = [];
+                    for (const stat of anime.statuses) {
+                        if (!stat.count || !stat.status) continue;
+                        const enumName = AniListReplyBuilder.formatEnums(stat.status);
+                        lines.push(`${enumName}: **${stat.count}**`);
+                    }
+                    if (lines.length) embed.addField('Status', lines, true);
+                }
+                if (anime.genres) {
+                    const lines = [];
+                    for (const stat of anime.genres) {
+                        if (!stat.count || !stat.genre) continue;
+                        const url = `https://anilist.co/search/anime?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
+                        lines.push(`${stat.count} [${stat.genre}](${url})`);
+                    }
+                    if (lines.length) embed.addField('Genres', lines, true);
+                }
+                if (anime.tags) {
+                    const lines = [];
+                    for (const stat of anime.tags) {
+                        if (!stat.count || !stat.tag || !stat.tag.name) continue;
+                        const url = `https://anilist.co/search/anime?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
+                        lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
+                    }
+                    if (lines.length) embed.addField('Tags', lines, true);
+                }
+            }
+            if (manga && manga.count) {
+                embed.addField('Manga Stats', [
+                    `Total Manga: **${manga.count}**`,
+                    ...(manga.chaptersRead ? [`Chapters: **${manga.chaptersRead}**`] : []),
+                    ...(manga.volumesRead ? [`Volumes: **${manga.volumesRead}**`] : []),
+                    ...(manga.meanScore ? [`Mean Score: **${manga.meanScore}**`] : []),
+                    ...(manga.standardDeviation ? [`Std deviation: **${manga.standardDeviation}**`] : []),
+                ], true);
+                if (manga.formats) {
+                    const lines = [];
+                    for (const stat of manga.formats) {
+                        if (!stat.count || !stat.format) continue;
+                        const enumName = AniListReplyBuilder.formatEnums(stat.format);
+                        lines.push(`${enumName}: **${stat.count}**`);
+                    }
+                    if (lines.length) embed.addField('Formats', lines, true);
+                }
+                if (manga.statuses) {
+                    const lines = [];
+                    for (const stat of manga.statuses) {
+                        if (!stat.count || !stat.status) continue;
+                        const enumName = AniListReplyBuilder.formatEnums(stat.status);
+                        lines.push(`${enumName}: **${stat.count}**`);
+                    }
+                    if (lines.length) embed.addField('Status', lines, true);
+                }
+                if (manga.genres) {
+                    const lines = [];
+                    for (const stat of manga.genres) {
+                        if (!stat.count || !stat.genre) continue;
+                        const url = `https://anilist.co/search/manga?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
+                        lines.push(`${stat.count} [${stat.genre}](${url})`);
+                    }
+                    if (lines.length) embed.addField('Genres', lines, true);
+                }
+                if (manga.tags) {
+                    const lines = [];
+                    for (const stat of manga.tags) {
+                        if (!stat.count || !stat.tag || !stat.tag.name) continue;
+                        const url = `https://anilist.co/search/manga?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
+                        lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
+                    }
+                    if (lines.length) embed.addField('Tags', lines, true);
+                }
+            }
         }
         return this.addEmbed(embed);
     }
@@ -246,7 +345,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
         }
     }
 
-    private static formatEnums(value: ModRole | MediaStatus): string {
+    private static formatEnums(value: ModRole | MediaStatus | MediaListStatus | MediaFormat): string {
         switch (value) {
             case ModRole.ADMIN: return 'Admin';
             case ModRole.ANIME_DATA: return 'Anime Data';
@@ -266,6 +365,22 @@ export class AniListReplyBuilder extends ReplyBuilder {
             case MediaStatus.HIATUS: return 'Hiatus';
             case MediaStatus.NOT_YET_RELEASED: return 'Not Yet Released';
             case MediaStatus.RELEASING: return 'Releasing';
+            case MediaListStatus.COMPLETED: return 'Completed';
+            case MediaListStatus.CURRENT: return 'Current';
+            case MediaListStatus.DROPPED: return 'Dropped';
+            case MediaListStatus.PAUSED: return 'Paused';
+            case MediaListStatus.PLANNING: return 'Planning';
+            case MediaListStatus.REPEATING: return 'Repeating';
+            case MediaFormat.MANGA: return 'Manga';
+            case MediaFormat.MOVIE: return 'Movie';
+            case MediaFormat.MUSIC: return 'Music';
+            case MediaFormat.NOVEL: return 'Novel';
+            case MediaFormat.ONA: return 'ONA';
+            case MediaFormat.ONE_SHOT: return 'One Shot';
+            case MediaFormat.OVA: return 'OVA';
+            case MediaFormat.SPECIAL: return 'Special';
+            case MediaFormat.TV: return 'TV';
+            case MediaFormat.TV_SHORT: return 'TV Short';
             default: {
                 console.log(`[support] unknown anilist enum value <${value}>`);
                 return value;
