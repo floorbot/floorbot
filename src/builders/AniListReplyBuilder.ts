@@ -1,6 +1,7 @@
-import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, Page, PageInfo, Staff, Studio } from "../apis/anilist/AniListAPI.js";
+import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaRankType, Staff, Studio } from "../apis/anilist/AniListAPI.js";
 import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
+import { Page, PageInfo } from "../apis/anilist/interfaces/Page.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
 import { DateTime } from "luxon";
 
