@@ -11,6 +11,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     protected context?: BuilderContext;
 
     public files?: AttachmentBuilder[];
+    public attachments?: AttachmentBuilder[];
     public components?: ActionRowBuilder[];
     public embeds?: EmbedBuilder[];
     public content?: string | null;
@@ -49,12 +50,17 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addFile(attachment: AttachmentBuilder): this {
-        return this.addFile(attachment);
+        return this.addFiles(attachment);
     }
 
     public addFiles(...attachments: AttachmentBuilder[]): this {
         if (!this.files) this.files = [];
         this.files.push(...attachments);
+        return this;
+    }
+
+    public removeAttachments(): this {
+        this.attachments = [];
         return this;
     }
 
@@ -96,7 +102,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
                 ...(error && error.message ? [`Message: \`${error.message}\``] : [])
             ]);
-        this.addFiles(attachment);
+        this.addFile(attachment);
         this.addEmbed(embed);
         return this;
     }
@@ -110,7 +116,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 `Sorry! I could not find any results for \`${query || 'your query'}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
-        this.addFiles(attachment);
+        this.addFile(attachment);
         this.addEmbed(embed);
         return this;
     }

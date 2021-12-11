@@ -1,5 +1,5 @@
 import { TraceMoeResult } from './interfaces/TraceMoeResult.js';
-import { TraceMoeResponse } from './interfaces/TraceMoeData.js';
+import { TraceMoeResponse } from './interfaces/TraceMoeResponse.js';
 import fetch, { Headers } from 'node-fetch';
 import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
