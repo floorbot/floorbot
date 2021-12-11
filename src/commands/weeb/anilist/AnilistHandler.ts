@@ -1,10 +1,10 @@
+import { AniListReplyBuilder, AniListUserComponentID } from '../../../builders/AniListReplyBuilder.js';
 import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/AniListAPI.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
 import { AutocompleteInteraction, CacheType, CommandInteraction } from 'discord.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
-import { AniListReplyBuilder, AniListUserComponentID } from '../../../builders/AniListReplyBuilder.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { Redis } from 'ioredis';
 import path from 'path';
@@ -59,13 +59,38 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private createReplyOptions(command: CommandInteraction, search: string, subCommand: AniListSubCommand | AniListUserComponentID, res: AniListResponse): AniListReplyBuilder {
+    private async fetchAniListData(subCommand: AniListSubCommand, vars: QueryVars): Promise<AniListResponse> {
+        switch (subCommand) {
+            case AniListSubCommand.USER: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/user_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+            case AniListSubCommand.MEDIA: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+            case AniListSubCommand.CHARACTER: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/characters_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+            case AniListSubCommand.STAFF: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/staff_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+            case AniListSubCommand.STUDIO: {
+                const query = fs.readFileSync(`${path.resolve()}/res/queries/studios_page.gql`, 'utf8');
+                return this.api.request(query, vars);
+            }
+        }
+    }
+
+    private createReplyOptions(command: CommandInteraction, search: string, scope: AniListSubCommand | AniListUserComponentID, res: AniListResponse): AniListReplyBuilder {
         const page = res.data.Page;
         const builder = new AniListReplyBuilder(command);
         if (!page) return builder.addUnexpectedErrorEmbed('[anilist] No page on anilist response');
         if (res.errors) return builder.addAniListErrorsEmbed(res.errors);
         const totalPages = page.pageInfo ? page.pageInfo.total || 0 : 0;
-        switch (subCommand) {
+        switch (scope) {
             case AniListSubCommand.CHARACTER: {
                 if (!page.characters || !page.characters[0]) return builder.addNotFoundEmbed(search);
                 else {
@@ -132,31 +157,6 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
                     if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
-            }
-        }
-    }
-
-    private async fetchAniListData(subCommand: AniListSubCommand, vars: QueryVars): Promise<AniListResponse> {
-        switch (subCommand) {
-            case AniListSubCommand.USER: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/user_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.MEDIA: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.CHARACTER: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/characters_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.STAFF: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/staff_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.STUDIO: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/studios_page.gql`, 'utf8');
-                return this.api.request(query, vars);
             }
         }
     }
