@@ -84,7 +84,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this.addActionRow(actionRow);
     }
 
-    public addUnexpectedErrorEmbed(error: any): InteractionReplyOptions {
+    public addUnexpectedErrorEmbed(error: any): this {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
         const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
         const embed = this.createEmbedBuilder()
@@ -96,7 +96,9 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
                 ...(error && error.message ? [`Message: \`${error.message}\``] : [])
             ]);
-        return { embeds: [embed], files: [attachment] };
+        this.addFiles(attachment);
+        this.addEmbed(embed);
+        return this;
     }
 
     public addNotFoundEmbed(query?: string, message?: string): this {

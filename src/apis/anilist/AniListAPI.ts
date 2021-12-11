@@ -63,7 +63,7 @@ export class AniListAPI {
     }
 
     public async request(query: string, variables: QueryVars): Promise<AniListResponse> {
-        return this.limiter.schedule({ expiration: 2500 }, () => {
+        return this.limiter.schedule({ expiration: 5000 }, () => {
             return fetch(`https://graphql.anilist.co`, {
                 method: 'POST',
                 body: JSON.stringify({ query: query, variables: variables }),

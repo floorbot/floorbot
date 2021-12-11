@@ -2,27 +2,27 @@ import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextM
 import { HandlerButton, HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
 import { TraceMoeAPI } from '../../../apis/tracemoe/TraceMoeAPI.js';
-import { AniListAPI } from '../../../apis/anilist/AniListAPI.js';
+// import { AniListAPI } from '../../../apis/anilist/AniListAPI.js';
 import { TraceMoeCommandData } from './TraceMoeCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { TraceMoeReplies } from './TraceMoeReplies.js';
 import { ContextMenuInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
-import path from 'path';
-import fs from 'fs';
-import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
+// import path from 'path';
+// import fs from 'fs';
 import { ActionRowBuilder } from '../../../discord/builders/ActionRowBuilder.js';
+import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
 
 export class TraceMoeHandler extends ContextMenuHandler {
 
-    private readonly anilist: AniListAPI;
+    // private readonly anilist: AniListAPI;
     private readonly tracemoe: TraceMoeAPI;
     private readonly replies: TraceMoeReplies;
 
     constructor(redis: Redis) {
         super({ group: 'Weeb', global: false, nsfw: false, data: TraceMoeCommandData });
         this.replies = new TraceMoeReplies();
-        this.anilist = new AniListAPI({ redis });
+        // this.anilist = new AniListAPI({ redis });
         this.tracemoe = new TraceMoeAPI({ redis });
     }
 
@@ -55,10 +55,10 @@ export class TraceMoeHandler extends ContextMenuHandler {
             }
             if (component.customId === 'anilist') {
                 await component.deferUpdate();
-                const anilistID = typeof result!.anilist === 'string' ? result!.anilist : result!.anilist.id;
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
-                const anilistRes = await this.anilist.request(query, { id: parseInt(anilistID.toString()), page: 1 });
-                const replyOptions = new AniListReplyBuilder(contextMenu).addAniListEmbeds(anilistRes)
+                // const anilistID = typeof result!.anilist === 'string' ? result!.anilist : result!.anilist.id;
+                // const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
+                // const anilistRes = await this.anilist.request(query, { id: parseInt(anilistID.toString()), page: 1 });
+                const replyOptions = new AniListReplyBuilder(contextMenu)
                     .addActionRow(new ActionRowBuilder()
                         .addComponents(new HandlerButton().setStyle('SECONDARY').setCustomId('tracemoe').setLabel('Trace Moe')));
                 return await component.editReply(replyOptions);

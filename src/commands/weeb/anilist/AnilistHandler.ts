@@ -10,7 +10,7 @@ import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
 
-export class AnilistHandler extends ChatInputHandler implements Autocomplete {
+export class AniListHandler extends ChatInputHandler implements Autocomplete {
 
     private readonly api: AniListAPI;
 
@@ -31,8 +31,7 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
         const search = command.options.getString('search', true);
         const vars = { ...(parseInt(search) ? { id: parseInt(search) } : { search: search }), page: 1 };
         let res = await this.fetchAniListData(subCommand, vars);
-        const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res, search);
-        if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
+        const replyOptions = this.createReplyOptions(command, search, subCommand, res);
         const message = await command.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
@@ -44,11 +43,65 @@ export class AnilistHandler extends ChatInputHandler implements Autocomplete {
             vars.page = vars.page % totalPages;
             vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
             res = await this.fetchAniListData(subCommand, vars);
-            const replyOptions = new AniListReplyBuilder(command).addAniListEmbeds(res, search);
-            if (res.data.Page) replyOptions.addAniListPageActionRow(res.data.Page);
+            const replyOptions = this.createReplyOptions(command, search, subCommand, res);
             return await component.editReply(replyOptions);
         }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+    }
+
+    private createReplyOptions(command: CommandInteraction, search: string, subCommand: AniListSubCommand, res: AniListResponse): AniListReplyBuilder {
+        const page = res.data.Page;
+        const builder = new AniListReplyBuilder(command);
+        if (!page) return builder.addUnexpectedErrorEmbed('[anilist] No page on anilist response');
+        if (res.errors) return builder.addAniListErrorsEmbed(res.errors);
+        const totalPages = page.pageInfo ? page.pageInfo.total || 0 : 0;
+        switch (subCommand) {
+            case AniListSubCommand.CHARACTER: {
+                if (!page.characters || !page.characters[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.characters[0].siteUrl || undefined;
+                    builder.addCharacterEmbed(page.characters[0], page.pageInfo);
+                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                }
+            }
+            case AniListSubCommand.MEDIA: {
+                if (!page.media || !page.media[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.media[0].siteUrl || undefined;
+                    builder.addMediaEmbed(page.media[0], page.pageInfo);
+                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                }
+            }
+            case AniListSubCommand.STAFF: {
+                if (!page.staff || !page.staff[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.staff[0].siteUrl || undefined;
+                    builder.addStaffEmbed(page.staff[0], page.pageInfo);
+                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                };
+            }
+            case AniListSubCommand.STUDIO: {
+                if (!page.studios || !page.studios[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.studios[0].siteUrl || undefined;
+                    builder.addStudioEmbed(page.studios[0], page.pageInfo);
+                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                };
+            }
+            case AniListSubCommand.USER: {
+                if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.users[0].siteUrl || undefined;
+                    builder.addUserEmbed(page.users[0], page.pageInfo);
+                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                };
+            }
+        }
     }
 
     private async fetchAniListData(subCommand: AniListSubCommand, vars: QueryVars): Promise<AniListResponse> {

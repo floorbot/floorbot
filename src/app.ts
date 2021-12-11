@@ -24,12 +24,12 @@ import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/Owoif
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
 import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
-import { AnilistHandler } from './commands/weeb/anilist/AnilistHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
+import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
+import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { DefineHandler } from './commands/fun/define/DefineHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
@@ -82,7 +82,7 @@ const client = new HandlerClient({
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FloorbotHandler(),
-        new AnilistHandler(redis),
+        new AniListHandler(redis),
         new LostHandler(),
         new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),

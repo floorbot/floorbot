@@ -1,9 +1,19 @@
-import { AniListError, AniListResponse, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, Page, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
-import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
+import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
+import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
-import { DateTime } from "luxon";
 import humanizeDuration from "humanize-duration";
+import { DateTime } from "luxon";
+
+export enum AniListReplyBuilderView {
+    USER = 'user',
+    USER_ANIME_STATS = 'userAnimeStats',
+    USER_MANGA_STATS = 'userMangaStats',
+    CHARACTER = 'character',
+    STUDIO = 'studio',
+    STAFF = 'staff',
+    MEDIA = 'media'
+};
 
 export class AniListReplyBuilder extends ReplyBuilder {
 
@@ -18,64 +28,82 @@ export class AniListReplyBuilder extends ReplyBuilder {
         return embed;
     }
 
-    public addAniListEmbeds(res: AniListResponse, search?: string): this {
-        if (res.errors) {
-            res.errors.forEach(error => this.addAniListErrorEmbed(error));
-        } else if (res.data) {
-            const { User, Media, Staff, Studio, Character, Page } = res.data;
-            if (User) this.addUserEmbed(User);
-            if (Media) this.addMediaEmbed(Media);
-            if (Staff) this.addStaffEmbed(Staff);
-            if (Studio) this.addStudioEmbed(Studio);
-            if (Character) this.addCharacterEmbed(Character);
-            if (Page) {
-                const { users, media, staff, studios, characters, pageInfo } = Page;
-                if (users) users.forEach(user => this.addUserEmbed(user, pageInfo));
-                if (media) media.forEach(media => this.addMediaEmbed(media, pageInfo));
-                if (staff) staff.forEach(staff => this.addStaffEmbed(staff, pageInfo));
-                if (studios) studios.forEach(studio => this.addStudioEmbed(studio, pageInfo));
-                if (characters) characters.forEach(character => this.addCharacterEmbed(character, pageInfo));
-                if (!(
-                    (users && users.length) ||
-                    (media && media.length) ||
-                    (staff && staff.length) ||
-                    (studios && studios.length) ||
-                    (characters && characters.length)
-                )) this.addNotFoundEmbed(search);
-            }
-            if (!(User || Media || Staff || Studio || Character || Page)) this.addNotFoundEmbed(search);
-        }
-        return this;
-    }
-
-    public addAniListPageActionRow(Page: Page): this {
-        const siteURLs: string[] = [];
-        const { users, media, staff, studios, characters, pageInfo } = Page;
-        if (users) users.forEach(user => { if (user.siteUrl) siteURLs.push(user.siteUrl); });
-        if (media) media.forEach(media => { if (media.siteUrl) siteURLs.push(media.siteUrl); });
-        if (staff) staff.forEach(staff => { if (staff.siteUrl) siteURLs.push(staff.siteUrl); });
-        if (studios) studios.forEach(studio => { if (studio.siteUrl) siteURLs.push(studio.siteUrl); });
-        if (characters) characters.forEach(character => { if (character.siteUrl) siteURLs.push(character.siteUrl); });
-        const siteURL = siteURLs.length === 1 ? siteURLs[0] : undefined;
-        const totalPages = pageInfo ? pageInfo.total || 0 : 0;
-        if (totalPages) return this.addPageActionRow(siteURL, undefined, totalPages <= 1);
-        return this;
-    }
-
-    public addAniListErrorEmbed(error: AniListError): this {
-        console.error('[anilist] AniList has responded an error...', error);
+    public addAniListErrorsEmbed(errors: AniListError[]): this {
+        console.error('[anilist] AniList has responded with errors...', errors);
         const attachment = this.getAvatar('1-3');
         const embed = this.createEmbedBuilder()
             .setTitle('AniList Error')
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
-                `Status: *${error.status}*`,
-                `Locations: *${error.locations.length}*`,
-                `Message: *${error.message}*`
+                `AniList responded with the following messages:`,
+                '',
+                ...errors.map(error => `*${error.message}*`)
             ]);
         this.addFile(attachment);
         this.addEmbed(embed);
         return this;
+    }
+
+    public addUserStatsEmbed(type: 'anime' | 'manga', user: User): this {
+        const typeName = HandlerUtil.capitalizeString(type);
+        const avatarURL = user.avatar?.large || user.avatar?.medium;
+        const embed = this.createEmbedBuilder()
+            .setAuthor(`${user.name}'s ${type}list`, avatarURL || undefined, user.siteUrl || undefined);
+        const stats = user.statistics?.[type];
+        if (!stats || !stats.count) {
+            embed.setDescription('they exist but haven\'t done anything ¯\\_(ツ)_/¯');
+        } else {
+            embed.addField(`${typeName} Stats`, [
+                `Total ${typeName}: **${stats.count}**`,
+                ...(stats.chaptersRead ? [`Chapters: **${stats.chaptersRead}**`] : []),
+                ...(stats.volumesRead ? [`Volumes: **${stats.volumesRead}**`] : []),
+                ...(stats.episodesWatched ? [
+                    `Episodes: **${HandlerUtil.formatCommas(stats.episodesWatched)}**`,
+                    `Average Eps: **${HandlerUtil.formatCommas(Math.round(stats.episodesWatched / (stats.count || 1)))}**`
+                ] : []),
+                ...(stats.minutesWatched ? [`Watched: **${humanizeDuration(stats.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
+                ...(stats.meanScore ? [`Mean Score: **${stats.meanScore}**`] : []),
+                ...(stats.standardDeviation ? [`Std deviation: **${stats.standardDeviation}**`] : []),
+
+            ], true);
+            if (stats.formats) {
+                const lines = [];
+                for (const stat of stats.formats) {
+                    if (!stat.count || !stat.format) continue;
+                    const enumName = AniListReplyBuilder.formatEnums(stat.format);
+                    lines.push(`${enumName}: **${stat.count}**`);
+                }
+                if (lines.length) embed.addField('Formats', lines, true);
+            }
+            if (stats.statuses) {
+                const lines = [];
+                for (const stat of stats.statuses) {
+                    if (!stat.count || !stat.status) continue;
+                    const enumName = AniListReplyBuilder.formatEnums(stat.status);
+                    lines.push(`${enumName}: **${stat.count}**`);
+                }
+                if (lines.length) embed.addField('Status', lines, true);
+            }
+            if (stats.genres) {
+                const lines = [];
+                for (const stat of stats.genres) {
+                    if (!stat.count || !stat.genre) continue;
+                    const url = `https://anilist.co/search/${type}?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
+                    lines.push(`${stat.count} [${stat.genre}](${url})`);
+                }
+                if (lines.length) embed.addField('Genres', lines, true);
+            }
+            if (stats.tags) {
+                const lines = [];
+                for (const stat of stats.tags) {
+                    if (!stat.count || !stat.tag || !stat.tag.name) continue;
+                    const url = `https://anilist.co/search/${type}?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
+                    lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
+                }
+                if (lines.length) embed.addField('Tags', lines, true);
+            }
+        }
+        return this.addEmbed(embed);
     }
 
     public addUserEmbed(user: User, pageInfo?: PageInfo): this {
@@ -100,7 +128,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
             ...(totalFavouriteStudios ? [`Favourite Studios: **${totalFavouriteStudios}**`] : []),
         ];
         const embed = this.createEmbedBuilder(pageInfo)
-            .setTitle(user.name);
+            .setTitle(`${user.name}'s Profile`);
         if (descriptionLines.length) embed.setDescription(descriptionLines);
         if (user.siteUrl) embed.setURL(user.siteUrl);
         if (user.bannerImage) embed.setImage(user.bannerImage);
@@ -109,107 +137,10 @@ export class AniListReplyBuilder extends ReplyBuilder {
             const avatarURL = avatar.large || avatar.medium;
             if (avatarURL) embed.setThumbnail(avatarURL);
         }
-        if (user.statistics) {
-            const { anime, manga } = user.statistics;
-            if (anime && anime.count) {
-                embed.addField('Anime Stats', [
-                    `Total Anime: **${anime.count}**`,
-                    ...(anime.episodesWatched ? [
-                        `Episodes: **${HandlerUtil.formatCommas(anime.episodesWatched)}**`,
-                        `Average Eps: **${HandlerUtil.formatCommas(Math.round(anime.episodesWatched / (anime.count || 1)))}**`
-                    ] : []),
-                    ...(anime.minutesWatched ? [`Watched: **${humanizeDuration(anime.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
-                    ...(anime.meanScore ? [`Mean Score: **${anime.meanScore}**`] : []),
-                    ...(anime.standardDeviation ? [`Std deviation: **${anime.standardDeviation}**`] : []),
-
-                ], true);
-                if (anime.formats) {
-                    const lines = [];
-                    for (const stat of anime.formats) {
-                        if (!stat.count || !stat.format) continue;
-                        const enumName = AniListReplyBuilder.formatEnums(stat.format);
-                        lines.push(`${enumName}: **${stat.count}**`);
-                    }
-                    if (lines.length) embed.addField('Formats', lines, true);
-                }
-                if (anime.statuses) {
-                    const lines = [];
-                    for (const stat of anime.statuses) {
-                        if (!stat.count || !stat.status) continue;
-                        const enumName = AniListReplyBuilder.formatEnums(stat.status);
-                        lines.push(`${enumName}: **${stat.count}**`);
-                    }
-                    if (lines.length) embed.addField('Status', lines, true);
-                }
-                if (anime.genres) {
-                    const lines = [];
-                    for (const stat of anime.genres) {
-                        if (!stat.count || !stat.genre) continue;
-                        const url = `https://anilist.co/search/anime?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
-                        lines.push(`${stat.count} [${stat.genre}](${url})`);
-                    }
-                    if (lines.length) embed.addField('Genres', lines, true);
-                }
-                if (anime.tags) {
-                    const lines = [];
-                    for (const stat of anime.tags) {
-                        if (!stat.count || !stat.tag || !stat.tag.name) continue;
-                        const url = `https://anilist.co/search/anime?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
-                        lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
-                    }
-                    if (lines.length) embed.addField('Tags', lines, true);
-                }
-            }
-            if (manga && manga.count) {
-                embed.addField('Manga Stats', [
-                    `Total Manga: **${manga.count}**`,
-                    ...(manga.chaptersRead ? [`Chapters: **${manga.chaptersRead}**`] : []),
-                    ...(manga.volumesRead ? [`Volumes: **${manga.volumesRead}**`] : []),
-                    ...(manga.meanScore ? [`Mean Score: **${manga.meanScore}**`] : []),
-                    ...(manga.standardDeviation ? [`Std deviation: **${manga.standardDeviation}**`] : []),
-                ], true);
-                if (manga.formats) {
-                    const lines = [];
-                    for (const stat of manga.formats) {
-                        if (!stat.count || !stat.format) continue;
-                        const enumName = AniListReplyBuilder.formatEnums(stat.format);
-                        lines.push(`${enumName}: **${stat.count}**`);
-                    }
-                    if (lines.length) embed.addField('Formats', lines, true);
-                }
-                if (manga.statuses) {
-                    const lines = [];
-                    for (const stat of manga.statuses) {
-                        if (!stat.count || !stat.status) continue;
-                        const enumName = AniListReplyBuilder.formatEnums(stat.status);
-                        lines.push(`${enumName}: **${stat.count}**`);
-                    }
-                    if (lines.length) embed.addField('Status', lines, true);
-                }
-                if (manga.genres) {
-                    const lines = [];
-                    for (const stat of manga.genres) {
-                        if (!stat.count || !stat.genre) continue;
-                        const url = `https://anilist.co/search/manga?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
-                        lines.push(`${stat.count} [${stat.genre}](${url})`);
-                    }
-                    if (lines.length) embed.addField('Genres', lines, true);
-                }
-                if (manga.tags) {
-                    const lines = [];
-                    for (const stat of manga.tags) {
-                        if (!stat.count || !stat.tag || !stat.tag.name) continue;
-                        const url = `https://anilist.co/search/manga?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
-                        lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
-                    }
-                    if (lines.length) embed.addField('Tags', lines, true);
-                }
-            }
-        }
         return this.addEmbed(embed);
     }
 
-    public addMediaEmbed(media: Media, pageInfo?: PageInfo, showDescription?: boolean): this {
+    public addMediaEmbed(media: Media, pageInfo?: PageInfo): this {
         const embed = this.createEmbedBuilder(pageInfo);
         const popularity = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.POPULAR) : undefined;
         const rated = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.RATED) : undefined;
@@ -222,6 +153,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
             const title = media.title.romaji || media.title.english || media.title.native;
             if (title) embed.setTitle(`${title} ${(media.isAdult ?? false) ? '(18+)' : ''}`);
         }
+        if (media.bannerImage) embed.setImage(media.bannerImage);
         if (media.siteUrl) embed.setURL(media.siteUrl);
         if (media.coverImage) {
             const coverImage = media.coverImage;
@@ -262,11 +194,6 @@ export class AniListReplyBuilder extends ReplyBuilder {
             const half = Math.ceil(lines.length / 2);
             embed.addField(infoString, lines.slice(0, half), true);
             embed.addField('\u200b', lines.slice(-half), true);
-        }
-        if (showDescription && media.description) {
-            embed.addField('Description', HandlerUtil.shortenMessage(media.description, { maxLength: 1024 }), false);
-        } else if (media.bannerImage) {
-            embed.setImage(media.bannerImage);
         }
         return this.addEmbed(embed);
     }
