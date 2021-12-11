@@ -1,14 +1,25 @@
-import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User } from "../apis/anilist/AniListAPI.js";
+import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserStatisticTypes } from "../apis/anilist/AniListAPI.js";
+import { ActionRowBuilder } from "../discord/builders/ActionRowBuilder.js";
+import { ButtonBuilder } from "../discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
 import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
 import { HandlerUtil } from "../discord/HandlerUtil.js";
 import humanizeDuration from "humanize-duration";
+import { Constants } from "discord.js";
 import { DateTime } from "luxon";
+
+const { MessageButtonStyles } = Constants;
+
+export enum AniListUserComponentID {
+    ANIME_LIST = 'anime_list',
+    MANGA_LIST = 'manga_list',
+    PROFILE = 'profile'
+}
 
 export enum AniListReplyBuilderView {
     USER = 'user',
-    USER_ANIME_STATS = 'userAnimeStats',
-    USER_MANGA_STATS = 'userMangaStats',
+    USER_ANIME_STATS = 'user_anime_stats',
+    USER_MANGA_STATS = 'user_manga_stats',
     CHARACTER = 'character',
     STUDIO = 'studio',
     STAFF = 'staff',
@@ -26,6 +37,31 @@ export class AniListReplyBuilder extends ReplyBuilder {
             if (currentPage && total && total > 1) embed.setFooter(`${currentPage}/${total} Powered by AniList`, iconURL);
         }
         return embed;
+    }
+
+    public addUserButtons(stats: UserStatisticTypes, current?: AniListUserComponentID): this {
+        const profileButton = new ButtonBuilder()
+            .setLabel('Profile')
+            .setCustomId(AniListUserComponentID.PROFILE)
+            .setStyle(MessageButtonStyles.SUCCESS)
+            .setDisabled(current === AniListUserComponentID.PROFILE);
+        const animelistButton = new ButtonBuilder()
+            .setLabel('Animelist')
+            .setCustomId(AniListUserComponentID.ANIME_LIST)
+            .setStyle(MessageButtonStyles.PRIMARY)
+            .setDisabled(current === AniListUserComponentID.ANIME_LIST || !(stats.anime && stats.anime.count));
+        const mangalistButton = new ButtonBuilder()
+            .setLabel('Mangalist')
+            .setCustomId(AniListUserComponentID.MANGA_LIST)
+            .setStyle(MessageButtonStyles.PRIMARY)
+            .setDisabled(current === AniListUserComponentID.MANGA_LIST || !(stats.manga && stats.manga.count));;
+        const actionRow = new ActionRowBuilder()
+            .addComponents([
+                profileButton,
+                animelistButton,
+                mangalistButton
+            ]);
+        return this.addActionRow(actionRow);
     }
 
     public addAniListErrorsEmbed(errors: AniListError[]): this {

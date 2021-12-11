@@ -4,7 +4,7 @@ import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButt
 import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
 import { AutocompleteInteraction, CacheType, CommandInteraction } from 'discord.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
-import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
+import { AniListReplyBuilder, AniListUserComponentID } from '../../../builders/AniListReplyBuilder.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { Redis } from 'ioredis';
 import path from 'path';
@@ -35,21 +35,31 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
         const message = await command.followUp(replyOptions);
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
-            await component.deferUpdate();
-            let { pageInfo } = res.data.Page || {};
-            const totalPages = pageInfo ? (pageInfo.total || 1) : 1;
-            if (component.customId === HandlerButtonID.NEXT_PAGE) vars.page++;
-            if (component.customId === HandlerButtonID.PREVIOUS_PAGE) vars.page--;
-            vars.page = vars.page % totalPages;
-            vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
-            res = await this.fetchAniListData(subCommand, vars);
-            const replyOptions = this.createReplyOptions(command, search, subCommand, res);
-            return await component.editReply(replyOptions);
+            switch (component.customId) {
+                case AniListUserComponentID.ANIME_LIST:
+                case AniListUserComponentID.MANGA_LIST:
+                case AniListUserComponentID.PROFILE: {
+                    const replyOptions = this.createReplyOptions(command, search, component.customId, res);
+                    return await component.update(replyOptions);
+                }
+                default: {
+                    await component.deferUpdate();
+                    let { pageInfo } = res.data.Page || {};
+                    const totalPages = pageInfo ? (pageInfo.total || 1) : 1;
+                    if (component.customId === HandlerButtonID.NEXT_PAGE) vars.page++;
+                    if (component.customId === HandlerButtonID.PREVIOUS_PAGE) vars.page--;
+                    vars.page = vars.page % totalPages;
+                    vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
+                    res = await this.fetchAniListData(subCommand, vars);
+                    const replyOptions = this.createReplyOptions(command, search, subCommand, res);
+                    return await component.editReply(replyOptions);
+                }
+            }
         }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private createReplyOptions(command: CommandInteraction, search: string, subCommand: AniListSubCommand, res: AniListResponse): AniListReplyBuilder {
+    private createReplyOptions(command: CommandInteraction, search: string, subCommand: AniListSubCommand | AniListUserComponentID, res: AniListResponse): AniListReplyBuilder {
         const page = res.data.Page;
         const builder = new AniListReplyBuilder(command);
         if (!page) return builder.addUnexpectedErrorEmbed('[anilist] No page on anilist response');
@@ -61,7 +71,7 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
                 else {
                     const siteURL = page.characters[0].siteUrl || undefined;
                     builder.addCharacterEmbed(page.characters[0], page.pageInfo);
-                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 }
             }
@@ -70,7 +80,7 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
                 else {
                     const siteURL = page.media[0].siteUrl || undefined;
                     builder.addMediaEmbed(page.media[0], page.pageInfo);
-                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 }
             }
@@ -79,7 +89,7 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
                 else {
                     const siteURL = page.staff[0].siteUrl || undefined;
                     builder.addStaffEmbed(page.staff[0], page.pageInfo);
-                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
@@ -88,16 +98,38 @@ export class AniListHandler extends ChatInputHandler implements Autocomplete {
                 else {
                     const siteURL = page.studios[0].siteUrl || undefined;
                     builder.addStudioEmbed(page.studios[0], page.pageInfo);
-                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
+            case AniListUserComponentID.PROFILE:
             case AniListSubCommand.USER: {
                 if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
                 else {
                     const siteURL = page.users[0].siteUrl || undefined;
                     builder.addUserEmbed(page.users[0], page.pageInfo);
-                    if (totalPages) return builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.PROFILE);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                };
+            }
+            case AniListUserComponentID.ANIME_LIST: {
+                if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.users[0].siteUrl || undefined;
+                    builder.addUserStatsEmbed('anime', page.users[0]);
+                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.ANIME_LIST);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
+                    return builder;
+                };
+            }
+            case AniListUserComponentID.MANGA_LIST: {
+                if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
+                else {
+                    const siteURL = page.users[0].siteUrl || undefined;
+                    builder.addUserStatsEmbed('manga', page.users[0]);
+                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.MANGA_LIST);
+                    if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
