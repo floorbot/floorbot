@@ -1,5 +1,5 @@
 export interface TraceMoeResult {
-    readonly anilist: string | {
+    readonly anilist: number | {
         readonly id: number;
         readonly idMal: number;
         readonly title: {
