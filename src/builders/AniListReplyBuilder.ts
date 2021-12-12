@@ -1,4 +1,4 @@
-import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserStatisticTypes } from "../apis/anilist/AniListAPI.js";
+import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../apis/anilist/AniListAPI.js";
 import { ActionRowBuilder } from "../discord/builders/ActionRowBuilder.js";
 import { ButtonBuilder } from "../discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
@@ -100,28 +100,25 @@ export class AniListReplyBuilder extends ReplyBuilder {
                     `Average Eps: **${HandlerUtil.formatCommas(Math.round(stats.episodesWatched / (stats.count || 1)))}**`
                 ] : []),
                 ...(stats.minutesWatched ? [`Watched: **${humanizeDuration(stats.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
-                ...(stats.meanScore ? [`Mean Score: **${stats.meanScore}**`] : []),
-                ...(stats.standardDeviation ? [`Std deviation: **${stats.standardDeviation}**`] : []),
-
+                `Mean Score: **${stats.meanScore || 0}**`,
+                `Std deviation: **${stats.standardDeviation || 0}**`
             ], true);
-            if (stats.formats) {
-                const lines = [];
-                for (const stat of stats.formats) {
-                    if (!stat.count || !stat.format) continue;
-                    const enumName = AniListReplyBuilder.formatEnums(stat.format);
-                    lines.push(`${enumName}: **${stat.count}**`);
-                }
-                if (lines.length) embed.addField('Formats', lines, true);
+            // stats.formats
+            const formatLines = [];
+            for (const stat of AniListReplyBuilder.transformFormats(type, stats.formats || [])) {
+                if (!stat.format) continue;
+                const enumName = AniListReplyBuilder.formatEnums(stat.format);
+                formatLines.push(`${enumName}: **${stat.count}**`);
             }
-            if (stats.statuses) {
-                const lines = [];
-                for (const stat of stats.statuses) {
-                    if (!stat.count || !stat.status) continue;
-                    const enumName = AniListReplyBuilder.formatEnums(stat.status);
-                    lines.push(`${enumName}: **${stat.count}**`);
-                }
-                if (lines.length) embed.addField('Status', lines, true);
+            if (formatLines.length) embed.addField('Formats', formatLines, true);
+            // stats.status
+            const statusLines = [];
+            for (const stat of AniListReplyBuilder.transformStatuses(stats.statuses || [])) {
+                if (!stat.status) continue;
+                const enumName = AniListReplyBuilder.formatEnums(stat.status);
+                statusLines.push(`${enumName}: **${stat.count}**`);
             }
+            if (statusLines.length) embed.addField('Status', statusLines, true);
             if (stats.genres) {
                 const lines = [];
                 for (const stat of stats.genres) {
@@ -351,5 +348,38 @@ export class AniListReplyBuilder extends ReplyBuilder {
                 return value;
             }
         }
+    }
+
+    private static transformFormats(type: 'anime' | 'manga', formats: UserFormatStatistic[]): UserFormatStatistic[] {
+        const emptyFormatStatistic = { count: 0, meanScore: 0, minutesWatched: 0, chaptersRead: 0, mediaIds: [] };
+        switch (type) {
+            case 'manga': {
+                if (!formats.some(format => format.format === MediaFormat.MANGA)) formats.push({ format: MediaFormat.MANGA, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.NOVEL)) formats.push({ format: MediaFormat.NOVEL, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.ONE_SHOT)) formats.push({ format: MediaFormat.ONE_SHOT, ...emptyFormatStatistic });
+                return formats;
+            }
+            case 'anime': {
+                if (!formats.some(format => format.format === MediaFormat.TV)) formats.push({ format: MediaFormat.TV, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.MOVIE)) formats.push({ format: MediaFormat.MOVIE, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.TV_SHORT)) formats.push({ format: MediaFormat.TV_SHORT, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.OVA)) formats.push({ format: MediaFormat.OVA, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.ONA)) formats.push({ format: MediaFormat.ONA, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.SPECIAL)) formats.push({ format: MediaFormat.SPECIAL, ...emptyFormatStatistic });
+                if (!formats.some(format => format.format === MediaFormat.MUSIC)) formats.push({ format: MediaFormat.MUSIC, ...emptyFormatStatistic });
+                return formats;
+            }
+        }
+    }
+
+    private static transformStatuses(statuses: UserStatusStatistic[]): UserStatusStatistic[] {
+        const emptyStatusStatistic = { count: 0, meanScore: 0, minutesWatched: 0, chaptersRead: 0, mediaIds: [] };
+        if (!statuses.some(status => status.status === MediaListStatus.CURRENT)) statuses.push({ status: MediaListStatus.CURRENT, ...emptyStatusStatistic });
+        if (!statuses.some(status => status.status === MediaListStatus.COMPLETED)) statuses.push({ status: MediaListStatus.COMPLETED, ...emptyStatusStatistic });
+        if (!statuses.some(status => status.status === MediaListStatus.PAUSED)) statuses.push({ status: MediaListStatus.PAUSED, ...emptyStatusStatistic });
+        if (!statuses.some(status => status.status === MediaListStatus.PLANNING)) statuses.push({ status: MediaListStatus.PLANNING, ...emptyStatusStatistic });
+        if (!statuses.some(status => status.status === MediaListStatus.DROPPED)) statuses.push({ status: MediaListStatus.DROPPED, ...emptyStatusStatistic });
+        if (!statuses.some(status => status.status === MediaListStatus.REPEATING)) statuses.push({ status: MediaListStatus.REPEATING, ...emptyStatusStatistic });
+        return statuses;
     }
 }
