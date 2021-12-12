@@ -1,4 +1,4 @@
-import { AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../apis/anilist/AniListAPI.js";
+import { ActivityUnion, AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../apis/anilist/AniListAPI.js";
 import { ActionRowBuilder } from "../discord/builders/ActionRowBuilder.js";
 import { ButtonBuilder } from "../discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
@@ -13,6 +13,7 @@ const { MessageButtonStyles } = Constants;
 export enum AniListUserComponentID {
     ANIME_LIST = 'anime_list',
     MANGA_LIST = 'manga_list',
+    ACTIVITIES = 'activities',
     PROFILE = 'profile'
 }
 
@@ -54,12 +55,18 @@ export class AniListReplyBuilder extends ReplyBuilder {
             .setLabel('Mangalist')
             .setCustomId(AniListUserComponentID.MANGA_LIST)
             .setStyle(MessageButtonStyles.PRIMARY)
-            .setDisabled(current === AniListUserComponentID.MANGA_LIST || !(stats.manga && stats.manga.count));;
+            .setDisabled(current === AniListUserComponentID.MANGA_LIST || !(stats.manga && stats.manga.count));
+        const activitiesButton = new ButtonBuilder()
+            .setLabel('Activities')
+            .setCustomId(AniListUserComponentID.ACTIVITIES)
+            .setStyle(MessageButtonStyles.PRIMARY)
+            .setDisabled(current === AniListUserComponentID.ACTIVITIES);
         const actionRow = new ActionRowBuilder()
             .addComponents([
                 profileButton,
                 animelistButton,
-                mangalistButton
+                mangalistButton,
+                activitiesButton
             ]);
         return this.addActionRow(actionRow);
     }
@@ -78,6 +85,25 @@ export class AniListReplyBuilder extends ReplyBuilder {
         this.addFile(attachment);
         this.addEmbed(embed);
         return this;
+    }
+
+    public addUserActivitiesEmbed(user: User, activities: ActivityUnion[]): this {
+        const avatarURL = user.avatar?.large || user.avatar?.medium;
+        const embed = this.createEmbedBuilder()
+            .setAuthor(`${user.name}'s activity`, avatarURL || undefined, user.siteUrl || undefined);
+        const lines = [];
+        for (const activity of activities) {
+            const titleString = activity.media?.title?.romaji || activity.media?.title?.english || '**unknown**';
+            const timeString = `[[${activity.createdAt ? `<t:${activity.createdAt}:R>` : '[*unknown*]'}](${activity.siteUrl || 'https://anilist.co/'})]`;
+            const statusString = HandlerUtil.capitalizeString(activity.status || 'Interacted With');
+            const progressString = activity.progress ? `${activity.progress} of ` : ``;
+            const mediaString = `[${titleString}](${activity.media?.siteUrl || 'https://anilist.co/'})`;
+            const line = `${timeString} ${statusString} ${progressString}${mediaString}`;
+            lines.push(line);
+        }
+        const description = lines.join('\n') || 'There is no recorded activity...';
+        embed.setDescription(HandlerUtil.shortenMessage(description, { maxLength: 4096 }));
+        return this.addEmbed(embed);
     }
 
     public addUserStatsEmbed(type: 'anime' | 'manga', user: User): this {
@@ -179,7 +205,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
         const embed = this.createEmbedBuilder(pageInfo);
         const popularity = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.POPULAR) : undefined;
         const rated = media.rankings ? media.rankings.find(ranking => ranking.allTime && ranking.type === MediaRankType.RATED) : undefined;
-        const nextAiring = media.nextAiringEpisode;
+        const nextAiringEpisode = media.nextAiringEpisode?.episode || null;
         const mainStudioEdge = media.studios && media.studios.edges ? media.studios.edges.find(edge => edge.isMain) : null;
         const mainStudio = mainStudioEdge ? mainStudioEdge.node ?? null : null;
         const startDate = media.startDate ? AniListReplyBuilder.getFuzzyDateString(media.startDate) : null;
@@ -213,7 +239,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
                 [`Studio: ** [${mainStudio.name}](${mainStudio.siteUrl}) ** `] :
                 [`Studio: ** ${mainStudio.name}** `] : []),
             ...(media.trailer && trailerUrl ? [`Trailer: ** [${media.trailer.site}](${trailerUrl}) ** `] : []),
-            ...(media.episodes ? [`Episodes: ** ${nextAiring ? nextAiring.episode - 1 : media.episodes} /${media.episodes}**`] : []),
+            ...(media.episodes ? [`Episodes: ** ${nextAiringEpisode ? nextAiringEpisode - 1 : media.episodes} /${media.episodes}**`] : []),
             ...(media.chapters ? [`Chapters: **${media.chapters}**`] : []),
             ...(media.volumes ? [`Volumes: **${media.volumes}**`] : []),
             `Started: **${startDate ? startDate : 'unknown'}**`,
@@ -282,7 +308,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
     public addStudioEmbed(studio: Studio, pageInfo?: PageInfo): this {
         const totalMedia = studio.media?.pageInfo?.total || 0;
         const embed = this.createEmbedBuilder(pageInfo)
-            .setTitle(studio.name)
+            .setTitle(studio.name || 'Unknown Studio')
             .setDescription([
                 `Animation Studio: **${studio.isAnimationStudio ? 'yes' : 'no'}**`,
                 ...(studio.favourites ? [`Favourites: **${HandlerUtil.formatCommas(studio.favourites)}**`] : []),

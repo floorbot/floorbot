@@ -6,7 +6,7 @@ import { User } from './User';
 export type StaffConnection = Connection<StaffEdge, Staff>;
 
 export interface Staff {
-    readonly id: number;
+    readonly id?: number;
     readonly name?: StaffName | null;
     readonly languageV2?: string | null;
     readonly image?: StaffImage | null;

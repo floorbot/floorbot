@@ -5,7 +5,7 @@ import { Staff, StaffRoleType } from './Staff';
 export type CharacterConnection = Connection<CharacterEdge, Character>;
 
 export interface Character {
-    readonly id: number;
+    readonly id?: number;
     readonly name?: CharacterName;
     readonly image?: CharacterImage;
     readonly description?: string | null;

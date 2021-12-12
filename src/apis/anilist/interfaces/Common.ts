@@ -8,12 +8,12 @@ import { Media } from './Media';
 
 export interface AniListResponse {
     readonly data: {
-        readonly Activity: ActivityUnion | null;
-        readonly Character: Character | null;
-        readonly Studio: Studio | null;
-        readonly Staff: Staff | null;
-        readonly Media: Media | null;
-        readonly User: User | null;
+        readonly Activity?: ActivityUnion | null;
+        readonly Character?: Character | null;
+        readonly Studio?: Studio | null;
+        readonly Staff?: Staff | null;
+        readonly Media?: Media | null;
+        readonly User?: User | null;
         readonly Page: Page | null;
     };
     readonly errors?: AniListError[];

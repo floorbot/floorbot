@@ -4,9 +4,9 @@ import { Connection } from './Common';
 export type StudioConnection = Connection<StudioEdge, Studio>;
 
 export interface Studio {
-    readonly id: number;
-    readonly name: string;
-    readonly isAnimationStudio: boolean;
+    readonly id?: number;
+    readonly name?: string;
+    readonly isAnimationStudio?: boolean;
     readonly media?: MediaConnection;
     readonly siteUrl?: string | null;
     readonly isFavourite: boolean | null;

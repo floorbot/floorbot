@@ -16,7 +16,7 @@ export interface MediaVariables {
 }
 
 export interface Media {
-    readonly id: number;
+    readonly id?: number;
     readonly idMal?: number | null;
     readonly title?: MediaTitle;
     readonly type?: MediaType;

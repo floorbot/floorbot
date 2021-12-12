@@ -1,8 +1,9 @@
 query($page: Int, $id: Int, $search: String) {
     Page(page: $page, perPage: 1) {
         pageInfo {
-            currentPage
             total
+            perPage
+            currentPage
             lastPage
             hasNextPage
         }
