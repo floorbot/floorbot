@@ -8,7 +8,6 @@ import { HandlerUtil } from "../discord/HandlerUtil.js";
 import humanizeDuration from "humanize-duration";
 import { ProbeResult } from "probe-image-size";
 import { Constants } from "discord.js";
-import { Media } from "../apis/anilist/AniListAPI.js";
 
 const { MessageButtonStyles } = Constants;
 
@@ -30,11 +29,10 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
         return embed;
     }
 
-    public addTraceMoeEmbed(metadata: ProbeResult, result: TraceMoeResult, media: Media | null, pageData: TraceMoeReplyBuilderPage): this {
+    public addTraceMoeEmbed(metadata: ProbeResult, result: TraceMoeResult, pageData: TraceMoeReplyBuilderPage): this {
         const anilistID = typeof result.anilist === 'number' ? result.anilist : result.anilist.id;
-        const title = media?.title?.romaji || (typeof result.anilist === 'number' ? result.filename : result.anilist.title.romaji);
         const embed = this.createEmbedBuilder(pageData)
-            .setTitle(title)
+            .setTitle(typeof result.anilist === 'number' ? result.filename : result.anilist.title.romaji)
             .setURL(`https://anilist.co/anime/${anilistID}`)
             .setThumbnail(metadata.url)
             .setDescription([
