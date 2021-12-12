@@ -7,7 +7,7 @@ export enum AniListSubCommand {
     STUDIO = 'studio',
     STAFF = 'staff',
     MEDIA = 'media',
-    USER = 'user',
+    USER = 'user'
 }
 
 export const AniListCommandData: ChatInputApplicationCommandData = {

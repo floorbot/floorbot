@@ -18,14 +18,14 @@ export enum AniListUserComponentID {
 }
 
 export enum AniListReplyBuilderView {
-    USER = 'user',
     USER_ANIME_STATS = 'user_anime_stats',
     USER_MANGA_STATS = 'user_manga_stats',
     CHARACTER = 'character',
     STUDIO = 'studio',
     STAFF = 'staff',
-    MEDIA = 'media'
-};
+    MEDIA = 'media',
+    USER = 'user'
+}
 
 export class AniListReplyBuilder extends ReplyBuilder {
 
