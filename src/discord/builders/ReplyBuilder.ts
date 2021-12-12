@@ -49,7 +49,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addFile(attachment: AttachmentBuilder): this {
-        return this.addFile(attachment);
+        return this.addFiles(attachment);
     }
 
     public addFiles(...attachments: AttachmentBuilder[]): this {
@@ -67,6 +67,12 @@ export class ReplyBuilder implements InteractionReplyOptions {
         console.log('[dev] ReplyBuilder#getAvatar is a temporary solution...');
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${avatar}.png`);
         return new AttachmentBuilder(buffer, 'floorbot.png');
+    }
+
+    /** This is a speical attachment to make embeds as wide as possible */
+    protected getEmbedWidenerAttachment(): AttachmentBuilder {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
+        return new AttachmentBuilder(buffer, 'embed_widener.png');
     }
 
     /** This is a unique helper function for consistent embeds */
@@ -96,7 +102,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
                 ...(error && error.message ? [`Message: \`${error.message}\``] : [])
             ]);
-        this.addFiles(attachment);
+        this.addFile(attachment);
         this.addEmbed(embed);
         return this;
     }
@@ -110,7 +116,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 `Sorry! I could not find any results for \`${query || 'your query'}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
-        this.addFiles(attachment);
+        this.addFile(attachment);
         this.addEmbed(embed);
         return this;
     }

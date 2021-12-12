@@ -81,9 +81,11 @@ export class AniListReplyBuilder extends ReplyBuilder {
     }
 
     public addUserStatsEmbed(type: 'anime' | 'manga', user: User): this {
+        const attachment = this.getEmbedWidenerAttachment();
         const typeName = HandlerUtil.capitalizeString(type);
         const avatarURL = user.avatar?.large || user.avatar?.medium;
         const embed = this.createEmbedBuilder()
+            .setImage(attachment.getEmbedUrl())
             .setAuthor(`${user.name}'s ${type}list`, avatarURL || undefined, user.siteUrl || undefined);
         const stats = user.statistics?.[type];
         if (!stats || !stats.count) {
@@ -139,7 +141,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
                 if (lines.length) embed.addField('Tags', lines, true);
             }
         }
-        return this.addEmbed(embed);
+        return this.addFile(attachment).addEmbed(embed);
     }
 
     public addUserEmbed(user: User, pageInfo?: PageInfo): this {
