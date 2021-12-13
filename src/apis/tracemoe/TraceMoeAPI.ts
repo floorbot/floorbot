@@ -1,3 +1,4 @@
+import { TraceMoeMeResponse } from './interfaces/TraceMoeMeResponse.js';
 import { TraceMoeResponse } from './interfaces/TraceMoeResponse.js';
 import { TraceMoeResult } from './interfaces/TraceMoeResult.js';
 import fetch, { Headers } from 'node-fetch';
@@ -5,7 +6,7 @@ import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
 import { Redis } from 'ioredis';
 
-export { TraceMoeResponse, TraceMoeResult };
+export { TraceMoeResponse, TraceMoeMeResponse, TraceMoeResult };
 
 export interface TraceMoeConstructorOptions {
     readonly apiKey?: string,
@@ -66,10 +67,10 @@ export class TraceMoeAPI {
         return headers;
     }
 
-    private async request(params: [string, string | number | null][]): Promise<any> {
+    private async request(endpoint: string, params: [string, string | number | null][]): Promise<any> {
         return this.limiter.schedule(() => {
             const paramString = params.map((param) => `${param[0]}${param[1] !== null ? `=${encodeURIComponent(param[1])}` : ''}`).join('&');
-            const url = `https://api.trace.moe/search?${paramString}`;
+            const url = `https://api.trace.moe/${endpoint}?${paramString}`;
             const options = { method: 'GET', headers: this.getHeaders() };
             return fetch(url, options).then((res: any) => res.json());
         });
@@ -79,7 +80,7 @@ export class TraceMoeAPI {
         const existing = TraceMoeAPI.TRACE_MOE_ANILIST_CACHE.get(url);
         if (existing) return existing as TraceMoeResponse;
         const params: [string, string | number | null][] = [['anilistInfo', null], ['url', url]];
-        const res = await this.request(params);
+        const res = await this.request('search', params);
         TraceMoeAPI.TRACE_MOE_ANILIST_CACHE.set(url, res);
         return res as TraceMoeResponse;
     }
@@ -88,8 +89,13 @@ export class TraceMoeAPI {
         const existing = TraceMoeAPI.TRACE_MOE_CACHE.get(url);
         if (existing) return existing as TraceMoeResponse;
         const params: [string, string | number | null][] = [['url', url]];
-        const res = await this.request(params);
+        const res = await this.request('search', params);
         TraceMoeAPI.TRACE_MOE_CACHE.set(url, res);
         return res as TraceMoeResponse;
+    }
+
+    public async fetchMe(): Promise<TraceMoeMeResponse> {
+        const res = await this.request('me', []);
+        return res as TraceMoeMeResponse;
     }
 }
