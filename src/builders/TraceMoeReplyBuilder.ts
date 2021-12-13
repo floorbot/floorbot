@@ -64,7 +64,7 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
                     [`Studio: ** [${mainStudio.name}](${mainStudio.siteUrl}) ** `] :
                     [`Studio: ** ${mainStudio.name}** `] : []),
                 ...(media.trailer && trailerUrl ? [`Trailer: ** [${media.trailer.site}](${trailerUrl}) ** `] : []),
-                ...(media.episodes ? [`Episodes: ** ${nextAiring ? nextAiring.episode - 1 : media.episodes} /${media.episodes}**`] : []),
+                ...(media.episodes ? [`Episodes: ** ${(nextAiring && nextAiring.episode) ? nextAiring.episode - 1 : media.episodes} /${media.episodes}**`] : []),
                 ...(media.chapters ? [`Chapters: **${media.chapters}**`] : []),
                 ...(media.volumes ? [`Volumes: **${media.volumes}**`] : []),
                 `Started: **${startDate ? startDate : 'unknown'}**`,

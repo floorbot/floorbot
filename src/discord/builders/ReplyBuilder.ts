@@ -75,6 +75,12 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return new AttachmentBuilder(buffer, 'floorbot.png');
     }
 
+    /** This is a speical attachment to make embeds as wide as possible */
+    protected getEmbedWidenerAttachment(): AttachmentBuilder {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
+        return new AttachmentBuilder(buffer, 'embed_widener.png');
+    }
+
     /** This is a unique helper function for consistent embeds */
     protected createEmbedBuilder(): EmbedBuilder {
         const embed = new EmbedBuilder();

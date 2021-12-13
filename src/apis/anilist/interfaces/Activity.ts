@@ -1,29 +1,34 @@
 import { Media } from "./Media.js";
 import { User } from "./User.js";
 
+export interface ActivityVariables {
+    readonly userId?: number;
+    readonly type?: ActivityType;
+}
+
 export type ActivityUnion = TextActivity & ListActivity & MessageActivity;
 
 export interface Activity {
-    readonly id: number;
+    readonly id?: number;
     readonly type?: ActivityType;
-    readonly replyCount: number;
+    readonly replyCount?: number;
     readonly siteUrl?: string | null;
     readonly isLocked?: boolean | null;
     readonly isSubscribed?: boolean | null;
     readonly likeCount: number;
     readonly isLiked?: boolean | null;
-    readonly createdAt: number;
+    readonly createdAt?: number;
     readonly replies?: ActivityReply[];
     readonly likes?: User[];
 }
 
-export interface TextActivity {
+export interface TextActivity extends Activity {
     readonly userId?: number | null;
     readonly text?: string | null;
     readonly user?: User;
 }
 
-export interface ListActivity {
+export interface ListActivity extends Activity {
     readonly userId?: number | null;
     readonly status?: string | null;
     readonly progress?: string | null;
@@ -31,7 +36,7 @@ export interface ListActivity {
     readonly media?: Media;
 }
 
-export interface MessageActivity {
+export interface MessageActivity extends Activity {
     readonly recipientId?: number | null;
     readonly messengerId?: number | null;
     readonly message?: string | null;

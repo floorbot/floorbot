@@ -1,5 +1,5 @@
-query($id: Int, $page: Int, $type: ActivityType) {
-    Page(perPage: 50, page: $page) {
+query($userId: Int) {
+    Page(perPage: 10, page: 1) {
         pageInfo {
             total
             perPage
@@ -7,13 +7,16 @@ query($id: Int, $page: Int, $type: ActivityType) {
             lastPage
             hasNextPage
         }
-        activities(userId: $id, type: $type, sort: ID_DESC) {
+        activities(userId: $userId, type: MEDIA_LIST, sort: ID_DESC) {
             ... on ListActivity {
                 id
-                createdAt
+                type
+                replyCount
                 status
                 progress
+                likeCount
                 siteUrl
+                createdAt
                 media {
                     id
                     siteUrl
@@ -22,6 +25,17 @@ query($id: Int, $page: Int, $type: ActivityType) {
                         english
                         native
                         userPreferred
+                    }
+                }
+                user {
+                    id
+                    statistics {
+                        anime {
+                            count
+                        }
+                        manga {
+                            count
+                        }
                     }
                 }
             }

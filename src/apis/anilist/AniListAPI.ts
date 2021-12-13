@@ -1,3 +1,4 @@
+import { ActivityVariables } from './interfaces/Activity.js';
 import { AniListResponse } from './interfaces/Common';
 import { MediaVariables } from './interfaces/Media';
 import Bottleneck from 'bottleneck';
@@ -16,7 +17,7 @@ export * from './interfaces/Staff.js';
 export * from './interfaces/User.js';
 export * from './interfaces/Page.js';
 
-export type QueryVars = MediaVariables & {
+export type QueryVars = MediaVariables & ActivityVariables & {
     page?: number,
     perPage?: number;
 };

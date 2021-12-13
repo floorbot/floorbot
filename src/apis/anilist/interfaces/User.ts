@@ -5,8 +5,8 @@ import { CharacterConnection } from "./Character.js";
 import { Staff, StaffConnection } from "./Staff.js";
 
 export interface User {
-    readonly id: number;
-    readonly name: string;
+    readonly id?: number;
+    readonly name?: string;
     readonly about?: string | null;
     readonly avatar?: UserAvatar;
     readonly bannerImage?: string | null;
@@ -96,13 +96,13 @@ export interface UserStatisticTypes {
 }
 
 export interface UserStatistics {
-    readonly count: number;
-    readonly meanScore: number;
-    readonly standardDeviation: number;
-    readonly minutesWatched: number;
-    readonly episodesWatched: number;
-    readonly chaptersRead: number;
-    readonly volumesRead: number;
+    readonly count?: number;
+    readonly meanScore?: number;
+    readonly standardDeviation?: number;
+    readonly minutesWatched?: number;
+    readonly episodesWatched?: number;
+    readonly chaptersRead?: number;
+    readonly volumesRead?: number;
     readonly formats?: UserFormatStatistic[];
     readonly statuses?: UserStatusStatistic[];
     readonly scores?: [UserScoreStatistic];
@@ -118,11 +118,11 @@ export interface UserStatistics {
 }
 
 export interface UserStatistic {
-    readonly count: number;
-    readonly meanScore: number;
-    readonly minutesWatched: number;
-    readonly chaptersRead: number;
-    readonly mediaIds: number[];
+    readonly count?: number;
+    readonly meanScore?: number;
+    readonly minutesWatched?: number;
+    readonly chaptersRead?: number;
+    readonly mediaIds?: number[];
 }
 
 export interface UserFormatStatistic extends UserStatistic {
@@ -163,7 +163,7 @@ export interface UserCountryStatistic extends UserStatistic {
 
 export interface UserVoiceActorStatistic extends UserStatistic {
     readonly voiceActor?: Staff;
-    readonly characterIds: number[];
+    readonly characterIds?: number[];
 }
 
 export interface UserStaffStatistic extends UserStatistic {
