@@ -318,22 +318,7 @@ export class AniListReplyBuilder extends ReplyBuilder {
         return this.addEmbed(embed);
     }
 
-    private static getFuzzyDateString(fuzzy: FuzzyDate, string?: boolean): string | null {
-        const fuzz = {
-            ...(fuzzy.day && { day: fuzzy.day }),
-            ...(fuzzy.month && { month: fuzzy.month }),
-            ...(fuzzy.year && { year: fuzzy.year })
-        };
-        if (!fuzz.day && !fuzz.month && !fuzz.month) return null;
-        if (!string || Object.values(fuzz).length === 3) {
-            return `<t:${Math.round(DateTime.fromObject(fuzz).toSeconds())}:d>`;
-        } else {
-            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return [fuzz.month ? months[fuzz.month - 1] : null, fuzz.day, fuzz.year].filter(part => part || part === 0).join(' ');
-        }
-    }
-
-    private static formatEnums(value: ModRole | MediaStatus | MediaListStatus | MediaFormat): string {
+    public static formatEnums(value: ModRole | MediaStatus | MediaListStatus | MediaFormat): string {
         switch (value) {
             case ModRole.ADMIN: return 'Admin';
             case ModRole.ANIME_DATA: return 'Anime Data';
@@ -407,5 +392,20 @@ export class AniListReplyBuilder extends ReplyBuilder {
         if (!statuses.some(status => status.status === MediaListStatus.DROPPED)) statuses.push({ status: MediaListStatus.DROPPED, ...emptyStatusStatistic });
         if (!statuses.some(status => status.status === MediaListStatus.REPEATING)) statuses.push({ status: MediaListStatus.REPEATING, ...emptyStatusStatistic });
         return statuses;
+    }
+
+    public static getFuzzyDateString(fuzzy: FuzzyDate, string?: boolean): string | null {
+        const fuzz = {
+            ...(fuzzy.day && { day: fuzzy.day }),
+            ...(fuzzy.month && { month: fuzzy.month }),
+            ...(fuzzy.year && { year: fuzzy.year })
+        };
+        if (!fuzz.day && !fuzz.month && !fuzz.month) return null;
+        if (!string || Object.values(fuzz).length === 3) {
+            return `<t:${Math.round(DateTime.fromObject(fuzz).toSeconds())}:d>`;
+        } else {
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            return [fuzz.month ? months[fuzz.month - 1] : null, fuzz.day, fuzz.year].filter(part => part || part === 0).join(' ');
+        }
     }
 }

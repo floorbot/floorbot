@@ -1,4 +1,4 @@
-import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User, Util, SplitOptions } from 'discord.js';
+import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User, Util, SplitOptions, TextBasedChannels } from 'discord.js';
 import { HandlerReplies } from './helpers/HandlerReplies.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import { HandlerClient } from './HandlerClient.js';
@@ -10,6 +10,21 @@ const { Events } = Constants;
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export class HandlerUtil {
+
+    public static isNSFW(channel: TextBasedChannels): boolean {
+        switch (channel.type) {
+            case "DM": return false;
+            case "GUILD_TEXT":
+            case "GUILD_NEWS": { return channel.nsfw; }
+            case "GUILD_PRIVATE_THREAD":
+            case "GUILD_PUBLIC_THREAD":
+            case "GUILD_NEWS_THREAD": { return !channel.parent || !channel.parent.nsfw; }
+            default: {
+                console.warn(`[support](nsfw) Unknown channel type <${(<any>channel).type}> for checking NSFW support`);
+                return false;
+            };
+        }
+    }
 
     public static shortenMessage(message: string, options: SplitOptions = {}): string {
         const short = Util.splitMessage(message, { maxLength: 512, char: '', append: '...', ...options })[0];

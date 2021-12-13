@@ -1,13 +1,15 @@
+import { TraceMoeMeResponse } from './interfaces/TraceMoeMeResponse.js';
+import { TraceMoeResponse } from './interfaces/TraceMoeResponse.js';
 import { TraceMoeResult } from './interfaces/TraceMoeResult.js';
-import { TraceMoeResponse } from './interfaces/TraceMoeData.js';
 import fetch, { Headers } from 'node-fetch';
 import Bottleneck from 'bottleneck';
 import NodeCache from 'node-cache';
 import { Redis } from 'ioredis';
 
-export { TraceMoeResponse, TraceMoeResult };
+export { TraceMoeResponse, TraceMoeMeResponse, TraceMoeResult };
 
 export interface TraceMoeConstructorOptions {
+    readonly apiKey?: string,
     readonly redis: Redis;
     readonly rateLimit?: {
         readonly perMonth: number;
@@ -17,12 +19,15 @@ export interface TraceMoeConstructorOptions {
 
 export class TraceMoeAPI {
 
+    private static TRACE_MOE_ANILIST_CACHE = new NodeCache({ stdTTL: 60 * 60 });
     private static TRACE_MOE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
     private readonly limiter: Bottleneck;
+    private readonly apiKey?: string;
 
     //free tier is only 60 calls/minute and 1000 calls a month
     constructor(options: TraceMoeConstructorOptions) {
+        this.apiKey = options.apiKey;
         const rateLimit = options.rateLimit || { perMonth: 1000, perMinute: 60 };
         let { redis } = options;
         // Creates a monthly (31 day) limit of specified requests (api limits)
@@ -56,21 +61,41 @@ export class TraceMoeAPI {
         this.limiter.chain(monthlyLimit);
     }
 
-    private async request(params: [string, string | number][], headers?: Headers): Promise<any> {
+    private getHeaders(): Headers {
+        const headers = new Headers();
+        if (this.apiKey) headers.set('x-trace-key', this.apiKey);
+        return headers;
+    }
+
+    private async request(endpoint: string, params: [string, string | number | null][]): Promise<any> {
         return this.limiter.schedule(() => {
-            const paramString = params.map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
-            const url = `https://api.trace.moe/search?anilistInfo&${paramString}`;
-            const options = { method: 'GET', headers: headers || new Headers() };
+            const paramString = params.map((param) => `${param[0]}${param[1] !== null ? `=${encodeURIComponent(param[1])}` : ''}`).join('&');
+            const url = `https://api.trace.moe/${endpoint}?${paramString}`;
+            const options = { method: 'GET', headers: this.getHeaders() };
             return fetch(url, options).then((res: any) => res.json());
         });
+    }
+
+    public async fetchTraceMoeAniListData(url: string): Promise<TraceMoeResponse> {
+        const existing = TraceMoeAPI.TRACE_MOE_ANILIST_CACHE.get(url);
+        if (existing) return existing as TraceMoeResponse;
+        const params: [string, string | number | null][] = [['anilistInfo', null], ['url', url]];
+        const res = await this.request('search', params);
+        TraceMoeAPI.TRACE_MOE_ANILIST_CACHE.set(url, res);
+        return res as TraceMoeResponse;
     }
 
     public async fetchTraceMoeData(url: string): Promise<TraceMoeResponse> {
         const existing = TraceMoeAPI.TRACE_MOE_CACHE.get(url);
         if (existing) return existing as TraceMoeResponse;
-        const params: [string, string | number][] = [['url', url]];
-        const res = await this.request(params);
+        const params: [string, string | number | null][] = [['url', url]];
+        const res = await this.request('search', params);
         TraceMoeAPI.TRACE_MOE_CACHE.set(url, res);
         return res as TraceMoeResponse;
+    }
+
+    public async fetchMe(): Promise<TraceMoeMeResponse> {
+        const res = await this.request('me', []);
+        return res as TraceMoeMeResponse;
     }
 }

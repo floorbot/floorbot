@@ -1,5 +1,5 @@
 export interface TraceMoeResult {
-    readonly anilist: string | {
+    readonly anilist: number | {
         readonly id: number;
         readonly idMal: number;
         readonly title: {
@@ -11,7 +11,7 @@ export interface TraceMoeResult {
         readonly isAdult: boolean;
     };
     readonly filename: string;
-    readonly episode: number;
+    readonly episode: number | null;
     readonly from: number;
     readonly to: number;
     readonly similarity: number;

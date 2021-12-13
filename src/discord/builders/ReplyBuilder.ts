@@ -10,12 +10,13 @@ export class ReplyBuilder implements InteractionReplyOptions {
 
     protected context?: BuilderContext;
 
-    public files?: AttachmentBuilder[];
+    public attachments?: AttachmentBuilder[];
     public components?: ActionRowBuilder[];
+    public files?: AttachmentBuilder[];
     public embeds?: EmbedBuilder[];
     public content?: string | null;
 
-    constructor(data: BuilderContext | (InteractionReplyOptions & { context: BuilderContext; })) {
+    constructor(data: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
         if (data) {
             if (data instanceof Interaction) this.context = data;
             else if (data instanceof Message) this.context = data;
@@ -55,6 +56,11 @@ export class ReplyBuilder implements InteractionReplyOptions {
     public addFiles(...attachments: AttachmentBuilder[]): this {
         if (!this.files) this.files = [];
         this.files.push(...attachments);
+        return this;
+    }
+
+    public clearAttachments(): this {
+        this.attachments = [];
         return this;
     }
 
@@ -119,5 +125,17 @@ export class ReplyBuilder implements InteractionReplyOptions {
         this.addFile(attachment);
         this.addEmbed(embed);
         return this;
+    }
+
+    public addMissingContentReply(action: string): InteractionReplyOptions {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-2.png`);
+        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const embed = this.createEmbedBuilder()
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like that message has no content to ${action}`,
+                `*Please make the correct changes before trying again!*`
+            ].join('\n'));
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 }
