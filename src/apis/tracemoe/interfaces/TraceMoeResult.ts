@@ -11,7 +11,7 @@ export interface TraceMoeResult {
         readonly isAdult: boolean;
     };
     readonly filename: string;
-    readonly episode: number;
+    readonly episode: number | null;
     readonly from: number;
     readonly to: number;
     readonly similarity: number;

@@ -2,11 +2,10 @@ import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextM
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
 import { TraceMoeAPI, TraceMoeResult } from '../../../apis/tracemoe/TraceMoeAPI.js';
 import { TraceMoeReplyBuilder } from '../../../builders/TraceMoeReplyBuilder.js';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
 import { AniListAPI, Media } from '../../../apis/anilist/AniListAPI.js';
+import { ContextMenuInteraction, Interaction } from 'discord.js';
 import { TraceMoeCommandData } from './TraceMoeCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { ContextMenuInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
@@ -42,11 +41,11 @@ export class TraceMoeHandler extends ContextMenuHandler {
         let result = HandlerUtil.resolveArrayPage(res.result, pageData.page);
         let media = await this.requestAnime(result);
 
-        const replyOptions: ReplyBuilder = new TraceMoeReplyBuilder(contextMenu)
-            .addTraceMoeEmbed(metadata, result, media, pageData)
-            .addTraceMoePageActionRow(result, pageData)
+        const replyOptions = new TraceMoeReplyBuilder(contextMenu)
             // .setContent(result.video) // This does not embed...
-            .addTraceMoeFile(result);
+            .addTraceMoeEmbed(metadata, result, media, pageData)
+            .addTraceMoePageActionRow(result, pageData);
+        if (this.canPostVideo(contextMenu, media)) replyOptions.addTraceMoeFile(result);
         const message = await contextMenu.followUp(replyOptions);
 
         // Add interaciton collector and handle buttons
@@ -61,14 +60,20 @@ export class TraceMoeHandler extends ContextMenuHandler {
             result = HandlerUtil.resolveArrayPage(res.result, pageData.page);
             media = await this.requestAnime(result);
             const replyOptions = new TraceMoeReplyBuilder(contextMenu)
+                // .setContent(result.video) // This does not embed...
                 .addTraceMoeEmbed(metadata, result, media, pageData)
                 .addTraceMoePageActionRow(result, pageData)
-                // .setContent(result.video) // This does not embed...
-                .addTraceMoeFile(result)
                 .clearAttachments();
+            if (this.canPostVideo(component, media)) replyOptions.addTraceMoeFile(result);
             return await component.editReply(replyOptions);
         }));
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+    }
+
+    private canPostVideo(interaction: Interaction<any>, media?: Media): boolean {
+        const channelNSFW = (interaction.channel && HandlerUtil.isNSFW(interaction.channel)) ?? false;
+        const mediaNSFW = media?.isAdult ?? true;
+        return !mediaNSFW || channelNSFW;
     }
 
     private async requestAnime(result: TraceMoeResult): Promise<Media | undefined> {

@@ -28,12 +28,14 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
 
     public addTraceMoeEmbed(metadata: ProbeResult, result: TraceMoeResult, media?: Media, pageData?: TraceMoeReplyBuilderPage): this {
         const anilistID = typeof result.anilist === 'number' ? result.anilist : result.anilist.id;
+        const title = media?.title?.romaji || (typeof result.anilist === 'number' ? result.filename : result.anilist.title.romaji);
+        const nsfw = media?.isAdult || false;
         const embed = this.createEmbedBuilder(pageData)
-            .setTitle(media?.title?.romaji || (typeof result.anilist === 'number' ? result.filename : result.anilist.title.romaji))
+            .setTitle(`${title} ${nsfw ? '(18+)' : ''}`)
             .setURL(`https://anilist.co/anime/${anilistID}`)
             .setImage(metadata.url)
             .setDescription([
-                `Episode: **${result.episode}**`,
+                `Episode: **${result.episode ?? '1/1'}**`,
                 `Similarity: **${HandlerUtil.formatDecimal(result.similarity * 100, 2)}%**`,
                 `Scene Time: **${humanizeDuration(Math.round(result.from) * 1000)}**`
             ]);
@@ -101,7 +103,6 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
     }
 
     public addTraceMoeFile(result: TraceMoeResult): this {
-        console.log(result);
         const attachment = new AttachmentBuilder(`${result.video}&size=l`);
         return this.addFile(attachment);
     }
