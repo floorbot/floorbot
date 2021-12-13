@@ -1,5 +1,6 @@
 import { Client, DiscordAPIError, Message } from 'discord.js';
 
+
 export class MessageReaction {
 
     private static CumEmotes: Array<string> = [
@@ -10,6 +11,16 @@ export class MessageReaction {
         '824077626708328479', // borpa
         '858846864185753642', // borpaspin
     ];
+
+    // This should exist, I shouldn't have to make this shitty function
+    private static MessageHasAnyMentions(message: Message): boolean {
+        return Boolean(
+            message.mentions.users.size
+            || message.mentions.everyone
+            || message.mentions.roles.size > 0
+            || message.mentions.channels.size > 0
+        );
+    }
 
     public static setup(client: Client): void {
         client.on('messageCreate', (message: Message) => {
@@ -32,6 +43,16 @@ export class MessageReaction {
                     // User has bot blocked and permission to react is denied...
                     if (!(error instanceof DiscordAPIError) || error.httpStatus !== 403) {
                         console.error('[message-reaction](controller) failed to react to cum...', error);
+                    }
+                });
+            }
+
+            // Reacts with JinPing when a bot sends a message with a ping
+            if (message.author.bot && MessageReaction.MessageHasAnyMentions(message)) {
+                message.react('😄' || '718814332154019880').catch(error => {
+                    // User has bot blocked and permission to react is denied...
+                    if (!(error instanceof DiscordAPIError) || error.httpStatus !== 403) {
+                        console.error('[message-reaction](controller) failed to react to bot pinging someone...', error);
                     }
                 });
             }
