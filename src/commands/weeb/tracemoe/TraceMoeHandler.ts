@@ -1,10 +1,9 @@
-import { TraceMoeComponentID, TraceMoeReplyBuilder } from '../../../builders/TraceMoeReplyBuilder.js';
 import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { AniListReplyBuilder } from '../../../builders/AniListReplyBuilder.js';
+import { TraceMoeAPI, TraceMoeResult } from '../../../apis/tracemoe/TraceMoeAPI.js';
+import { TraceMoeReplyBuilder } from '../../../builders/TraceMoeReplyBuilder.js';
 import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
 import { AniListAPI, Media } from '../../../apis/anilist/AniListAPI.js';
-import { TraceMoeAPI } from '../../../apis/tracemoe/TraceMoeAPI.js';
 import { TraceMoeCommandData } from './TraceMoeCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { ContextMenuInteraction } from 'discord.js';
@@ -41,28 +40,18 @@ export class TraceMoeHandler extends ContextMenuHandler {
         // Create and send the first reply
         const pageData = { page: 0, pages: res.result.length };
         let result = HandlerUtil.resolveArrayPage(res.result, pageData.page);
+        let media = await this.requestAnime(result);
 
         const replyOptions: ReplyBuilder = new TraceMoeReplyBuilder(contextMenu)
-            .addTraceMoeEmbed(metadata, result, pageData)
+            .addTraceMoeEmbed(metadata, result, media, pageData)
             .addTraceMoePageActionRow(result, pageData)
+            // .setContent(result.video) // This does not embed...
             .addTraceMoeFile(result);
         const message = await contextMenu.followUp(replyOptions);
 
         // Add interaciton collector and handle buttons
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
-            if (component.customId === TraceMoeComponentID.ANILIST) {
-                await component.deferUpdate();
-                const anilist = await this.requestAnime(typeof result.anilist === 'number' ? result.anilist : result.anilist.id);
-                if (!anilist) {
-                    const replyOptions = new AniListReplyBuilder(contextMenu).addNotFoundEmbed();
-                    return component.editReply(replyOptions);
-                } else {
-                    const replyOptions = new AniListReplyBuilder(contextMenu)
-                        .addMediaEmbed(anilist);
-                    return component.editReply(replyOptions);
-                }
-            }
 
             // Send a loading embed and folloup with next/previous result
             await component.update(new TraceMoeReplyBuilder(contextMenu).addTraceMoeLoadingEmbed());
@@ -70,9 +59,11 @@ export class TraceMoeHandler extends ContextMenuHandler {
             if (component.customId === HandlerButtonID.PREVIOUS_PAGE) pageData.page--;
             if (!HandlerUtil.isNonEmptyArray(res.result)) return contextMenu.followUp(new TraceMoeReplyBuilder(contextMenu).addNotFoundEmbed());
             result = HandlerUtil.resolveArrayPage(res.result, pageData.page);
+            media = await this.requestAnime(result);
             const replyOptions = new TraceMoeReplyBuilder(contextMenu)
-                .addTraceMoeEmbed(metadata, result, pageData)
+                .addTraceMoeEmbed(metadata, result, media, pageData)
                 .addTraceMoePageActionRow(result, pageData)
+                // .setContent(result.video) // This does not embed...
                 .addTraceMoeFile(result)
                 .clearAttachments();
             return await component.editReply(replyOptions);
@@ -80,10 +71,10 @@ export class TraceMoeHandler extends ContextMenuHandler {
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private async requestAnime(id: number): Promise<Media | null> {
+    private async requestAnime(result: TraceMoeResult): Promise<Media | undefined> {
         const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
+        const id = typeof result.anilist === 'number' ? result.anilist : result.anilist.id;
         const res = await this.anilist.request(query, { id: id });
-        const media = res.data.Page?.media?.[0];
-        return media || null;
+        return res.data.Page?.media?.[0];
     }
 }
