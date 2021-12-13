@@ -14,10 +14,12 @@ export class MessageReaction {
 
     // This should exist, I shouldn't have to make this shitty function
     private static MessageHasAnyMentions(message: Message): boolean {
-        return Boolean(message.mentions.members?.size)
+        return Boolean(
+            message.mentions.users.size
             || message.mentions.everyone
             || message.mentions.roles.size > 0
-            || message.mentions.channels.size > 0;
+            || message.mentions.channels.size > 0
+        );
     }
 
     public static setup(client: Client): void {
@@ -47,7 +49,7 @@ export class MessageReaction {
 
             // Reacts with JinPing when a bot sends a message with a ping
             if (message.author.bot && MessageReaction.MessageHasAnyMentions(message)) {
-                message.react('718814332154019880').catch(error => {
+                message.react('😄' || '718814332154019880').catch(error => {
                     // User has bot blocked and permission to react is denied...
                     if (!(error instanceof DiscordAPIError) || error.httpStatus !== 403) {
                         console.error('[message-reaction](controller) failed to react to bot pinging someone...', error);
