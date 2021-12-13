@@ -45,7 +45,7 @@ export class MessageReaction {
                 });
             }
 
-            // Reacts with PingLee when a bot sends a message with a ping
+            // Reacts with JinPing when a bot sends a message with a ping
             if (message.author.bot && MessageReaction.MessageHasAnyMentions(message)) {
                 message.react('718814332154019880').catch(error => {
                     // User has bot blocked and permission to react is denied...
