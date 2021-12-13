@@ -15,10 +15,10 @@ export class MessageReaction {
     // This should exist, I shouldn't have to make this shitty function
     private static MessageHasAnyMentions(message: Message): boolean {
         return Boolean(
-            message.mentions.users.size
-            || message.mentions.everyone
-            || message.mentions.roles.size > 0
-            || message.mentions.channels.size > 0
+            message.mentions.everyone
+            || message.mentions.users.size
+            || message.mentions.roles.size
+            || message.mentions.channels.size
         );
     }
 
