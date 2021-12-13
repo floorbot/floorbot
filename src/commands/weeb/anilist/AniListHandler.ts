@@ -2,27 +2,20 @@ import { AniListReplyBuilder, AniListUserComponentID } from '../../../builders/A
 import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/AniListAPI.js';
 import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
-import { AutocompleteInteraction, CacheType, CommandInteraction } from 'discord.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
 import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
 
-export class AniListHandler extends ChatInputHandler implements Autocomplete {
+export class AniListHandler extends ChatInputHandler {
 
     private readonly api: AniListAPI;
 
     constructor(redis: Redis) {
         super({ data: AniListCommandData, group: 'Weeb' });
         this.api = new AniListAPI({ redis });
-    }
-
-    public async autocomplete(_autocomplete: AutocompleteInteraction<CacheType>): Promise<any> {
-        console.log('[anilist] autocomplete needs to be implemented...');
-        // Probably just show a list and return the ID
-        return;
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
