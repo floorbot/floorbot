@@ -1,9 +1,13 @@
 {
+    // Editor
     "editor.formatOnSave": true,
-    "typescript.format.semicolons": "insert",
-    "files.insertFinalNewline": true,
+    "editor.detectIndentation": false,
+    "editor.bracketPairColorization.enabled": true,
+    // Files
     "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
-    "javascript.preferences.importModuleSpecifierEnding": "js",
+    // TypeScript
+    "typescript.format.semicolons": "insert",
     "typescript.preferences.importModuleSpecifierEnding": "js"
 }
