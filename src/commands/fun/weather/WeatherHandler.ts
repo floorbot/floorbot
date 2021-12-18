@@ -1,14 +1,14 @@
 import { CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageActionRow, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
 import { WeatherSelectMenu, WeatherSelectMenuID, WeatherTempsOrder } from './components/WeatherSelectMenu.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
 import { WeatherButton, WeatherButtonID } from './components/WeatherButton.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { WeatherDatabase, WeatherLinkRow } from './db/WeatherDatabase.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { WeatherEmbed } from './components/WeatherEmbed.js';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
@@ -69,7 +69,7 @@ export class WeatherHandler extends ChatInputHandler {
             }
             case WeatherSubCommandName.SERVER_TEMPS: {
                 await command.deferReply();
-                const { channel, guild } = <{ channel: GuildChannel, guild: Guild }>command;
+                const { channel, guild } = <{ channel: GuildChannel, guild: Guild; }>command;
                 const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
                 const allLinks = await this.database.fetchAllLinks(guild);
                 let loadingReplyOptions = WeatherEmbed.getLoadingEmbed(command, allLinks.length, 0).toReplyOptions();
@@ -136,7 +136,7 @@ export class WeatherHandler extends ChatInputHandler {
                 if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
                 await this.database.deleteLink(member);
-                const embed = WeatherEmbed.getUnlinkedEmbed(command, member)
+                const embed = WeatherEmbed.getUnlinkedEmbed(command, member);
                 return command.followUp({ embeds: [embed], components: [] });
             }
         }
@@ -191,14 +191,14 @@ export class WeatherHandler extends ChatInputHandler {
                     }
                 }
             } catch { }
-        }
+        };
     }
 
-    private createServerTempsResponse(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkRow][], viewData: { page: number, perPage: number, order: WeatherTempsOrder }): InteractionReplyOptions {
-        if (viewData.order === WeatherTempsOrder.HOTTEST) links.sort((link1, link2) => { return link2[0].current.temp - link1[0].current.temp });
-        else if (viewData.order === WeatherTempsOrder.COLDEST) links.sort((link1, link2) => { return link1[0].current.temp - link2[0].current.temp });
-        else if (viewData.order === WeatherTempsOrder.HUMIDITY) links.sort((link1, link2) => { return link2[0].current.humidity - link1[0].current.humidity });
-        else if (viewData.order === WeatherTempsOrder.TIMEZONE) links.sort((link1, link2) => { return link2[0].timezone_offset - link1[0].timezone_offset });
+    private createServerTempsResponse(interaction: Interaction, links: [OneCallData, GuildMember, WeatherLinkRow][], viewData: { page: number, perPage: number, order: WeatherTempsOrder; }): InteractionReplyOptions {
+        if (viewData.order === WeatherTempsOrder.HOTTEST) links.sort((link1, link2) => { return link2[0].current.temp - link1[0].current.temp; });
+        else if (viewData.order === WeatherTempsOrder.COLDEST) links.sort((link1, link2) => { return link1[0].current.temp - link2[0].current.temp; });
+        else if (viewData.order === WeatherTempsOrder.HUMIDITY) links.sort((link1, link2) => { return link2[0].current.humidity - link1[0].current.humidity; });
+        else if (viewData.order === WeatherTempsOrder.TIMEZONE) links.sort((link1, link2) => { return link2[0].timezone_offset - link1[0].timezone_offset; });
         const sliced = links.slice((viewData.page - 1) * viewData.perPage, viewData.page * viewData.perPage);
         if (!sliced.length && viewData.page !== 1) return this.createServerTempsResponse(interaction, links, { ...viewData, page: 1 });
         const embed = WeatherEmbed.getServerTempsEmbed(interaction, sliced);

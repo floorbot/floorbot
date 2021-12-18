@@ -1,6 +1,6 @@
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerButtonID } from '../../../lib/discord/helpers/components/HandlerButton.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { RollData, RollReplies } from './RollReplies.js';
 import { CommandInteraction, Message } from 'discord.js';
 import { RollCommandData } from './RollCommandData.js';
@@ -26,7 +26,7 @@ export class RollHandler extends ChatInputHandler {
                 rollString: rollString,
                 rollCount: matches ? (Number(matches[1]) || 1) : 0,
                 dice: matches ? Number(matches[2]) : 0
-            }
+            };
         });
 
         const totalRolls = rollables.reduce((total, rollable) => total + rollable.rollCount, 0);
@@ -50,7 +50,7 @@ export class RollHandler extends ChatInputHandler {
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private rollDice(rollables: { rollString: string, rollCount: number, dice: number }): RollData {
+    private rollDice(rollables: { rollString: string, rollCount: number, dice: number; }): RollData {
         const rolls = [...Array(rollables.rollCount)].map(() => Math.ceil(Math.random() * Math.ceil(rollables.dice)));
         const total = rolls.reduce((total, roll) => total + roll, 0);
         return { ...rollables, rolls, total };

@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
 import { DDDButtonID, DDDReplies } from './replies/DDDReplies.js';
-import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { DDDCommandData } from './DDDCommandData.js';
 import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';
@@ -36,8 +36,8 @@ export class DDDHandler extends ChatInputHandler {
         const updated = await this.database.fetchParticipant(participantRow);
         if (!updated) return;
         participantRow = updated;
-        const jobKey = `${participantRow.guild_id}-${participantRow.user_id}-${participantRow.year}`
-        if (this.jobs.has(jobKey)) { this.deleteSchedule(participantRow) }
+        const jobKey = `${participantRow.guild_id}-${participantRow.user_id}-${participantRow.year}`;
+        if (this.jobs.has(jobKey)) { this.deleteSchedule(participantRow); }
 
         const allNutRows = await this.database.fetchAllNuts(participantRow);
         const participantStats = DDDUtil.getParticipantStats(participantRow, allNutRows);
@@ -49,7 +49,7 @@ export class DDDHandler extends ChatInputHandler {
         if (participantRow.failed === -1) {
             if (guild && member) {
                 if (channel) {
-                    const replyOptions = this.replies.createParticipantPassedReply(settingsRow, participantStats)
+                    const replyOptions = this.replies.createParticipantPassedReply(settingsRow, participantStats);
                     await channel.send(replyOptions).catch(() => { });
                 }
                 if (settingsRow.passing_role_id) await member.roles.remove(settingsRow.passing_role_id).catch(() => { });
@@ -77,7 +77,7 @@ export class DDDHandler extends ChatInputHandler {
     }
 
     private async deleteSchedule(participantRow: DDDParticipantRow) {
-        const jobKey = `${participantRow.guild_id}-${participantRow.user_id}-${participantRow.year}`
+        const jobKey = `${participantRow.guild_id}-${participantRow.user_id}-${participantRow.year}`;
         const job = this.jobs.get(jobKey);
         if (job) {
             this.jobs.delete(jobKey);
@@ -153,7 +153,7 @@ export class DDDHandler extends ChatInputHandler {
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
                     if (!HandlerUtil.isAdminOrOwner(component.member)) return component.reply(HandlerReplies.createAdminOrOwnerReply(command));
-                    if (!component.isButton()) { throw component }
+                    if (!component.isButton()) { throw component; }
                     await component.deferUpdate();
                     switch (component.customId) {
                         case DDDButtonID.SET_EVENT_CHANNEL: {
@@ -237,7 +237,7 @@ export class DDDHandler extends ChatInputHandler {
                 ) { return command.followUp(this.replies.createNutFailReply(command, eventDetails, participantZoneDetails)); }
                 const description = command.options.getString('description');
                 allNutRows.push(await this.database.setNut({ ...partialParticipant, epoch: command.createdTimestamp.toString(), description: description }));
-                const participantStats = DDDUtil.getParticipantStats(participantRow!, allNutRows)
+                const participantStats = DDDUtil.getParticipantStats(participantRow!, allNutRows);
                 const replyOptions = this.replies.createNutReply(command, participantStats);
                 return command.followUp(replyOptions);
             }

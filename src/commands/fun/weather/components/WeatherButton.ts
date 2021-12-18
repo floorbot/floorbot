@@ -1,4 +1,4 @@
-import { HandlerButton, HandlerButtonID } from '../../../../discord/helpers/components/HandlerButton.js';
+import { HandlerButton, HandlerButtonID } from '../../../../lib/discord/helpers/components/HandlerButton.js';
 import { Constants, MessageButton, MessageButtonOptions } from 'discord.js';
 import { LatLonData, OpenWeatherAPI } from '../api/OpenWeatherAPI.js';
 

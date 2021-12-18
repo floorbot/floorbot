@@ -1,11 +1,11 @@
-import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { TraceMoeAPI, TraceMoeResult } from '../../../apis/tracemoe/TraceMoeAPI.js';
-import { TraceMoeReplyBuilder } from '../../../builders/TraceMoeReplyBuilder.js';
-import { AniListAPI, Media } from '../../../apis/anilist/AniListAPI.js';
+import { ContextMenuHandler } from '../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
+import { TraceMoeAPI, TraceMoeResult } from '../../../lib/apis/tracemoe/TraceMoeAPI.js';
+import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { AniListAPI, Media } from '../../../lib/apis/anilist/AniListAPI.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { TraceMoeReplyBuilder } from './TraceMoeReplyBuilder.js';
 import { ContextMenuInteraction, Interaction } from 'discord.js';
 import { TraceMoeCommandData } from './TraceMoeCommandData.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
@@ -54,8 +54,8 @@ export class TraceMoeHandler extends ContextMenuHandler {
 
             // Send a loading embed and folloup with next/previous result
             await component.update(new TraceMoeReplyBuilder(contextMenu).addTraceMoeLoadingEmbed());
-            if (component.customId === HandlerButtonID.NEXT_PAGE) pageData.page++;
-            if (component.customId === HandlerButtonID.PREVIOUS_PAGE) pageData.page--;
+            if (component.customId === ComponentID.NEXT_PAGE) pageData.page++;
+            if (component.customId === ComponentID.PREVIOUS_PAGE) pageData.page--;
             if (!HandlerUtil.isNonEmptyArray(res.result)) return contextMenu.followUp(new TraceMoeReplyBuilder(contextMenu).addNotFoundEmbed());
             result = HandlerUtil.resolveArrayPage(res.result, pageData.page);
             media = await this.requestAnime(result);

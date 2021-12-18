@@ -1,7 +1,7 @@
 import { Client, Collection, Constants, Guild, GuildBan, Interaction, InteractionReplyOptions, Message, MessageActionRow, SelectMenuInteraction, VoiceChannel } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerButton, HandlerButtonID } from '../../../lib/discord/helpers/components/HandlerButton.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { GroupHandlerMap } from './FloorbotHandler.js';
 import humanizeDuration from 'humanize-duration';
 

@@ -1,11 +1,11 @@
 import { ApplicationCommand, CommandInteraction, Constants, Guild, Message, SelectMenuInteraction, VoiceChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
 import { FloorbotButtonID, FloorbotReplies } from './FloorbotReplies.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
+import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { FloorbotCommandData } from './FloorbotCommandData.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { Handler } from '../../../discord/Handler.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { Handler } from '../../../lib/discord/Handler.js';
 
 export type HandlerMap = Map<Handler<any>, ApplicationCommand | undefined>;
 export type GroupHandlerMap = Map<string, HandlerMap>;

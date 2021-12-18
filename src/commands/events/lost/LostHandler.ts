@@ -1,4 +1,4 @@
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { CommandInteraction, GuildMember } from 'discord.js';
 import { LostCommandData } from './LostCommandData.js';
 

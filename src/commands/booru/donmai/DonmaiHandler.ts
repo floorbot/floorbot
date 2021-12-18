@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
-import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
-import { DonmaiAPI, DonmaiAPIAuth } from '../../../apis/donmai/DonmaiAPI.js';
+import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
+import { DonmaiAPI, DonmaiAPIAuth } from '../../../lib/apis/donmai/DonmaiAPI.js';
 import { DonmaiCommandData } from './DonmaiCommandData.js';
 import { DonmaiReplies } from './DonmaiReplies.js';
 import { BooruHandler } from '../BooruHandler.js';

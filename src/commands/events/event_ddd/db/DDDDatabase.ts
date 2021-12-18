@@ -1,6 +1,6 @@
 import { DDDPartialParticipantRow, DDDParticipantRow } from './interfaces/DDDParticipantRow';
 import { DDDPartialSettingsRow, DDDSettingsRow } from './interfaces/DDDSettingsRow';
-import { HandlerDatabase, HandlerDB } from '../../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../../lib/discord/helpers/HandlerDatabase.js';
 import { DDDPartialNutRow, DDDNutRow } from './interfaces/DDDNutRow';
 import path from 'path';
 import fs from 'fs';
@@ -34,7 +34,7 @@ export class DDDDatabase extends HandlerDatabase {
     public async fetchSettings(partial: DDDPartialSettingsRow): Promise<DDDSettingsRow> {
         const sql = 'SELECT * FROM ddd_settings WHERE guild_id = :guild_id AND year = :year LIMIT 1';
         const rows = await this.select(sql, partial);
-        return rows.length ? rows[0] : { ...partial, channel_id: null, event_role_id: null, passing_role_id: null, failed_role_id: null }
+        return rows.length ? rows[0] : { ...partial, channel_id: null, event_role_id: null, passing_role_id: null, failed_role_id: null };
     }
 
     /** --- Participant Functions --- **/
@@ -89,7 +89,7 @@ export class DDDDatabase extends HandlerDatabase {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;
                 if (res.reason.code !== 'ER_TABLE_EXISTS_ERROR') throw res.reason;
-            })
-        })
+            });
+        });
     }
 }

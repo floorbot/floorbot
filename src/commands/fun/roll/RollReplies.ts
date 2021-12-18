@@ -1,14 +1,14 @@
 import { InteractionReplyOptions, Interaction, Message, CacheType, CommandInteraction, Util, MessageActionRow } from 'discord.js';
-import { HandlerButton } from '../../../discord/helpers/components/HandlerButton.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerButton } from '../../../lib/discord/helpers/components/HandlerButton.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 
 export interface RollData {
     rollString: string,
     rollCount: number,
     rolls: number[],
     total: number,
-    dice: number
+    dice: number;
 }
 
 export class RollReplies extends HandlerReplies {
@@ -44,7 +44,7 @@ export class RollReplies extends HandlerReplies {
         const actionRow = new MessageActionRow().addComponents([
             HandlerButton.createPreviousPageButton(),
             HandlerButton.createNextPageButton()
-        ])
+        ]);
 
         return { embeds: [embed], ...(rollData.length > 1 && { components: [actionRow] }) };
     }

@@ -1,4 +1,4 @@
-import { HandlerDatabase, HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { Message, Interaction, User } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
@@ -12,7 +12,7 @@ export interface DisputeRow {
     readonly message_id: string,
     readonly content: string,
     readonly vote_user_id: string,
-    readonly vote_choice: boolean
+    readonly vote_choice: boolean;
 }
 
 export interface DisputeResults {
@@ -22,7 +22,7 @@ export interface DisputeResults {
     readonly successful_pct: Number,
     readonly successful_pct_rounded: Number,
     readonly dispute_user_id: string,
-    readonly message_user_id: string
+    readonly message_user_id: string;
 }
 
 export class DisputeDatabase extends HandlerDatabase {
@@ -53,11 +53,11 @@ export class DisputeDatabase extends HandlerDatabase {
     }
 
     public async getVoters(message: Message, which: string): Promise<string | null> {
-        let sql = ''
+        let sql = '';
         if (which == 'yes') {
-            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 1'
+            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 1';
         } else {
-            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0'
+            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0';
         };
         const query = {
             guild_id: message.guild!.id,
@@ -65,9 +65,9 @@ export class DisputeDatabase extends HandlerDatabase {
             message_id: message.id
         };
         const rows = await this.select(sql, query);
-        let result = []
+        let result = [];
         for (let i = 0; i < rows.length; i++) {
-            result.push(`<@${rows[i]['vote_user_id']}>`)
+            result.push(`<@${rows[i]['vote_user_id']}>`);
         }
         return result.join('\n');
     }
@@ -141,7 +141,7 @@ export class DisputeDatabase extends HandlerDatabase {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;
                 if (res.reason.code !== 'ER_TABLE_EXISTS_ERROR') throw res.reason;
-            })
-        })
+            });
+        });
     }
 }

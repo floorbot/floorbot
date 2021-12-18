@@ -1,4 +1,4 @@
-import { HandlerSelectMenu, HandlerSelectMenuID } from '../../../../discord/helpers/components/HandlerSelectMenu.js';
+import { HandlerSelectMenu, HandlerSelectMenuID } from '../../../../lib/discord/helpers/components/HandlerSelectMenu.js';
 import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
 
 export const WeatherSelectMenuID = {
@@ -27,7 +27,7 @@ export class WeatherSelectMenu extends HandlerSelectMenu {
                 label: `Order by ${orderName}`,
                 default: orderName === selected,
                 value: orderName
-            })
+            });
         }
         selectMenu.setCustomId(WeatherSelectMenuID.ORDER);
         return selectMenu;

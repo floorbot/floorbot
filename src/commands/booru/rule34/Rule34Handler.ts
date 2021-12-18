@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
-import { Rule34API, Rule34APIAutocomplete } from '../../../apis/rule34/Rule34API.js';
-import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
+import { Rule34API, Rule34APIAutocomplete } from '../../../lib/apis/rule34/Rule34API.js';
+import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
 import { Rule34CommandData } from './Rule34CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
 import { BooruReplies } from '../BooruReplies.js';

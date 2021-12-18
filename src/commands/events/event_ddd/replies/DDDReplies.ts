@@ -1,10 +1,10 @@
 import { CommandInteraction, Constants, Interaction, InteractionReplyOptions, Message, MessageActionRow } from 'discord.js';
-import { HandlerButton, HandlerButtonID } from '../../../../discord/helpers/components/HandlerButton.js';
-import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { HandlerButton, HandlerButtonID } from '../../../../lib/discord/helpers/components/HandlerButton.js';
+import { HandlerEmbed } from '../../../../lib/discord/helpers/components/HandlerEmbed.js';
 import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from '../DDDUtil.js';
 import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from '../db/DDDDatabase.js';
-import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
-import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../../lib/discord/helpers/HandlerReplies.js';
+import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
 
 const { MessageButtonStyles } = Constants;
 
@@ -19,14 +19,14 @@ export const DDDButtonID = {
         CREATE_FAILED_ROLE: 'create_failed_role',
         DELETE_FAILED_ROLE: 'delete_failed_role'
     }
-}
+};
 
 export class DDDReplies extends HandlerReplies {
 
     private readonly eventAcronym: string;
     private readonly eventName: string;
 
-    constructor(options: { eventName: string, eventAcronym: string }) {
+    constructor(options: { eventName: string, eventAcronym: string; }) {
         super();
         this.eventAcronym = options.eventAcronym;
         this.eventName = options.eventName;
@@ -83,8 +83,8 @@ export class DDDReplies extends HandlerReplies {
     }
 
     public createLeaderboardReply(command: CommandInteraction<'cached'>, eventDetails: DDDEventDetails, allParticipantStats: DDDParticipantStats[]): InteractionReplyOptions {
-        allParticipantStats = allParticipantStats.sort(function(one, two) {
-            let sortNum = 0
+        allParticipantStats = allParticipantStats.sort(function (one, two) {
+            let sortNum = 0;
             const oneRequiredNuts = one.day;
             const oneNuts = one.nutMonth[one.day - 1]!.length;
             const oneCompleted = oneNuts / oneRequiredNuts;
@@ -110,16 +110,16 @@ export class DDDReplies extends HandlerReplies {
                 sortNum += -1000;
             }
             if (twoNuts > oneNuts) {
-              sortNum += 100
+                sortNum += 100;
             }
             if (oneNuts > twoNuts) {
-              sortNum += -100
+                sortNum += -100;
             }
             if (two.allNutRows.length > one.allNutRows.length) {
-              sortNum += 10
+                sortNum += 10;
             }
             if (one.allNutRows.length > two.allNutRows.length) {
-              sortNum += -10
+                sortNum += -10;
             }
             return sortNum;
         });
@@ -129,21 +129,21 @@ export class DDDReplies extends HandlerReplies {
             let dailyNuts = participantStats.nutMonth[day - 1]!.length;
             const nuts = participantStats.allNutRows.length;
             const failed = participantStats.participantRow.failed;
-            let statusEmoji = '🟢'
+            let statusEmoji = '🟢';
             if (dailyNuts / day < 1) {
-                statusEmoji = '🟡'
+                statusEmoji = '🟡';
             }
             if (failed) {
-                statusEmoji = '🔴'
+                statusEmoji = '🔴';
                 day = failed;
                 dailyNuts = participantStats.nutMonth[day - 1]!.length;
             }
-            return `${statusEmoji} Day: \`${day}\` Nuts: \`${dailyNuts}/${day}\` (\`${nuts}\` Total) <@${userID}>`
+            return `${statusEmoji} Day: \`${day}\` Nuts: \`${dailyNuts}/${day}\` (\`${nuts}\` Total) <@${userID}>`;
         });
         return this.createEmbedTemplate(command, eventDetails)
             .setTitle(`DDD Leaderboard for ${command.guild.name}`)
             .setDescription(stringRows.length ? stringRows : 'There are no participants to show...')
-            .toReplyOptions()
+            .toReplyOptions();
     }
 
     public createNotTextChannelReply(command: CommandInteraction, eventDetails: DDDEventDetails): InteractionReplyOptions {
@@ -261,7 +261,7 @@ export class DDDReplies extends HandlerReplies {
                 `Failed: **${dayFailed ? `Day ${dayFailed}` : '*Not Yet!*'} **`,
                 `Midnight: **<t:${zoneDetails.nextMidnight.toSeconds()}:R>**`
             ])
-            .toReplyOptions()
+            .toReplyOptions();
     }
 
     public createNutFailReply(command: CommandInteraction, eventDetails: DDDEventDetails, participantZoneDetails: DDDZoneDetails | null): InteractionReplyOptions {
@@ -273,6 +273,6 @@ export class DDDReplies extends HandlerReplies {
                     [`Sorry! It looks like ${eventID} has not started in your timezone (\`${participantZoneDetails.zone}\`) yet! You can start reporting your nuts <t:${Math.round(participantZoneDetails.startDate.toSeconds())}:R>!`] :
                     [`Sorry! It looks like you have not joined ${eventID}. To guarantee participating please join before the cutoff <t:${Math.round(eventDetails.guaranteedDate.toSeconds())}:R>!`])
             ])
-            .toReplyOptions()
+            .toReplyOptions();
     }
 }

@@ -1,7 +1,7 @@
-import { ChatInputHandler } from '../../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
+import { ChatInputHandler } from '../../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { HandlerEmbed } from '../../../../lib/discord/helpers/components/HandlerEmbed.js';
 import { FlipChatInputCommandData } from './FlipChatInputCommandData.js';
-import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
 import { CommandInteraction, Util } from 'discord.js';
 import { Flipper } from '../Flipper.js';
 
@@ -28,7 +28,7 @@ export class FlipChatInputHandler extends ChatInputHandler {
             return command.followUp(embed.toReplyOptions());
         } else {
             const flipped = Flipper.flipText(value);
-            const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!
+            const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!;
             return command.followUp({ content: split, allowedMentions: { parse: [] } });
         }
     }

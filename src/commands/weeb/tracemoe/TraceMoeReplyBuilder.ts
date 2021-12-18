@@ -1,11 +1,10 @@
-import { TraceMoeResult } from "../apis/tracemoe/interfaces/TraceMoeResult.js";
-import { AttachmentBuilder } from "../discord/builders/AttachmentBuilder.js";
-import { ActionRowBuilder } from "../discord/builders/ActionRowBuilder.js";
-import { Media, MediaRankType } from "../apis/anilist/AniListAPI.js";
-import { EmbedBuilder } from "../discord/builders/EmbedBuilder.js";
-import { ReplyBuilder } from "../discord/builders/ReplyBuilder.js";
-import { AniListReplyBuilder } from "./AniListReplyBuilder.js";
-import { HandlerUtil } from "../discord/HandlerUtil.js";
+import { FuzzyDate, Media, MediaRankType } from "../../../lib/apis/anilist/AniListAPI.js";
+import { TraceMoeResult } from "../../../lib/apis/tracemoe/interfaces/TraceMoeResult.js";
+import { AttachmentBuilder } from "../../../lib/discord/builders/AttachmentBuilder.js";
+import { ActionRowBuilder } from "../../../lib/discord/builders/ActionRowBuilder.js";
+import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
+import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
+import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
 import humanizeDuration from "humanize-duration";
 import { ProbeResult } from "probe-image-size";
 import { DateTime } from "luxon";
@@ -45,8 +44,8 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
             const nextAiring = media.nextAiringEpisode;
             const mainStudioEdge = media.studios && media.studios.edges ? media.studios.edges.find(edge => edge.isMain) : null;
             const mainStudio = mainStudioEdge ? mainStudioEdge.node ?? null : null;
-            const startDate = media.startDate ? AniListReplyBuilder.getFuzzyDateString(media.startDate) : null;
-            const endDate = media.endDate ? AniListReplyBuilder.getFuzzyDateString(media.endDate) : null;
+            const startDate = media.startDate ? TraceMoeReplyBuilder.getFuzzyDateString(media.startDate) : null;
+            const endDate = media.endDate ? TraceMoeReplyBuilder.getFuzzyDateString(media.endDate) : null;
             const trailerUrl = media.trailer ? (
                 media.trailer.site === 'youtube' ? `https://www.youtube.com/watch?v=${media.trailer.id}` : (
                     media.trailer.site === 'dailymotion' ? `https://www.dailymotion.com/video/${media.trailer.id}` : null
@@ -105,5 +104,20 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
     public addTraceMoeFile(result: TraceMoeResult): this {
         const attachment = new AttachmentBuilder(`${result.video}&size=l`);
         return this.addFile(attachment);
+    }
+
+    private static getFuzzyDateString(fuzzy: FuzzyDate, string?: boolean): string | null {
+        const fuzz = {
+            ...(fuzzy.day && { day: fuzzy.day }),
+            ...(fuzzy.month && { month: fuzzy.month }),
+            ...(fuzzy.year && { year: fuzzy.year })
+        };
+        if (!fuzz.day && !fuzz.month && !fuzz.month) return null;
+        if (!string || Object.values(fuzz).length === 3) {
+            return `<t:${Math.round(DateTime.fromObject(fuzz).toSeconds())}:d>`;
+        } else {
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            return [fuzz.month ? months[fuzz.month - 1] : null, fuzz.day, fuzz.year].filter(part => part || part === 0).join(' ');
+        }
     }
 }

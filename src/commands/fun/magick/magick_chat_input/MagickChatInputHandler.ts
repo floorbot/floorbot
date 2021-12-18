@@ -1,21 +1,21 @@
 import { CommandInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ImageMagickCLIAction, MagickProgress } from '../../../../clis/image-magick/ImageMagickCLIAction.js';
-import { ChatInputHandler } from '../../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { ImageMagickCLIAction, MagickProgress } from '../../../../lib/tools/image-magick/ImageMagickCLIAction.js';
+import { ChatInputHandler } from '../../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { MagickChatInputCommandData } from './MagickChatInputCommandData.js';
-import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import { MagickReplies } from '../MagickReplies.js';
 import { MagickUtil } from '../MagickUtil.js';
 
 export class MagickChatInputHandler extends ChatInputHandler {
 
-    private readonly actions: { [index: string]: ImageMagickCLIAction };
+    private readonly actions: { [index: string]: ImageMagickCLIAction; };
     private readonly replies: MagickReplies;
 
     constructor(path: string) {
         super({ group: 'Fun', global: false, nsfw: false, data: MagickChatInputCommandData });
 
-        this.actions = MagickUtil.makeActions(path)
+        this.actions = MagickUtil.makeActions(path);
         this.replies = new MagickReplies();
     }
 
@@ -72,7 +72,7 @@ export class MagickChatInputHandler extends ChatInputHandler {
                 updateTime = now;
                 if (!(interaction instanceof SelectMenuInteraction)) return;
                 const replyOptions = this.replies.createProgressReply(interaction, metadata, action!, progress);
-                if (message) message.edit(replyOptions).catch(HandlerUtil.handleErrors(this))
+                if (message) message.edit(replyOptions).catch(HandlerUtil.handleErrors(this));
             }
         }).then((buffer: Buffer) => {
             const newMetadata = probe.sync(buffer)!;

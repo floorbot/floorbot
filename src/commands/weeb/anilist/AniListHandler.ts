@@ -1,9 +1,9 @@
-import { AniListReplyBuilder, AniListUserComponentID } from '../../../builders/AniListReplyBuilder.js';
-import { AniListAPI, AniListResponse, QueryVars } from '../../../apis/anilist/AniListAPI.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
+import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListMixins.js';
+import { AniListAPI, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
@@ -29,10 +29,10 @@ export class AniListHandler extends ChatInputHandler {
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             switch (component.customId) {
-                case AniListUserComponentID.ANIME_LIST:
-                case AniListUserComponentID.MANGA_LIST:
-                case AniListUserComponentID.ACTIVITIES:
-                case AniListUserComponentID.PROFILE: {
+                case AniListComponentID.ANIME_LIST:
+                case AniListComponentID.MANGA_LIST:
+                case AniListComponentID.ACTIVITIES:
+                case AniListComponentID.PROFILE: {
                     const replyOptions = await this.fetchReplyOptions(command, search, component.customId, res);
                     return await component.update(replyOptions);
                 }
@@ -40,8 +40,8 @@ export class AniListHandler extends ChatInputHandler {
                     await component.deferUpdate();
                     let { pageInfo } = res.data.Page || {};
                     const totalPages = pageInfo ? (pageInfo.total || 1) : 1;
-                    if (component.customId === HandlerButtonID.NEXT_PAGE) vars.page++;
-                    if (component.customId === HandlerButtonID.PREVIOUS_PAGE) vars.page--;
+                    if (component.customId === ComponentID.NEXT_PAGE) vars.page++;
+                    if (component.customId === ComponentID.PREVIOUS_PAGE) vars.page--;
                     vars.page = vars.page % totalPages;
                     vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
                     res = await this.fetchAniListData(subCommand, vars);
@@ -90,7 +90,7 @@ export class AniListHandler extends ChatInputHandler {
      * This will create an anilist reply for any of the command/button inputs
      * Note this is async as activities is not a command however needs to be fetched when the button is pressed
      */
-    private async fetchReplyOptions(command: CommandInteraction, search: string, scope: AniListSubCommand | AniListUserComponentID, res: AniListResponse): Promise<AniListReplyBuilder> {
+    private async fetchReplyOptions(command: CommandInteraction, search: string, scope: AniListSubCommand | AniListComponentID, res: AniListResponse): Promise<AniListReplyBuilder> {
         const page = res.data.Page;
         const builder = new AniListReplyBuilder(command);
         if (!page) return builder.addUnexpectedErrorEmbed('[anilist] No page on anilist response');
@@ -133,38 +133,38 @@ export class AniListHandler extends ChatInputHandler {
                     return builder;
                 };
             }
-            case AniListUserComponentID.PROFILE:
+            case AniListComponentID.PROFILE:
             case AniListSubCommand.USER: {
                 if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
                 else {
                     const siteURL = page.users[0].siteUrl || undefined;
                     builder.addUserEmbed(page.users[0], page.pageInfo);
-                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.PROFILE);
+                    if (page.users[0].statistics) builder.addProfileActionRow(page.users[0].statistics, AniListComponentID.PROFILE);
                     if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
-            case AniListUserComponentID.ANIME_LIST: {
+            case AniListComponentID.ANIME_LIST: {
                 if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
                 else {
                     const siteURL = page.users[0].siteUrl || undefined;
-                    builder.addUserStatsEmbed('anime', page.users[0]);
-                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.ANIME_LIST);
+                    builder.addUserStatsEmbed(AniListUserStatTypes.ANIME, page.users[0]);
+                    if (page.users[0].statistics) builder.addProfileActionRow(page.users[0].statistics, AniListComponentID.ANIME_LIST);
                     if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
-            case AniListUserComponentID.MANGA_LIST: {
+            case AniListComponentID.MANGA_LIST: {
                 if (!page.users || !page.users[0]) return builder.addNotFoundEmbed(search);
                 else {
                     const siteURL = page.users[0].siteUrl || undefined;
-                    builder.addUserStatsEmbed('manga', page.users[0]);
-                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.MANGA_LIST);
+                    builder.addUserStatsEmbed(AniListUserStatTypes.MANGA, page.users[0]);
+                    if (page.users[0].statistics) builder.addProfileActionRow(page.users[0].statistics, AniListComponentID.MANGA_LIST);
                     if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };
             }
-            case AniListUserComponentID.ACTIVITIES: {
+            case AniListComponentID.ACTIVITIES: {
                 if (!page.users || !page.users[0] || !page.users[0].id) return builder.addNotFoundEmbed(search);
                 else {
                     const userID = page.users[0].id;
@@ -174,7 +174,7 @@ export class AniListHandler extends ChatInputHandler {
                     const activities = activitiesRes.data.Page.activities || [];
                     const siteURL = page.users[0].siteUrl || undefined;
                     builder.addUserActivitiesEmbed(page.users[0], activities);
-                    if (page.users[0].statistics) builder.addUserButtons(page.users[0].statistics, AniListUserComponentID.ACTIVITIES);
+                    if (page.users[0].statistics) builder.addProfileActionRow(page.users[0].statistics, AniListComponentID.ACTIVITIES);
                     if (totalPages) builder.addPageActionRow(siteURL, undefined, totalPages <= 1);
                     return builder;
                 };

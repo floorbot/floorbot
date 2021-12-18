@@ -1,8 +1,8 @@
 import { BooruBuilderAPIData, BooruBuilderImageData, BooruBuilderSuggestionData } from "./BooruBuilderInterfaces.js";
-import { BuilderContext } from "../../discord/builders/BuilderInterfaces.js";
-import { BooruSuggestionData } from "../../commands/booru/BooruReplies.js";
-import { ReplyBuilder } from "../../discord/builders/ReplyBuilder.js";
-import { EmbedBuilder } from "../../discord/builders/EmbedBuilder.js";
+import { BuilderContext } from "../../../../lib/discord/builders/BuilderInterfaces.js";
+import { BooruSuggestionData } from "../../BooruReplies.js";
+import { ReplyBuilder } from "../../../../lib/discord/builders/ReplyBuilder.js";
+import { EmbedBuilder } from "../../../../lib/discord/builders/EmbedBuilder.js";
 import { BooruActionRowBuilder } from "./BooruActionRowBuilder.js";
 import { Util } from "discord.js";
 

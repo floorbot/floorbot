@@ -1,4 +1,4 @@
-import { HandlerDatabase, HandlerDB } from '../../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../../lib/discord/helpers/HandlerDatabase.js';
 import WeatherLinkRow from './interfaces/WeatherLinkRow.js';
 import { Guild, GuildMember, User } from 'discord.js';
 import { GeocodeData } from '../api/OpenWeatherAPI.js';
@@ -28,7 +28,7 @@ export class WeatherDatabase extends HandlerDatabase {
     }
 
     public async setLink(member: GuildMember, geocode: GeocodeData) {
-        const query = { user_id: member.user.id, guild_id: member.guild.id, ...geocode, state: geocode.state ?? null};
+        const query = { user_id: member.user.id, guild_id: member.guild.id, ...geocode, state: geocode.state ?? null };
         const sql = 'REPLACE INTO weather_link VALUES (:user_id, :guild_id, :name, :state, :country, :lat, :lon)';
         return this.exec(sql, query);
     }
@@ -46,7 +46,7 @@ export class WeatherDatabase extends HandlerDatabase {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;
                 if (res.reason.code !== 'ER_TABLE_EXISTS_ERROR') throw res.reason;
-            })
-        })
+            });
+        });
     }
 }

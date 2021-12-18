@@ -9,5 +9,21 @@
     "files.trimTrailingWhitespace": true,
     // TypeScript
     "typescript.format.semicolons": "insert",
-    "typescript.preferences.importModuleSpecifierEnding": "js"
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    // Spell Check
+    "cSpell.words": [
+        "anilist",
+        "booru",
+        "danbooru",
+        "Donmai",
+        "envalid",
+        "Floorbot",
+        "Magick",
+        "Nhentai",
+        "owoify",
+        "safebooru",
+        "Sqlit",
+        "tracemoe",
+        "weeb"
+    ]
 }

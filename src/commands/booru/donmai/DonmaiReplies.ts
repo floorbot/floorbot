@@ -1,6 +1,6 @@
 import { BooruReplies, BooruReplyConstructorOptions } from '../BooruReplies.js';
 import { Interaction, InteractionReplyOptions, Message } from 'discord.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 
 export class DonmaiReplies extends BooruReplies {
 

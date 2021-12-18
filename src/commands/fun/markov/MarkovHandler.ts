@@ -1,10 +1,10 @@
 import { CommandInteraction, Message, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { MarkovButton, MarkovButtonType } from './components/MarkovButton.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
@@ -177,13 +177,13 @@ export class MarkovHandler extends ChatInputHandler {
                             });
                             break;
                         }
-                        default: { throw component }
+                        default: { throw component; }
                     }
                     const response = await this.fetchControlPanel(command, channel);
                     message = await component.editReply(response) as Message;
                 }
             } catch { }
-        }
+        };
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
@@ -195,15 +195,15 @@ export class MarkovHandler extends ChatInputHandler {
                 const rows = await this.database.fetchAllChannels(guild);
                 return rows.filter(row => row.posting).forEach(async data => {
                     const channel = await client.channels.fetch(data.channel_id) as TextChannel | null;
-                    const random = Math.floor(Math.random() * data.minutes)
+                    const random = Math.floor(Math.random() * data.minutes);
                     if (channel && !random) {
                         const response = await this.fetchMarkovResponse(channel, null);
                         if (response) await channel.send(response);
                     }
-                })
-            })
-        }, 1000 * 60) // Every minute
-        return { message: 'Setup Database and created auto-post interval' }
+                });
+            });
+        }, 1000 * 60); // Every minute
+        return { message: 'Setup Database and created auto-post interval' };
     }
 
     private async onMessageCreate(message: Message) {
@@ -218,7 +218,7 @@ export class MarkovHandler extends ChatInputHandler {
                     if (markov && message.content.length) markov.addData([message.content]);
                 }
                 if (row.posting && !message.editedTimestamp) {
-                    const random = Math.floor(Math.random() * row.messages)
+                    const random = Math.floor(Math.random() * row.messages);
                     if (!random) {
                         const response = await this.fetchMarkovResponse(message.channel, null);
                         if (response) await message.channel.send(response);

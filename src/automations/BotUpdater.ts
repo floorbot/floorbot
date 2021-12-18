@@ -1,4 +1,4 @@
-import { HandlerClient } from "../discord/HandlerClient";
+import { HandlerClient } from "../lib/discord/HandlerClient";
 
 export class BotUpdater {
 

@@ -1,7 +1,7 @@
 import { GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../api/OpenWeatherAPI.js';
 import { Util, GuildMember, GuildChannel, MessageEmbed, MessageEmbedOptions, Interaction } from 'discord.js';
-import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerEmbed } from '../../../../lib/discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
 import { WeatherLinkRow } from '../db/WeatherDatabase.js';
 import { OpenWeatherData } from '../WeatherHandler.js';
 import { WeatherEmojis } from '../WeatherEmojis.js';
@@ -168,7 +168,7 @@ export class WeatherEmbed extends HandlerEmbed {
             `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
             `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
             `${WeatherEmojis.getQualityEmoji(interaction.client, embed.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
-        ), true)
+        ), true);
         return embed;
     }
 
@@ -188,25 +188,25 @@ export class WeatherEmbed extends HandlerEmbed {
                 'Description:',
                 alert.description
             ].join('\n'), {
-                    append: '...',
-                    char: '',
-                    maxLength: 4096
-                })[0]!);
+                append: '...',
+                char: '',
+                maxLength: 4096
+            })[0]!);
         } else {
             embed.setTitle(`No Weather Warning for ${locationString} (${timeString})`);
-            embed.setDescription(`It looks like there is no active weather warning for \`${locationString}\`! Stay safe!`)
+            embed.setDescription(`It looks like there is no active weather warning for \`${locationString}\`! Stay safe!`);
         }
         return embed;
     }
 
     private getAQIString(aqi: number): string {
         switch (aqi) {
-            case 1: { return 'Good' }
-            case 2: { return 'Fair' }
-            case 3: { return 'Moderate' }
-            case 4: { return 'Poor' }
-            case 5: { return 'Very Poor' }
-            default: { return '*unknown*' }
+            case 1: { return 'Good'; }
+            case 2: { return 'Fair'; }
+            case 3: { return 'Moderate'; }
+            case 4: { return 'Poor'; }
+            case 5: { return 'Very Poor'; }
+            default: { return '*unknown*'; }
         }
     }
 

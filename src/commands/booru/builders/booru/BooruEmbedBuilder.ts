@@ -1,5 +1,5 @@
-import { BuilderContext } from "../../discord/builders/BuilderInterfaces.js";
-import { EmbedBuilder } from "../../discord/builders/EmbedBuilder.js";
+import { BuilderContext } from "../../../../lib/discord/builders/BuilderInterfaces.js";
+import { EmbedBuilder } from "../../../../lib/discord/builders/EmbedBuilder.js";
 import { BooruBuilderAPIData } from "./BooruBuilderInterfaces.js";
 
 export class BooruEmbedBuilder extends EmbedBuilder {

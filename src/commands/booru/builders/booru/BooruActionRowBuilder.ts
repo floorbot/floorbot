@@ -1,7 +1,7 @@
-import { ActionRowBuilder, ComponentID } from "../../discord/builders/ActionRowBuilder.js";
-import { SelectMenuBuilder } from "../../discord/builders/SelectMenuBuilder.js";
+import { ActionRowBuilder, ComponentID } from "../../../../lib/discord/builders/ActionRowBuilder.js";
+import { SelectMenuBuilder } from "../../../../lib/discord/builders/SelectMenuBuilder.js";
 import { BooruBuilderSuggestionData } from "./BooruBuilderInterfaces.js";
-import { ButtonBuilder } from "../../discord/builders/ButtonBuilder.js";
+import { ButtonBuilder } from "../../../../lib/discord/builders/ButtonBuilder.js";
 import { Constants, Util } from "discord.js";
 
 const { MessageButtonStyles } = Constants;

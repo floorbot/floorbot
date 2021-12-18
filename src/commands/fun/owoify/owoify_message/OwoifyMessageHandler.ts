@@ -1,5 +1,5 @@
-import { ContextMenuHandler } from '../../../../discord/handlers/abstracts/ContextMenuHandler.js';
-import { HandlerReplies } from '../../../../discord/helpers/HandlerReplies.js';
+import { ContextMenuHandler } from '../../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
+import { HandlerReplies } from '../../../../lib/discord/helpers/HandlerReplies.js';
 import { OwoifyMessageCommandData } from './OwoifyMessageCommandData.js';
 import { ContextMenuInteraction, Util } from 'discord.js';
 import owoify from 'owoify-js';
@@ -15,7 +15,7 @@ export class OwoifyMessageHandler extends ContextMenuHandler {
         if (!text.length) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'owoify'));
         await contextMenu.deferReply();
         const owo = (<any>owoify).default(text);
-        const split = Util.splitMessage(owo, { maxLength: 2000 })[0]!
+        const split = Util.splitMessage(owo, { maxLength: 2000 })[0]!;
         return contextMenu.followUp({ content: split, allowedMentions: { parse: [] } });
     }
 }

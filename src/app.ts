@@ -1,8 +1,8 @@
-import consolePrettifier from './lib/ConsolePrettifier.js';
+import consolePrettifier from './lib/console-prettifier.js';
 console.error = consolePrettifier(console.error);
 console.log = consolePrettifier(console.log);
 
-import { HandlerClient } from './discord/HandlerClient.js';
+import { HandlerClient } from './lib/discord/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
 import BetterSqlit3 from 'better-sqlite3';
 import RedisMock from 'ioredis-mock';

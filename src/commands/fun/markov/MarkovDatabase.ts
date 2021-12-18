@@ -1,4 +1,4 @@
-import { HandlerDatabase, HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase, HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { GuildChannel, User, Message, Guild } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
@@ -13,7 +13,7 @@ export interface MarkovChannelRow {
     readonly links: boolean,
     readonly mentions: boolean,
     readonly owoify: boolean,
-    readonly quoting: boolean
+    readonly quoting: boolean;
 }
 
 export interface MarkovStringRow {
@@ -23,12 +23,12 @@ export interface MarkovStringRow {
     readonly guild_id: string,
     readonly channel_id: string,
     readonly message_id: string,
-    readonly content: string
+    readonly content: string;
 }
 
 export interface MarkovStringTotals {
     total: number,
-    users: number
+    users: number;
 }
 
 export class MarkovDatabase extends HandlerDatabase {
@@ -54,7 +54,7 @@ export class MarkovDatabase extends HandlerDatabase {
             links: false,
             owoify: false,
             quoting: true
-        }
+        };
     }
 
     public async fetchAllChannels(guild: Guild): Promise<Array<MarkovChannelRow>> {
@@ -63,7 +63,7 @@ export class MarkovDatabase extends HandlerDatabase {
         return this.select(sql, query);
     }
 
-    public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean, owoify?: boolean, quoting?: boolean }): Promise<MarkovChannelRow> {
+    public async setChannel(channel: GuildChannel, options: { messages?: number, minutes?: number, posting?: boolean, tracking?: boolean, links?: boolean, mentions?: boolean, owoify?: boolean, quoting?: boolean; }): Promise<MarkovChannelRow> {
         const existing = await this.fetchChannel(channel);
         const sql = 'REPLACE INTO markov_channel VALUES (:guild_id, :channel_id, :minutes, :messages, :posting, :tracking, :links, :mentions, :owoify, :quoting)';
         const data = {
@@ -77,7 +77,7 @@ export class MarkovDatabase extends HandlerDatabase {
             mentions: options.mentions ?? existing.mentions,
             owoify: options.owoify ?? existing.owoify,
             quoting: options.quoting ?? existing.quoting
-        }
+        };
         await this.exec(sql, data);
         return data;
     }
@@ -97,14 +97,14 @@ export class MarkovDatabase extends HandlerDatabase {
 
     public async fetchStringsTotals(channel: GuildChannel): Promise<MarkovStringTotals> {
         const query = { guild_id: channel.guild.id, channel_id: channel.id };
-        const sql_total_all = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id'
+        const sql_total_all = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id';
         const sql_total_users = 'SELECT COUNT(*) AS total FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false';
         const total_all_rows = await this.select(sql_total_all, query);
         const total_users_rows = await this.select(sql_total_users, query);
         return {
             total: total_all_rows.length ? total_all_rows[0].total : 0,
             users: total_users_rows.length ? total_users_rows[0].total : 0
-        }
+        };
     }
 
     public async fetchStrings(channel: GuildChannel, user?: User): Promise<Array<MarkovStringRow>> {
@@ -112,7 +112,7 @@ export class MarkovDatabase extends HandlerDatabase {
         const sql = (user ?
             'SELECT * FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND user_id = :user_id' :
             'SELECT * FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id AND bot = false'
-        )
+        );
         return this.select(sql, query);
     }
 
@@ -134,14 +134,14 @@ export class MarkovDatabase extends HandlerDatabase {
 
     public async deleteStrings(scope: Guild | GuildChannel): Promise<void> {
         if (scope instanceof GuildChannel) {
-            const query = { guild_id: scope.guild.id, channel_id: scope.id }
+            const query = { guild_id: scope.guild.id, channel_id: scope.id };
             const sql = 'DELETE FROM markov_string WHERE guild_id = :guild_id AND channel_id = :channel_id';
-            return await this.exec(sql, query)
+            return await this.exec(sql, query);
         }
         if (scope instanceof Guild) {
-            const query = { guild_id: scope.id }
+            const query = { guild_id: scope.id };
             const sql = 'DELETE FROM markov_string WHERE guild_id = :guild_id';
-            return await this.exec(sql, query)
+            return await this.exec(sql, query);
         }
     }
 
@@ -168,7 +168,7 @@ export class MarkovDatabase extends HandlerDatabase {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;
                 if (res.reason.code !== 'ER_TABLE_EXISTS_ERROR') throw res.reason;
-            })
-        })
+            });
+        });
     }
 }

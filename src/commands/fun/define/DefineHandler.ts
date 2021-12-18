@@ -1,12 +1,12 @@
-import { UrbanDictionaryReplyBuilder } from '../../../builders/UrbanDictionaryReplyBuilder.js';
-import { ChatInputHandler } from '../../../discord/handlers/abstracts/ChatInputHandler.js';
-import { UrbanDictionaryAPI } from '../../../apis/urban-dictionary/UrbanDictionaryAPI.js';
+import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { UrbanDictionaryAPI } from '../../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js';
 import { CommandInteraction, Message, Util, AutocompleteInteraction } from 'discord.js';
-import { HandlerButtonID } from '../../../discord/helpers/components/HandlerButton.js';
-import { Autocomplete } from '../../../discord/handlers/interfaces/Autocomplete.js';
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
+import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
+import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { DefineCommandData } from './DefineCommandData.js';
+import { DefineReplyBuilder } from './DefineMixins.js';
 
 export class DefineHandler extends ChatInputHandler implements Autocomplete {
 
@@ -34,21 +34,21 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
         const definitions = query ?
             await this.api.define(Util.escapeMarkdown(query)).catch(() => null) :
             await this.api.random().catch(() => null);
-        if (!definitions) return command.followUp(HandlerReplies.createAPIErrorReply(command, this));
+        if (!definitions) return command.followUp(new ReplyBuilder(command).addUnexpectedErrorEmbed(this));
         if (!HandlerUtil.isNonEmptyArray(definitions)) {
-            if (!query) return command.followUp(HandlerReplies.createUnexpectedErrorReply(command, this));
-            else return command.followUp(HandlerReplies.createNotFoundReply(command, query));
+            if (!query) return command.followUp(new ReplyBuilder(command).addUnexpectedErrorEmbed(this));
+            else return command.followUp(new ReplyBuilder(command).addNotFoundEmbed(query));
         }
-        const replyOptions = new UrbanDictionaryReplyBuilder(command)
+        const replyOptions = new DefineReplyBuilder(command)
             .addDefinitionEmbed(definitions, page)
             .addDefinitionPageActionRow(definitions, page);
         const message = await command.followUp(replyOptions) as Message;
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             await component.deferUpdate();
-            if (component.customId === HandlerButtonID.NEXT_PAGE) page++;
-            if (component.customId === HandlerButtonID.PREVIOUS_PAGE) page--;
-            const replyOptions = new UrbanDictionaryReplyBuilder(command)
+            if (component.customId === ComponentID.NEXT_PAGE) page++;
+            if (component.customId === ComponentID.PREVIOUS_PAGE) page--;
+            const replyOptions = new DefineReplyBuilder(command)
                 .addDefinitionEmbed(definitions, page)
                 .addDefinitionPageActionRow(definitions, page);
             await component.editReply(replyOptions);

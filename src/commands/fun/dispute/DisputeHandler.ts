@@ -1,13 +1,13 @@
 import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
-import { ContextMenuHandler } from '../../../discord/handlers/abstracts/ContextMenuHandler.js';
+import { ContextMenuHandler } from '../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
 import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
-import { HandlerClient } from '../../../discord/HandlerClient.js';
-import { HandlerUtil } from '../../../discord/HandlerUtil.js';
-import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js'
-import { HandlerReplies } from '../../../discord/helpers/HandlerReplies.js';
+import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js';
+import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
 import { DisputeCommandData } from './DisputeCommandData.js';
 import { DisputeEmbed } from './components/DisputeEmbed.js';
-import { HandlerDB } from '../../../discord/helpers/HandlerDatabase.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 
 export class DisputeHandler extends ContextMenuHandler {
 
@@ -25,7 +25,7 @@ export class DisputeHandler extends ContextMenuHandler {
         if (origMessage.author == contextMenu.user) return contextMenu.reply(DisputeEmbed.getSelfUsedEmbed(contextMenu));
         const disputeExists = await this.database.disputeExists(origMessage);
         const disputeResultsErr = await this.database.fetchResults(origMessage);
-        if (disputeExists) return contextMenu.reply(DisputeEmbed.getAlreadyDisputedEmbed(contextMenu, disputeResultsErr!))
+        if (disputeExists) return contextMenu.reply(DisputeEmbed.getAlreadyDisputedEmbed(contextMenu, disputeResultsErr!));
         await this.database.setDisputeVote(contextMenu, contextMenu, origMessage, true);
         await contextMenu.deferReply();
         const disputeResults = await this.database.fetchResults(origMessage);
@@ -70,7 +70,7 @@ export class DisputeHandler extends ContextMenuHandler {
                     }
                 }
             } catch { }
-        }
+        };
     }
 
     private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number = 0): InteractionReplyOptions {
@@ -85,7 +85,7 @@ export class DisputeHandler extends ContextMenuHandler {
     private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>) {
         const updatedMessage = await message.fetch();
         let disputeResults = await this.database.fetchResults(origMessage);
-        let tieReplyOptions = {}
+        let tieReplyOptions = {};
         if (disputeResults!.total_votes <= 1) {
             contextMenu.editReply(DisputeEmbed.getNotEnoughVotesEmbed(contextMenu));
             await this.database.deleteResults(origMessage);

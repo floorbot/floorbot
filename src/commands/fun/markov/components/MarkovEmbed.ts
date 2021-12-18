@@ -1,7 +1,7 @@
 import { GuildChannel, Interaction, MessageEmbed, MessageEmbedOptions, User } from 'discord.js';
 import { MarkovChannelRow, MarkovStringTotals } from '../MarkovDatabase.js';
-import { HandlerEmbed } from '../../../../discord/helpers/components/HandlerEmbed.js';
-import { HandlerUtil } from '../../../../discord/HandlerUtil.js';
+import { HandlerEmbed } from '../../../../lib/discord/helpers/components/HandlerEmbed.js';
+import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
 
 export class MarkovEmbed extends HandlerEmbed {
 
@@ -27,7 +27,7 @@ export class MarkovEmbed extends HandlerEmbed {
                 'Post frequency:',
                 `- One in \`${channelData.messages}\` messages (\`${HandlerUtil.formatDecimal(100 / channelData.messages, 2)}%\` chance per message)`,
                 `- Once every \`${channelData.minutes}\` minutes (\`${HandlerUtil.formatDecimal(100 / channelData.minutes, 2)}%\` chance per minute)`
-            ].join('\n'), false)
+            ].join('\n'), false);
     }
 
     public static getWipeConfirmEmbed(interaction: Interaction, channel: GuildChannel): MarkovEmbed {
@@ -43,7 +43,7 @@ export class MarkovEmbed extends HandlerEmbed {
             .setDescription([
                 '⚠️ Before you can disable markov all saved data must be purged',
                 '⛔ This is irreversible and will hard reset all markov settings for this guild'
-            ].join('\n'))
+            ].join('\n'));
     }
 
     public static getPurgedEmbed(interaction: Interaction): MarkovEmbed {
@@ -62,6 +62,6 @@ export class MarkovEmbed extends HandlerEmbed {
                 ' - *Unlucky*',
                 '',
                 '*Please continue to use this channel as normal and try again later*'
-            ].join('\n'))
+            ].join('\n'));
     }
 }
