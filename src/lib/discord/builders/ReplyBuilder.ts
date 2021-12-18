@@ -15,6 +15,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     public files?: AttachmentBuilder[];
     public embeds?: EmbedBuilder[];
     public content?: string | null;
+    public ephemeral?: boolean | undefined;
 
     constructor(data: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
         if (data) {
@@ -64,6 +65,16 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
+    public clearComponents(): this {
+        this.components = [];
+        return this;
+    }
+
+    public setEphemeral(): this {
+        this.ephemeral = true;
+        return this;
+    }
+
     /**
      * This divides the core functions from the flavoured
      */
@@ -75,7 +86,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return new AttachmentBuilder(buffer, 'floorbot.png');
     }
 
-    /** This is a speical attachment to make embeds as wide as possible */
+    /** This is a special attachment to make embeds as wide as possible */
     protected getEmbedWidenerAttachment(): AttachmentBuilder {
         const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
         return new AttachmentBuilder(buffer, 'embed_widener.png');
