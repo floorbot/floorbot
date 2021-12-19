@@ -1,20 +1,19 @@
 import { AttachmentBuilder } from '../../../lib/discord/builders/AttachmentBuilder.js';
 import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
+import { DisputeHandler, voteStrings } from './DisputeHandler.js';
 import { Message, GuildMember, Util } from 'discord.js';
 import { DisputeResults } from './DisputeDatabase.js';
-import { voteStrings } from './DisputeHandler.js';
 import path from 'path';
 import fs from 'fs';
 
 export class DisputeReplyBuilder extends ReplyBuilder {
 
     public addDisputeEmbed(message: Message, results: DisputeResults, votes: voteStrings, targetTimestamp: number = 0): this {
-        const endDelay: number = 1000 * 60 * 1;
         const intMember = this.context!.member! as GuildMember;
         let newTargetTimestamp = 0;
         if (targetTimestamp == 0) {
-            newTargetTimestamp = Math.round((this.context!.createdTimestamp + endDelay) / 1000);
+            newTargetTimestamp = Math.round((this.context!.createdTimestamp + DisputeHandler.END_DELAY) / 1000);
         } else {
             newTargetTimestamp = Math.round(targetTimestamp / 1000);
         }
