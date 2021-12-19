@@ -1,7 +1,7 @@
-import { InteractionReplyOptions, Interaction, Message, CacheType, CommandInteraction, Util, MessageActionRow } from 'discord.js';
-import { HandlerButton } from '../../../lib/discord/helpers/components/HandlerButton.js';
-import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
+import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { Util } from 'discord.js';
 
 export interface RollData {
     rollString: string,
@@ -11,20 +11,22 @@ export interface RollData {
     dice: number;
 }
 
-export class RollReplies extends HandlerReplies {
+export class RollReplyBuilder extends ReplyBuilder {
 
-    public createMaxRollsReply(context: Interaction | Message, actualRolls: number, maxRolls: number): InteractionReplyOptions {
+    public addRollMaxRollsEmbed(actualRolls: number, maxRolls: number): this {
         const attachment = this.getAvatar('1-3');
-        return this.createEmbedTemplate(context)
+        const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
                 `Sorry! You can only roll up to \`${HandlerUtil.formatCommas(maxRolls)}\` dice!`,
                 `*You attempted to roll \`${HandlerUtil.formatCommas(actualRolls)}\` dice!*`
-            ])
-            .toReplyOptions({ files: [attachment] });
+            ]);
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        return this;
     }
 
-    public createRollsReply(command: CommandInteraction<CacheType>, rollData: RollData[], page: number): InteractionReplyOptions {
+    public addRollEmbed(rollData: RollData[], page: number): this {
         page = page % rollData.length;
         page = page >= 0 ? page : rollData.length + page;
         const rollsString = Util.splitMessage(
@@ -33,19 +35,20 @@ export class RollReplies extends HandlerReplies {
         )[0];
         const allTotal = rollData.reduce((total, data) => total + data.total, 0);
         const allFails = rollData.reduce((total, data) => !data.total ? total + 1 : total, 0);
-        const embed = this.createEmbedTemplate(command)
+        const embed = this.createEmbedBuilder()
             .setTitle(`${rollData[page]!.rollString} ${rollData[page]!.total ? '' : '(Invalid)'}`)
             .setDescription(rollData[page]!.total ?
                 `${rollsString} \`Total: ${rollData[page]!.total}\`` :
                 '*Please check the format of your dice (1d6 or 6D9...)*'
             )
             .setFooter(`Roll: ${page + 1}/${rollData.length} - Total: ${HandlerUtil.formatCommas(allTotal)} - Failed: ${HandlerUtil.formatCommas(allFails)}`);
+        return this.addEmbed(embed);
+    }
 
-        const actionRow = new MessageActionRow().addComponents([
-            HandlerButton.createPreviousPageButton(),
-            HandlerButton.createNextPageButton()
-        ]);
-
-        return { embeds: [embed], ...(rollData.length > 1 && { components: [actionRow] }) };
+    public addRollPageActionRow(rollData: RollData[]): this {
+        const actionRow = new ActionRowBuilder()
+            .addPreviousPageButton(undefined, rollData.length <= 1)
+            .addNextPageButton(undefined, rollData.length <= 1);
+        return this.addActionRow(actionRow);
     }
 }
