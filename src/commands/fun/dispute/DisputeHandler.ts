@@ -16,6 +16,7 @@ export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
     public static readonly END_DELAY: number = 1000 * 60 * 1;
+    private timeStamp = 0;
 
     constructor(db: HandlerDB) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
@@ -31,13 +32,14 @@ export class DisputeHandler extends ContextMenuHandler {
         await this.database.setDisputeVote(contextMenu, contextMenu.user, origMessage, true);
         await contextMenu.deferReply();
         disputeResults = await this.database.fetchResults(origMessage);
+        this.timeStamp = Math.round((contextMenu.createdTimestamp + DisputeHandler.END_DELAY));
         const votes = await this.createVoteStrings(origMessage);
         const embed = new DisputeReplyBuilder(contextMenu)
             .addDisputeEmbed(origMessage, disputeResults!, votes)
             .addDisputeActionRow();
         const message = await contextMenu.followUp(embed) as Message;
-        const collector = message.createMessageComponentCollector({ idle: DisputeHandler.END_DELAY });
-        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage));
+        const collector = message.createMessageComponentCollector({ time: DisputeHandler.END_DELAY });
+        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage, collector));
         collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection); });
     }
 
@@ -50,33 +52,39 @@ export class DisputeHandler extends ContextMenuHandler {
         return { yes_array, no_array };
     }
 
-    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message): (component: MessageComponentInteraction) => void {
+    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message, collector: any): (component: MessageComponentInteraction) => void {
         return async (component: MessageComponentInteraction) => {
             try {
                 if (component.isButton()) {
                     switch (component.customId) {
                         case ComponentID.YES: {
                             const currVote = await this.database.getDisputeVote(component, message);
-                            if (!currVote) await this.database.setDisputeVote(contextMenu, component.user, message, true);
+                            if (!currVote) {
+                                collector.resetTimer();
+                                this.timeStamp = component.createdTimestamp + DisputeHandler.END_DELAY;
+                            }
+                            await this.database.setDisputeVote(contextMenu, component.user, message, true);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
                             const votes = await this.createVoteStrings(message);
-                            const newTargetTimestamp = component.createdTimestamp + DisputeHandler.END_DELAY;
                             const embed = new DisputeReplyBuilder(contextMenu)
-                                .addDisputeEmbed(message, disputeResults!, votes, newTargetTimestamp)
+                                .addDisputeEmbed(message, disputeResults!, votes, this.timeStamp)
                                 .addDisputeActionRow();
                             await component.editReply(embed);
                             break;
                         }
                         case ComponentID.NO: {
                             const currVote = await this.database.getDisputeVote(component, message);
-                            if (!currVote) await this.database.setDisputeVote(contextMenu, component.user, message, false);
+                            if (!currVote) {
+                                collector.resetTimer();
+                                this.timeStamp = component.createdTimestamp + DisputeHandler.END_DELAY;
+                            }
+                            await this.database.setDisputeVote(contextMenu, component.user, message, false);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
                             const votes = await this.createVoteStrings(message);
-                            const newTargetTimestamp = component.createdTimestamp + DisputeHandler.END_DELAY;
                             const embed = new DisputeReplyBuilder(contextMenu)
-                                .addDisputeEmbed(message, disputeResults!, votes, newTargetTimestamp)
+                                .addDisputeEmbed(message, disputeResults!, votes, this.timeStamp)
                                 .addDisputeActionRow();
                             await component.editReply(embed);
                             break;
@@ -89,6 +97,7 @@ export class DisputeHandler extends ContextMenuHandler {
 
     private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>) {
         const updatedMessage = await message.fetch();
+        HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
         let disputeResults = await this.database.fetchResults(origMessage);
         if (disputeResults!.total_votes <= 1) {
             contextMenu.editReply(new DisputeReplyBuilder(contextMenu).addDisputeNotEnoughVotesEmbed());
@@ -105,8 +114,6 @@ export class DisputeHandler extends ContextMenuHandler {
                 await contextMenu.editReply(embed);
             }
             const embed = new DisputeReplyBuilder(contextMenu).addDisputeFinalEmbed(origMessage, disputeResults!);
-
-            HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
             await collection.last()!.followUp(embed);
         }
     }
