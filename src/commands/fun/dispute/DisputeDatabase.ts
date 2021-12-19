@@ -101,7 +101,9 @@ export class DisputeDatabase extends HandlerDatabase {
 
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/dispute.sql`, 'utf8'))
+            this.exec('query' in this.db ?
+                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-mariadb.sql`, 'utf8') :
+                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-sqlite.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

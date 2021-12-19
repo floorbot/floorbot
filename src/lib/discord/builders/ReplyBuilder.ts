@@ -70,8 +70,8 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
-    public setEphemeral(): this {
-        this.ephemeral = true;
+    public setEphemeral(ephemeral: boolean = true): this {
+        this.ephemeral = ephemeral;
         return this;
     }
 
