@@ -1,10 +1,10 @@
 import { ContextMenuInteraction, Message, MessageComponentInteraction, Collection } from 'discord.js';
 import { ContextMenuHandler } from '../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
+import { DisputeReplyBuilder, DisputeTimeStamp } from './DisputeReplyBuilder.js';
 import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { DisputeReplyBuilder } from './DisputeReplyBuilder.js';
 import { DisputeCommandData } from './DisputeCommandData.js';
 import { DisputeDatabase } from './DisputeDatabase.js';
 
@@ -16,7 +16,6 @@ export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
     public static readonly END_DELAY: number = 1000 * 60 * 1;
-    private timeStamp = 0;
 
     constructor(db: HandlerDB) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
@@ -24,6 +23,7 @@ export class DisputeHandler extends ContextMenuHandler {
     }
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
+        const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeHandler.END_DELAY);
         const origMessage = contextMenu.options.getMessage('message', true) as Message;
         if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentReply('dispute'));
         if (origMessage.author == contextMenu.user) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeSelfUsedEmbed());
@@ -32,15 +32,14 @@ export class DisputeHandler extends ContextMenuHandler {
         await this.database.setDisputeVote(contextMenu, contextMenu.user, origMessage, true);
         await contextMenu.deferReply();
         disputeResults = await this.database.fetchResults(origMessage);
-        this.timeStamp = Math.round((contextMenu.createdTimestamp + DisputeHandler.END_DELAY));
         const votes = await this.createVoteStrings(origMessage);
         const embed = new DisputeReplyBuilder(contextMenu)
-            .addDisputeEmbed(origMessage, disputeResults!, votes)
+            .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp())
             .addDisputeActionRow();
         const message = await contextMenu.followUp(embed) as Message;
         const collector = message.createMessageComponentCollector({ time: DisputeHandler.END_DELAY });
-        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage, collector));
-        collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection); });
+        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage, collector, timestamp));
+        collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection, timestamp); });
     }
 
     private async createVoteStrings(message: Message): Promise<voteStrings> {
@@ -52,7 +51,7 @@ export class DisputeHandler extends ContextMenuHandler {
         return { yes_array, no_array };
     }
 
-    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message, collector: any): (component: MessageComponentInteraction) => void {
+    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message, collector: any, timestamp: DisputeTimeStamp): (component: MessageComponentInteraction) => void {
         return async (component: MessageComponentInteraction) => {
             try {
                 if (component.isButton()) {
@@ -61,14 +60,14 @@ export class DisputeHandler extends ContextMenuHandler {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
-                                this.timeStamp = component.createdTimestamp + DisputeHandler.END_DELAY;
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
                             }
                             await this.database.setDisputeVote(contextMenu, component.user, message, true);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
                             const votes = await this.createVoteStrings(message);
                             const embed = new DisputeReplyBuilder(contextMenu)
-                                .addDisputeEmbed(message, disputeResults!, votes, this.timeStamp)
+                                .addDisputeEmbed(message, disputeResults!, votes, timestamp.getTimestamp())
                                 .addDisputeActionRow();
                             await component.editReply(embed);
                             break;
@@ -77,14 +76,14 @@ export class DisputeHandler extends ContextMenuHandler {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
-                                this.timeStamp = component.createdTimestamp + DisputeHandler.END_DELAY;
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
                             }
                             await this.database.setDisputeVote(contextMenu, component.user, message, false);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
                             const votes = await this.createVoteStrings(message);
                             const embed = new DisputeReplyBuilder(contextMenu)
-                                .addDisputeEmbed(message, disputeResults!, votes, this.timeStamp)
+                                .addDisputeEmbed(message, disputeResults!, votes, timestamp.getTimestamp())
                                 .addDisputeActionRow();
                             await component.editReply(embed);
                             break;
@@ -95,7 +94,7 @@ export class DisputeHandler extends ContextMenuHandler {
         };
     }
 
-    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>) {
+    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>, timestamp: DisputeTimeStamp) {
         const updatedMessage = await message.fetch();
         HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
         let disputeResults = await this.database.fetchResults(origMessage);
@@ -109,7 +108,7 @@ export class DisputeHandler extends ContextMenuHandler {
                 disputeResults = await this.database.fetchResults(origMessage);
                 const votes = await this.createVoteStrings(origMessage);
                 const embed = new DisputeReplyBuilder(contextMenu)
-                    .addDisputeEmbed(origMessage, disputeResults!, votes)
+                    .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp())
                     .addDisputeActionRow();
                 await contextMenu.editReply(embed);
             }

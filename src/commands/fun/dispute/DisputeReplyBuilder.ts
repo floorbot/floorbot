@@ -1,22 +1,32 @@
 import { AttachmentBuilder } from '../../../lib/discord/builders/AttachmentBuilder.js';
 import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
-import { DisputeHandler, voteStrings } from './DisputeHandler.js';
 import { Message, GuildMember, Util } from 'discord.js';
 import { DisputeResults } from './DisputeDatabase.js';
+import { voteStrings } from './DisputeHandler.js';
 import path from 'path';
 import fs from 'fs';
 
+export class DisputeTimeStamp {
+    private timestamp;
+
+    constructor(timestamp: number) {
+        this.timestamp = timestamp;
+    }
+
+    public getTimestamp(): number {
+        return this.timestamp;
+    }
+
+    public setTimestamp(timestamp: number): void {
+        this.timestamp = timestamp;
+    }
+}
 export class DisputeReplyBuilder extends ReplyBuilder {
 
-    public addDisputeEmbed(message: Message, results: DisputeResults, votes: voteStrings, targetTimestamp: number = 0): this {
+    public addDisputeEmbed(message: Message, results: DisputeResults, votes: voteStrings, targetTimestamp: number): this {
         const intMember = this.context!.member! as GuildMember;
-        let newTargetTimestamp = 0;
-        if (targetTimestamp == 0) {
-            newTargetTimestamp = Math.round((this.context!.createdTimestamp + DisputeHandler.END_DELAY) / 1000);
-        } else {
-            newTargetTimestamp = Math.round(targetTimestamp / 1000);
-        }
+        const newTargetTimestamp = Math.round(targetTimestamp / 1000);
         const { yes_array, no_array } = votes;
         const yes_string = yes_array.join('\n') || '';
         const no_string = no_array.join('\n') || '';
