@@ -96,7 +96,7 @@ export class DisputeHandler extends ContextMenuHandler {
 
     private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>, timestamp: DisputeTimeStamp) {
         const updatedMessage = await message.fetch();
-        HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
+        await HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
         let disputeResults = await this.database.fetchResults(origMessage);
         if (disputeResults!.total_votes <= 1) {
             contextMenu.editReply(new DisputeReplyBuilder(contextMenu).addDisputeNotEnoughVotesEmbed());
@@ -108,8 +108,7 @@ export class DisputeHandler extends ContextMenuHandler {
                 disputeResults = await this.database.fetchResults(origMessage);
                 const votes = await this.createVoteStrings(origMessage);
                 const embed = new DisputeReplyBuilder(contextMenu)
-                    .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp())
-                    .addDisputeActionRow();
+                    .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp());
                 await contextMenu.editReply(embed);
             }
             const embed = new DisputeReplyBuilder(contextMenu).addDisputeFinalEmbed(origMessage, disputeResults!);
