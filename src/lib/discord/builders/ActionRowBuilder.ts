@@ -6,7 +6,9 @@ const { MessageButtonStyles } = Constants;
 export enum ComponentID {
     PREVIOUS_PAGE = 'past_page',
     NEXT_PAGE = 'next_page',
-    DELETE = 'delete'
+    DELETE = 'delete',
+    YES = 'yes',
+    NO = 'no'
 }
 
 export class ActionRowBuilder extends MessageActionRow {
@@ -46,6 +48,22 @@ export class ActionRowBuilder extends MessageActionRow {
             .setLabel('✖️')
             .setStyle(MessageButtonStyles.DANGER)
             .setCustomId(ComponentID.DELETE);
+        return this.addComponents(button);
+    }
+
+    public addYesButton(): this {
+        const button = new ButtonBuilder()
+            .setLabel('Yes')
+            .setStyle(MessageButtonStyles.SUCCESS)
+            .setCustomId(ComponentID.YES);
+        return this.addComponents(button);
+    }
+
+    public addNoButton(): this {
+        const button = new ButtonBuilder()
+            .setLabel('No')
+            .setStyle(MessageButtonStyles.DANGER)
+            .setCustomId(ComponentID.NO);
         return this.addComponents(button);
     }
 }

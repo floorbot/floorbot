@@ -52,24 +52,15 @@ export class DisputeDatabase extends HandlerDatabase {
         return rows.length ? rows[0] : null;
     }
 
-    public async getVoters(message: Message, which: string): Promise<string | null> {
-        let sql = '';
-        if (which == 'yes') {
-            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 1';
-        } else {
-            sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id and vote_choice = 0';
-        };
+    public async getVoters(message: Message): Promise<DisputeRow[] | null> {
+        const sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id and channel_id = :channel_id and message_id = :message_id';
         const query = {
             guild_id: message.guild!.id,
             channel_id: message.channel.id,
             message_id: message.id
         };
         const rows = await this.select(sql, query);
-        let result = [];
-        for (let i = 0; i < rows.length; i++) {
-            result.push(`<@${rows[i]['vote_user_id']}>`);
-        }
-        return result.join('\n');
+        return rows.length ? rows : null;
     }
 
     public async getDisputeVote(interaction: Interaction, message: Message): Promise<DisputeRow | null> {
@@ -84,22 +75,7 @@ export class DisputeDatabase extends HandlerDatabase {
         return rows.length ? rows[0] : null;
     }
 
-    public async setDisputeVote(contextMenu: Interaction, buttonClick: Interaction, message: Message, choice: boolean) {
-        const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
-        return await this.exec(sql, {
-            epoch: message.createdTimestamp,
-            dispute_user_id: contextMenu.user.id,
-            message_user_id: message.author.id,
-            guild_id: message.guild!.id,
-            channel_id: message.channel.id,
-            message_id: message.id,
-            content: message.content,
-            vote_user_id: buttonClick.user!.id,
-            vote_choice: choice
-        });
-    }
-
-    public async setDisputeVoteID(contextMenu: Interaction, user: User, message: Message, choice: boolean) {
+    public async setDisputeVote(contextMenu: Interaction, user: User, message: Message, choice: boolean) {
         const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
         return await this.exec(sql, {
             epoch: message.createdTimestamp,
@@ -123,20 +99,11 @@ export class DisputeDatabase extends HandlerDatabase {
         });
     }
 
-    public async disputeExists(message: Message): Promise<boolean | null> {
-        const sql = 'SELECT * FROM dispute WHERE guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id LIMIT 1';
-        const query = {
-            guild_id: message.guild!.id,
-            channel_id: message.channel.id,
-            message_id: message.id
-        };
-        const rows = await this.select(sql, query);
-        return rows.length;
-    }
-
     public async createTables(): Promise<void> {
         return Promise.allSettled([
-            this.exec(fs.readFileSync(`${path.resolve()}/res/schemas/dispute.sql`, 'utf8'))
+            this.exec('query' in this.db ?
+                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-mariadb.sql`, 'utf8') :
+                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-sqlite.sql`, 'utf8'))
         ]).then(ress => {
             return ress.forEach(res => {
                 if (res.status === 'fulfilled') return;

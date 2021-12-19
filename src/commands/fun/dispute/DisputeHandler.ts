@@ -1,18 +1,21 @@
-import { ContextMenuInteraction, Message, MessageActionRow, Interaction, InteractionReplyOptions, MessageComponentInteraction, Collection } from 'discord.js';
+import { ContextMenuInteraction, Message, MessageComponentInteraction, Collection } from 'discord.js';
 import { ContextMenuHandler } from '../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
-import { DisputeButton, DisputeButtonID } from './components/DisputeButton.js';
+import { DisputeReplyBuilder, DisputeTimeStamp } from './DisputeReplyBuilder.js';
+import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { DisputeDatabase, DisputeResults } from './DisputeDatabase.js';
-import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
 import { DisputeCommandData } from './DisputeCommandData.js';
-import { DisputeEmbed } from './components/DisputeEmbed.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
+import { DisputeDatabase } from './DisputeDatabase.js';
 
+export interface voteStrings {
+    readonly yes_array: string[],
+    readonly no_array: string[];
+}
 export class DisputeHandler extends ContextMenuHandler {
 
     private readonly database: DisputeDatabase;
-    private readonly endDelay: number = 1000 * 60 * 1;
+    public static readonly END_DELAY: number = 1000 * 60 * 1;
 
     constructor(db: HandlerDB) {
         super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
@@ -20,51 +23,69 @@ export class DisputeHandler extends ContextMenuHandler {
     }
 
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
+        const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeHandler.END_DELAY);
         const origMessage = contextMenu.options.getMessage('message', true) as Message;
-        if (!origMessage.content.length) return contextMenu.reply(HandlerReplies.createMessageContentReply(contextMenu, 'dispute'));
-        if (origMessage.author == contextMenu.user) return contextMenu.reply(DisputeEmbed.getSelfUsedEmbed(contextMenu));
-        const disputeExists = await this.database.disputeExists(origMessage);
-        const disputeResultsErr = await this.database.fetchResults(origMessage);
-        if (disputeExists) return contextMenu.reply(DisputeEmbed.getAlreadyDisputedEmbed(contextMenu, disputeResultsErr!));
-        await this.database.setDisputeVote(contextMenu, contextMenu, origMessage, true);
+        if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentReply('dispute'));
+        if (origMessage.author == contextMenu.user) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeSelfUsedEmbed());
+        let disputeResults = await this.database.fetchResults(origMessage);
+        if (disputeResults?.total_votes || 0 > 0) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeAlreadyDisputedEmbed(disputeResults!));
+        await this.database.setDisputeVote(contextMenu, contextMenu.user, origMessage, true);
         await contextMenu.deferReply();
-        const disputeResults = await this.database.fetchResults(origMessage);
-        const yes_string = await this.database.getVoters(origMessage, 'yes');
-        const no_string = await this.database.getVoters(origMessage, 'no');
-        const replyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
-        const message = await contextMenu.followUp(replyOptions) as Message;
-        const collector = message.createMessageComponentCollector({ idle: this.endDelay });
-        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage));
-        collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection); });
+        disputeResults = await this.database.fetchResults(origMessage);
+        const votes = await this.createVoteStrings(origMessage);
+        const embed = new DisputeReplyBuilder(contextMenu)
+            .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp())
+            .addDisputeActionRow();
+        const message = await contextMenu.followUp(embed) as Message;
+        const collector = message.createMessageComponentCollector({ time: DisputeHandler.END_DELAY });
+        collector.on('collect', this.createCollectorFunction(contextMenu, origMessage, collector, timestamp));
+        collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection, timestamp); });
     }
 
-    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message): (component: MessageComponentInteraction) => void {
+    private async createVoteStrings(message: Message): Promise<voteStrings> {
+        const votes = await this.database.getVoters(message);
+        const yes_array: string[] = [];
+        const no_array: string[] = [];
+        if (!votes) return { yes_array, no_array };
+        votes.forEach(function (obj) { obj.vote_choice ? yes_array.push(`<@${obj.vote_user_id}>`) : no_array.push(`<@${obj.vote_user_id}>`); });
+        return { yes_array, no_array };
+    }
+
+    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message, collector: any, timestamp: DisputeTimeStamp): (component: MessageComponentInteraction) => void {
         return async (component: MessageComponentInteraction) => {
             try {
                 if (component.isButton()) {
                     switch (component.customId) {
-                        case DisputeButtonID.YES: {
+                        case ComponentID.YES: {
                             const currVote = await this.database.getDisputeVote(component, message);
-                            if (!currVote) await this.database.setDisputeVote(contextMenu, component, message, true);
+                            if (!currVote) {
+                                collector.resetTimer();
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
+                            }
+                            await this.database.setDisputeVote(contextMenu, component.user, message, true);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
-                            const yes_string = await this.database.getVoters(message, 'yes');
-                            const no_string = await this.database.getVoters(message, 'no');
-                            const newTargetTimestamp = component.createdTimestamp + this.endDelay;
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!, newTargetTimestamp);
-                            await component.editReply(replyOptions);
+                            const votes = await this.createVoteStrings(message);
+                            const embed = new DisputeReplyBuilder(contextMenu)
+                                .addDisputeEmbed(message, disputeResults!, votes, timestamp.getTimestamp())
+                                .addDisputeActionRow();
+                            await component.editReply(embed);
                             break;
                         }
-                        case DisputeButtonID.NO: {
+                        case ComponentID.NO: {
                             const currVote = await this.database.getDisputeVote(component, message);
-                            if (!currVote) await this.database.setDisputeVote(contextMenu, component, message, false);
+                            if (!currVote) {
+                                collector.resetTimer();
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
+                            }
+                            await this.database.setDisputeVote(contextMenu, component.user, message, false);
                             await component.deferUpdate();
                             const disputeResults = await this.database.fetchResults(message);
-                            const yes_string = await this.database.getVoters(message, 'yes');
-                            const no_string = await this.database.getVoters(message, 'no');
-                            const newTargetTimestamp = component.createdTimestamp + this.endDelay;
-                            const replyOptions = this.createCurrentResponse(contextMenu, message, disputeResults!, yes_string!, no_string!, newTargetTimestamp);
-                            await component.editReply(replyOptions);
+                            const votes = await this.createVoteStrings(message);
+                            const embed = new DisputeReplyBuilder(contextMenu)
+                                .addDisputeEmbed(message, disputeResults!, votes, timestamp.getTimestamp())
+                                .addDisputeActionRow();
+                            await component.editReply(embed);
                             break;
                         }
                     }
@@ -73,38 +94,25 @@ export class DisputeHandler extends ContextMenuHandler {
         };
     }
 
-    private createCurrentResponse(interaction: Interaction, message: Message, results: DisputeResults, yes_string: string, no_string: string, targetTimestamp: number = 0): InteractionReplyOptions {
-        const embed = DisputeEmbed.getCurrentEmbed(interaction, message, results, yes_string, no_string, targetTimestamp);
-        const actionRow: MessageActionRow = new MessageActionRow().addComponents([
-            DisputeButton.createDisputeButton(DisputeButtonID.YES),
-            DisputeButton.createDisputeButton(DisputeButtonID.NO)
-        ]);
-        return { embeds: [embed], components: [actionRow] };
-    }
-
-    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>) {
+    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>, timestamp: DisputeTimeStamp) {
         const updatedMessage = await message.fetch();
+        await HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
         let disputeResults = await this.database.fetchResults(origMessage);
-        let tieReplyOptions = {};
         if (disputeResults!.total_votes <= 1) {
-            contextMenu.editReply(DisputeEmbed.getNotEnoughVotesEmbed(contextMenu));
+            contextMenu.editReply(new DisputeReplyBuilder(contextMenu).addDisputeNotEnoughVotesEmbed());
             await this.database.deleteResults(origMessage);
         } else {
             if (disputeResults!.yes_votes == disputeResults!.no_votes) {
                 const random_boolean = Math.random() < 0.5;
-                await this.database.setDisputeVoteID(contextMenu, contextMenu.client.user!, origMessage, random_boolean);
+                await this.database.setDisputeVote(contextMenu, contextMenu.client.user!, origMessage, random_boolean);
                 disputeResults = await this.database.fetchResults(origMessage);
-
-                const yes_string = await this.database.getVoters(origMessage, 'yes');
-                const no_string = await this.database.getVoters(origMessage, 'no');
-                tieReplyOptions = this.createCurrentResponse(contextMenu, origMessage, disputeResults!, yes_string!, no_string!);
-                await contextMenu.editReply(tieReplyOptions);
+                const votes = await this.createVoteStrings(origMessage);
+                const embed = new DisputeReplyBuilder(contextMenu)
+                    .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp());
+                await contextMenu.editReply(embed);
             }
-            const embed = DisputeEmbed.getFinalEmbed(contextMenu, origMessage, disputeResults!);
-            const newMessage = { embeds: [embed] };
-
-            HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
-            await collection.last()!.followUp(newMessage);
+            const embed = new DisputeReplyBuilder(contextMenu).addDisputeFinalEmbed(origMessage, disputeResults!);
+            await collection.last()!.followUp(embed);
         }
     }
 
