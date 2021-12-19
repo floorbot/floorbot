@@ -31,11 +31,11 @@ import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
-import { DefineHandler } from './commands/fun/define/DefineHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
+import { DefineHandler } from './handlers/define/DefineHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
@@ -96,7 +96,6 @@ const client = new HandlerClient({
         new MagickMessageHandler(),
         new DisputeHandler(database),
         new TraceMoeHandler(redis),
-
         new DefineHandler(),
         new Rule34Handler()
     ],

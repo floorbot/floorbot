@@ -15,6 +15,5 @@ export type MixinInstance<F extends MixinFunction<any>> = F extends MixinFunctio
  * @returns The final mixed class from base and all mixins
  */
 export default function mixin<T extends MixinConstructor, M extends MixinFunction<T, any>[]>(Base: T, ...mixins: M): MixinReturnValue<T, M> {
-    return mixins.reduce((mix, applyMixin) => applyMixin(mix), Base
-    ) as MixinReturnValue<T, M>;
+    return mixins.reduce((mix, applyMixin) => applyMixin(mix), Base) as MixinReturnValue<T, M>;
 }

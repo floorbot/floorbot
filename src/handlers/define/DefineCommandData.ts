@@ -13,4 +13,4 @@ export const DefineCommandData: ChatInputApplicationCommandData = {
         autocomplete: true,
         description: 'What does this mean?'
     }]
-}
+};

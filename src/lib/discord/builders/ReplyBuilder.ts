@@ -124,7 +124,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
-    public addNotFoundEmbed(query?: string, message?: string): this {
+    public addNotFoundEmbed(query?: string | null, message?: string | null): this {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-3.png`);
         const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
         const embed = this.createEmbedBuilder()
