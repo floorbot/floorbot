@@ -1,5 +1,6 @@
-import { ChatInputApplicationCommandData, CommandInteraction, Util } from "discord.js";
+import { ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
 import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
+import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { FlipChatInputCommandData } from "./FlipChatInputCommandData.js";
 import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
 import { FlipHandler } from "../FlipHandler.js";
@@ -25,8 +26,8 @@ export class FlipChatInputHandler extends FlipHandler<ChatInputApplicationComman
             command.followUp(embed.toReplyOptions());
         } else {
             const flipped = this.flipText(value);
-            const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!;
-            command.followUp({ content: split, allowedMentions: { parse: [] } });
+            const shortened = HandlerUtil.shortenMessage(flipped, { maxLength: 2000 });
+            await command.followUp(new ReplyBuilder(command).setContent(shortened).suppressMentions());
         }
     }
 

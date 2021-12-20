@@ -1,4 +1,4 @@
-import { Interaction, InteractionReplyOptions, Message } from "discord.js";
+import { Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
 import { BuilderContext } from "./BuilderInterfaces.js";
@@ -11,12 +11,13 @@ export class ReplyBuilder implements InteractionReplyOptions {
 
     protected context?: BuilderContext;
 
+    public allowed_mentions?: MessageMentionOptions;
     public attachments?: AttachmentBuilder[];
     public components?: ActionRowBuilder[];
+    public ephemeral?: boolean | undefined;
     public files?: AttachmentBuilder[];
     public embeds?: EmbedBuilder[];
     public content?: string | null;
-    public ephemeral?: boolean | undefined;
 
     constructor(data: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
         if (data) {
@@ -28,6 +29,16 @@ export class ReplyBuilder implements InteractionReplyOptions {
 
     public setContent(content: string | null): this {
         this.content = content;
+        return this;
+    }
+
+    public setAllowedMentions(allowedMentions?: MessageMentionOptions): this {
+        this.allowed_mentions = allowedMentions;
+        return this;
+    }
+
+    public suppressMentions(): this {
+        this.allowed_mentions = { ...this.allowed_mentions, parse: [] };
         return this;
     }
 

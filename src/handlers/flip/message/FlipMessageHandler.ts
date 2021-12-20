@@ -1,6 +1,7 @@
-import { ContextMenuInteraction, MessageApplicationCommandData, Util } from 'discord.js';
+import { ContextMenuInteraction, MessageApplicationCommandData } from 'discord.js';
 import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { FlipMessageCommandData } from './FlipMessageCommandData.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { FlipHandler } from '../FlipHandler.js';
 
 export class FlipMessageHandler extends FlipHandler<MessageApplicationCommandData> {
@@ -14,7 +15,7 @@ export class FlipMessageHandler extends FlipHandler<MessageApplicationCommandDat
         if (!text.length) return contextMenu.reply(new ReplyBuilder(contextMenu).addMissingContentReply('flip'));
         await contextMenu.deferReply();
         const flipped = this.flipText(text);
-        const split = Util.splitMessage(flipped, { maxLength: 2000 })[0]!;
-        contextMenu.followUp({ content: split, allowedMentions: { parse: [] } });
+        const shortened = HandlerUtil.shortenMessage(flipped, { maxLength: 2000 });
+        await contextMenu.followUp(new ReplyBuilder(contextMenu).setContent(shortened).suppressMentions());
     }
 }
