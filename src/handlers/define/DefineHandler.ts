@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, Util } from "discord.js";
+import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, Constants, InteractionCollector, Util } from "discord.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
@@ -7,6 +7,8 @@ import { DefineCommandData } from "./DefineCommandData.js";
 import { DefineReplyBuilder } from "./DefineMixins.js";
 import { Pageable } from "../../lib/utils/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
+
+const { InteractionTypes } = Constants;
 
 export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
 
@@ -27,7 +29,7 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
         return interaction.respond(options);
     }
 
-    public async run(command: CommandInteraction<'cached'>): Promise<void> {
+    public async run(command: CommandInteraction): Promise<void> {
         await command.deferReply();
         const query = command.options.getString('query');
         const definitions = query ?
@@ -38,8 +40,14 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
         const replyOptions = new DefineReplyBuilder(command)
             .addDefinitionPageActionRow(pageable)
             .addDefinitionEmbed(pageable);
+
         const message = await command.followUp(replyOptions);
-        const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+        const collector = new InteractionCollector(command.client, {
+            interactionType: InteractionTypes.MESSAGE_COMPONENT,
+            idle: 1000 * 60 * 5,
+            message: message
+        });
+
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             await component.deferUpdate();
             if (component.customId === ComponentID.NEXT_PAGE) pageable.page++;
@@ -49,6 +57,7 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
                 .addDefinitionPageActionRow(pageable);
             await component.editReply(replyOptions);
         }));
-        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+
+        collector.on('end', () => { command.editReply({ components: [] }); });
     }
 }
