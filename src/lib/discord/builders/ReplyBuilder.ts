@@ -2,6 +2,7 @@ import { Interaction, InteractionReplyOptions, Message } from "discord.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
 import { BuilderContext } from "./BuilderInterfaces.js";
+import { Pageable } from "../../utils/Pageable.js";
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import path from 'path';
 import fs from 'fs';
@@ -99,7 +100,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return embed;
     }
 
-    public addPageActionRow(link?: string, currentPage?: number, disabled?: boolean): this {
+    public addPageActionRow(link?: string, currentPage?: number | Pageable<any>, disabled?: boolean): this {
         const actionRow = new ActionRowBuilder();
         if (link) actionRow.addViewOnlineButton(link);
         actionRow.addPreviousPageButton(currentPage, disabled);
