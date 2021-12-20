@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, Constants, InteractionCollector, Util } from "discord.js";
+import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, InteractionCollector, Util } from "discord.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
@@ -7,8 +7,6 @@ import { DefineCommandData } from "./DefineCommandData.js";
 import { DefineReplyBuilder } from "./DefineMixins.js";
 import { Pageable } from "../../lib/utils/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
-
-const { InteractionTypes } = Constants;
 
 export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
 
@@ -40,14 +38,8 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
         const replyOptions = new DefineReplyBuilder(command)
             .addDefinitionPageActionRow(pageable)
             .addDefinitionEmbed(pageable);
-
         const message = await command.followUp(replyOptions);
-        const collector = new InteractionCollector(command.client, {
-            interactionType: InteractionTypes.MESSAGE_COMPONENT,
-            idle: 1000 * 60 * 5,
-            message: message
-        });
-
+        const collector = new InteractionCollector(command.client, { message: message, time: 1000 * 60 * 10 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             await component.deferUpdate();
             if (component.customId === ComponentID.NEXT_PAGE) pageable.page++;
@@ -57,7 +49,6 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
                 .addDefinitionPageActionRow(pageable);
             await component.editReply(replyOptions);
         }));
-
         collector.on('end', () => { command.editReply({ components: [] }); });
     }
 }
