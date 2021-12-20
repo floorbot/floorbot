@@ -22,8 +22,8 @@ import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/
 import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
 import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/OwoifyMessageHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
-import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
-import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
+import { FlipChatInputHandler } from './handlers/flip/chat_input/FlipChatInputHandler.js';
+import { FlipMessageHandler } from './handlers/flip/message/FlipMessageHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
@@ -81,12 +81,13 @@ const client = new HandlerClient({
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
     ownerIds: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
+        new FlipChatInputHandler(),
+        new FlipMessageHandler(),
+
         new FloorbotHandler(),
         new AniListHandler(redis),
         new LostHandler(),
-        new FlipChatInputHandler(),
         new OwoifyChatInputHandler(),
-        new FlipMessageHandler(),
         new OwoifyMessageHandler(),
         new DDDHandler(database),
         new MarkovHandler(database),

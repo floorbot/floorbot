@@ -1,4 +1,5 @@
 import { UrbanDictionaryAPIData } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
+import { ActionRowBuilder } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
@@ -36,7 +37,11 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public addDefinitionPageActionRow(pageable: Pageable<UrbanDictionaryAPIData>): this {
-            return this.addPageActionRow(pageable.pageData.permalink, undefined, pageable.totalPages <= 1);
+            const actionRow = new ActionRowBuilder();
+            actionRow.addViewOnlineButton(pageable.pageData.permalink);
+            actionRow.addPreviousPageButton(null, pageable.totalPages < 2);
+            actionRow.addNextPageButton(null, pageable.totalPages < 2);
+            return this.addActionRow(actionRow);
         }
 
         public override addNotFoundEmbed(query?: string | null): this {

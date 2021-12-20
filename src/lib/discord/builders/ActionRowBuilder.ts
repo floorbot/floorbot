@@ -1,4 +1,5 @@
 import { Constants, MessageActionRow, MessageActionRowOptions } from 'discord.js';
+import { Pageable } from '../../utils/Pageable.js';
 import { ButtonBuilder } from './ButtonBuilder.js';
 
 const { MessageButtonStyles } = Constants;
@@ -25,19 +26,19 @@ export class ActionRowBuilder extends MessageActionRow {
         return this.addComponents(button);
     }
 
-    public addPreviousPageButton(currentPage?: number, disabled?: boolean): this {
+    public addPreviousPageButton(pageable?: null | number | Pageable<any>, disabled?: boolean): this {
         const button = new ButtonBuilder()
             .setCustomId(ComponentID.PREVIOUS_PAGE)
-            .setLabel(currentPage === undefined ? 'Previous' : `Page ${currentPage - 1}`)
+            .setLabel(pageable === undefined || pageable === null ? 'Previous' : `Page ${pageable instanceof Pageable ? pageable.previousPage : pageable - 1}`)
             .setStyle(MessageButtonStyles.PRIMARY);
         if (disabled) button.setDisabled(disabled);
         return this.addComponents(button);
     }
 
-    public addNextPageButton(currentPage?: number, disabled?: boolean): this {
+    public addNextPageButton(pageable?: null | number | Pageable<any>, disabled?: boolean): this {
         const button = new ButtonBuilder()
             .setCustomId(ComponentID.NEXT_PAGE)
-            .setLabel(currentPage === undefined ? 'Next' : `Page ${currentPage + 1}`)
+            .setLabel(pageable === undefined || pageable === null ? 'Next' : `Page ${pageable instanceof Pageable ? pageable.nextPage : pageable + 1}`)
             .setStyle(MessageButtonStyles.PRIMARY);
         if (disabled) button.setDisabled(disabled);
         return this.addComponents(button);

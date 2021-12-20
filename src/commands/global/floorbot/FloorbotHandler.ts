@@ -3,9 +3,10 @@ import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatIn
 import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
 import { FloorbotButtonID, FloorbotReplies } from './FloorbotReplies.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
-import { FloorbotCommandData } from './FloorbotCommandData.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { FloorbotCommandData } from './FloorbotCommandData.js';
 import { Handler } from '../../../lib/discord/Handler.js';
+import { BaseHandler } from 'discord.js-handlers';
 
 export type HandlerMap = Map<Handler<any>, ApplicationCommand | undefined>;
 export type GroupHandlerMap = Map<string, HandlerMap>;
@@ -102,7 +103,7 @@ export class FloorbotHandler extends ChatInputHandler {
     public override async setup(client: HandlerClient): Promise<any> {
         await super.setup(client);
         if (client.application) {
-            const handlers = client.handlers.filter(handler => handler.global);
+            const handlers = client.handlers.filter(handler => !(handler instanceof BaseHandler) && handler.global) as Handler<any>[];
             const appCommands = await client.application.commands.fetch();
             for (const handler of handlers) {
                 const appCommand = appCommands.find(appCommand => this.isCorrectHandler(handler, appCommand));
@@ -116,7 +117,7 @@ export class FloorbotHandler extends ChatInputHandler {
 
     private async fetchHandlerMap(guild: Guild): Promise<GroupHandlerMap> {
         const client = guild.client as HandlerClient;
-        const handlers = client.handlers.filter(handler => !handler.global);
+        const handlers = client.handlers.filter(handler => !(handler instanceof BaseHandler) && !handler.global) as Handler<any>[];
         const appCommands = await guild.commands.fetch();
         const groupHandlerMap = new Map();
         for (const handler of handlers) {

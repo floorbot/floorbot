@@ -1,14 +1,14 @@
-import { ChatInputHandler } from "../../lib/discord/handlers/abstracts/ChatInputHandler.js";
+import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, Util } from "discord.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
-import { Autocomplete } from "../../lib/discord/handlers/interfaces/Autocomplete.js";
-import { AutocompleteInteraction, CommandInteraction, Util } from "discord.js";
+import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
 import { DefineCommandData } from "./DefineCommandData.js";
 import { DefineReplyBuilder } from "./DefineMixins.js";
 import { Pageable } from "../../lib/utils/Pageable.js";
+import pVoid from "../../lib/promise-void.js";
 
-export class DefineHandler extends ChatInputHandler implements Autocomplete {
+export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
 
     private readonly api: UrbanDictionaryAPI;
 
@@ -27,13 +27,13 @@ export class DefineHandler extends ChatInputHandler implements Autocomplete {
         return interaction.respond(options);
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: CommandInteraction<'cached'>): Promise<void> {
         await command.deferReply();
         const query = command.options.getString('query');
         const definitions = query ?
             await this.api.define(Util.escapeMarkdown(query)) :
             await this.api.random();
-        if (!Pageable.isNonEmptyArray(definitions)) return command.followUp(new DefineReplyBuilder(command).addNotFoundEmbed(query));
+        if (!Pageable.isNonEmptyArray(definitions)) return pVoid(command.followUp(new DefineReplyBuilder(command).addNotFoundEmbed(query)));
         const pageable = new Pageable(definitions);
         const replyOptions = new DefineReplyBuilder(command)
             .addDefinitionPageActionRow(pageable)

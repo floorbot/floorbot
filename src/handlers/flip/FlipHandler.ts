@@ -1,13 +1,16 @@
-export class Flipper {
+import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { ApplicationCommandData } from 'discord.js';
 
-    public static flipText(text: string): string {
+export abstract class FlipHandler<T extends ApplicationCommandData> extends ApplicationCommandHandler<T> {
+
+    protected flipText(text: string): string {
         return text.split('').map(char => {
-            const reverse = Object.keys(Flipper.DATA).find(key => Flipper.DATA[key] === char);
-            return reverse || (Flipper.DATA[char] ? Flipper.DATA[char] : char);
+            const reverse = Object.keys(FlipHandler.FLIP_DATA).find(key => FlipHandler.FLIP_DATA[key] === char);
+            return reverse || (FlipHandler.FLIP_DATA[char] ? FlipHandler.FLIP_DATA[char] : char);
         }).reverse().join('');
     }
 
-    public static readonly DATA: { [index: string]: string } = {
+    private static readonly FLIP_DATA: { [index: string]: string; } = {
         "a": "\u0250",
         "b": "q",
         "c": "\u0254",
@@ -85,5 +88,5 @@ export class Flipper {
         "\u2045": "\u2046",
         "\u2234": "\u2235",
         "\r": "\n"
-    }
+    };
 }

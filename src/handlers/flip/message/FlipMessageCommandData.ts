@@ -5,4 +5,4 @@ const { ApplicationCommandTypes } = Constants;
 export const FlipMessageCommandData: MessageApplicationCommandData = {
     name: 'flip',
     type: ApplicationCommandTypes.MESSAGE
-}
+};

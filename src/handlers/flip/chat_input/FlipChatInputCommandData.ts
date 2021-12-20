@@ -12,4 +12,4 @@ export const FlipChatInputCommandData: ChatInputApplicationCommandData = {
         required: false,
         name: 'value'
     }]
-}
+};
