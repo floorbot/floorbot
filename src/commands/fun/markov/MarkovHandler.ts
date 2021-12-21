@@ -7,7 +7,7 @@ import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
 import Markov from 'markov-strings';
-import owoify from 'owoify-js';
+import { owoify } from 'owoifyx';
 
 export class MarkovHandler extends ChatInputHandler {
 
@@ -90,7 +90,7 @@ export class MarkovHandler extends ChatInputHandler {
             });
             return resolve(res);
         }).then((res: any) => {
-            const content = channelData.owoify ? (<any>owoify).default(res.string) : res.string;
+            const content = channelData.owoify ? owoify(res.string) : res.string;
             return { content: content, ...(!channelData.mentions && { allowedMentions: { parse: [] } }) };
         }).catch(() => {
             return null;

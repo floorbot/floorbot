@@ -18,12 +18,13 @@ import { NhentaiCodes } from './automations/NhentaiCodes.js';
 import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
-import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
 import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
-import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/OwoifyMessageHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
-import { FlipChatInputHandler } from './handlers/flip/chat_input/FlipChatInputHandler.js';
-import { FlipMessageHandler } from './handlers/flip/message/FlipMessageHandler.js';
+import { OwoifyChatInputHandler } from './handlers/owoify_chat_input/OwoifyChatInputHandler.js';
+import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
+import { FlipChatInputHandler } from './handlers/flip_chat_input/FlipChatInputHandler.js';
+import { OwoifyMessageHandler } from './handlers/owoify_message/OwoifyMessageHandler.js';
+import { FlipMessageHandler } from './handlers/flip_message/FlipMessageHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
@@ -35,7 +36,6 @@ import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
-import { DefineHandler } from './handlers/define/DefineHandler.js';
 import { RollHandler } from './commands/fun/roll/RollHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
@@ -97,7 +97,7 @@ const client = new HandlerClient({
         new MagickMessageHandler(),
         new DisputeHandler(database),
         new TraceMoeHandler(redis),
-        new DefineHandler(),
+        new DefineChatInputHandler(),
         new Rule34Handler()
     ],
     handlerBuilders: [

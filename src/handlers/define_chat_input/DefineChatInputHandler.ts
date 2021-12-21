@@ -2,18 +2,18 @@ import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandIntera
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
+import { DefineChatInputCommandData } from "./DefineChatInputCommandData.js";
+import { DefineReplyBuilder } from "../../helpers/mixins/DefineMixins.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
-import { DefineCommandData } from "./DefineCommandData.js";
-import { DefineReplyBuilder } from "./DefineMixins.js";
 import { Pageable } from "../../helpers/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
 
-export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
+export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
 
     private readonly api: UrbanDictionaryAPI;
 
     constructor() {
-        super(DefineCommandData);
+        super(DefineChatInputCommandData);
         this.api = new UrbanDictionaryAPI();
     }
 
@@ -33,7 +33,11 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
         const definitions = query ?
             await this.api.define(Util.escapeMarkdown(query)) :
             await this.api.random();
-        if (!Pageable.isNonEmptyArray(definitions)) return pVoid(command.followUp(new DefineReplyBuilder(command).addNotFoundEmbed(query)));
+        if (!Pageable.isNonEmptyArray(definitions)) {
+            const replyOptions = new DefineReplyBuilder(command)
+                .addDefinitionNotFoundEmbed(query);
+            return pVoid(command.followUp(replyOptions));
+        }
         const pageable = new Pageable(definitions);
         const replyOptions = new DefineReplyBuilder(command)
             .addDefinitionPageActionRow(pageable)

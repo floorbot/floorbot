@@ -12,4 +12,4 @@ export const OwoifyChatInputCommandData: ChatInputApplicationCommandData = {
         required: true,
         name: 'text'
     }]
-}
+};

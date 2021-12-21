@@ -2,7 +2,7 @@ import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
-export const DefineCommandData: ChatInputApplicationCommandData = {
+export const DefineChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'define',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'Define a word yo!',
