@@ -1,12 +1,10 @@
-import { CommandInteraction, Message, MessageActionRow, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
+import { CommandInteraction, Message, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
 import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { MarkovButton, MarkovButtonType } from './components/MarkovButton.js';
+import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
+import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
 import { MarkovCommandData } from './MarkovCommandData.js';
-import { MarkovEmbed } from './components/MarkovEmbed.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
 import Markov from 'markov-strings';
 import owoify from 'owoify-js';
@@ -27,7 +25,7 @@ export class MarkovHandler extends ChatInputHandler {
 
         switch (subCommand) {
             case 'settings': {
-                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(new MarkovReplyBuilder(command).addAdminOrOwnerEmbed());
                 await command.deferReply();
                 const response = await this.fetchControlPanel(command, channel);
                 const message = await command.followUp(response) as Message;
@@ -37,7 +35,7 @@ export class MarkovHandler extends ChatInputHandler {
                 return message;
             }
             case 'frequency': {
-                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
+                if (!HandlerUtil.isAdminOrOwner(command.member)) return command.reply(new MarkovReplyBuilder(command).addAdminOrOwnerEmbed());
                 await command.deferReply();
                 const perMessages = command.options.getInteger('messages') || undefined;
                 const perMinutes = command.options.getInteger('minutes') || undefined;
@@ -54,28 +52,18 @@ export class MarkovHandler extends ChatInputHandler {
                 await command.deferReply();
                 const user = command.options.getUser('user');
                 const response = await this.fetchMarkovResponse(channel, user);
-                return command.followUp(response ? response : MarkovEmbed.getFailedEmbed(command, channel, user).toReplyOptions());
+                return command.followUp(response ? response : new MarkovReplyBuilder(command).addMarkovFailedEmbed(channel, user));
             }
             default: throw command;
         }
     }
 
-    private async fetchControlPanel(interaction: Interaction, channel: GuildChannel): Promise<InteractionReplyOptions> {
+    private async fetchControlPanel(interaction: Interaction, channel: GuildChannel): Promise<MarkovReplyBuilder> {
         const totals = await this.database.fetchStringsTotals(channel);
         const channelData = await this.database.fetchChannel(channel);
-        const embed = MarkovEmbed.getControlPanel(interaction, channel, channelData, totals);
-        const primaryRow = new MessageActionRow().addComponents([
-            MarkovButton.getMarkovButton(channelData.posting ? MarkovButtonType.POSTING_DISABLE : MarkovButtonType.POSTING_ENABLE),
-            MarkovButton.getMarkovButton(channelData.tracking ? MarkovButtonType.TRACKING_DISABLE : MarkovButtonType.TRACKING_ENABLE),
-            MarkovButton.getMarkovButton(MarkovButtonType.WIPE)
-        ]);
-        const secondaryRow = new MessageActionRow().addComponents([
-            MarkovButton.getMarkovButton(channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
-            MarkovButton.getMarkovButton(channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE),
-            MarkovButton.getMarkovButton(channelData.owoify ? MarkovButtonType.OWOIFY_DISABLE : MarkovButtonType.OWOIFY_ENABLE),
-            MarkovButton.getMarkovButton(channelData.quoting ? MarkovButtonType.QUOTING_DISABLE : MarkovButtonType.QUOTING_ENABLE)
-        ]);
-        return { embeds: [embed], components: [primaryRow, secondaryRow] };
+        const embed = new MarkovReplyBuilder(interaction).addMarkovControlPanel(channel, channelData, totals)
+            .addMarkovActionRow(channelData);
+        return embed;
     }
 
     public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<InteractionReplyOptions | null> {
@@ -113,7 +101,7 @@ export class MarkovHandler extends ChatInputHandler {
         return async (component: MessageComponentInteraction<'cached'>) => {
             try {
                 if (component.isButton()) {
-                    if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
+                    if (!HandlerUtil.isAdminOrOwner(component.member, command)) return command.reply(new MarkovReplyBuilder(command).addAdminOrOwnerEmbed());
                     await component.deferUpdate();
                     switch (component.customId as MarkovButtonType) {
                         case MarkovButtonType.POSTING_ENABLE:
@@ -148,14 +136,12 @@ export class MarkovHandler extends ChatInputHandler {
                         }
                         case MarkovButtonType.WIPE: {
                             HandlerUtil.toggleMessageComponents(message, true);
+                            const embed = new MarkovReplyBuilder(command).addMarkovWipeConfirmEmbed(channel)
+                                .addMarkovWipeActionRow();
                             await component.editReply({
                                 ...(message.content && { content: message.content }),
-                                embeds: [...message.embeds, MarkovEmbed.getWipeConfirmEmbed(command, channel)],
-                                components: [...message.components, new MessageActionRow().addComponents(
-                                    MarkovButton.getMarkovButton(MarkovButtonType.BACKOUT),
-                                    MarkovButton.getMarkovButton(MarkovButtonType.WIPE_CONFIRMED),
-                                    MarkovButton.getMarkovButton(MarkovButtonType.PURGE_CONFIRMED)
-                                )],
+                                embeds: [...message.embeds, ...embed.embeds ?? []],
+                                components: [...message.components, ...embed.components ?? []]
                             });
                             return;
                         }

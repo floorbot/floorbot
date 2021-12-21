@@ -29,7 +29,7 @@ export class TraceMoeHandler extends ContextMenuHandler {
         // Get the image url if there is one
         const targetMessage = contextMenu.options.getMessage('message', true);
         const metadata = await HandlerUtil.probeMessage(targetMessage);
-        if (!metadata) return contextMenu.followUp(new TraceMoeReplyBuilder(contextMenu).addMissingContentReply('trace moe'));
+        if (!metadata) return contextMenu.followUp(new TraceMoeReplyBuilder(contextMenu).addMissingContentEmbed('trace moe'));
 
         // Fetch the trace moe results and check the contents
         const res = await this.tracemoe.fetchTraceMoeData(metadata.url);

@@ -1,4 +1,4 @@
-import { Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
+import { BaseCommandInteraction, Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
 import { BuilderContext } from "./BuilderInterfaces.js";
@@ -150,7 +150,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
-    public addMissingContentReply(action: string): InteractionReplyOptions {
+    public addMissingContentEmbed(action: string): this {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-2.png`);
         const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
         const embed = this.createEmbedBuilder()
@@ -159,6 +159,29 @@ export class ReplyBuilder implements InteractionReplyOptions {
                 `Sorry! It looks like that message has no content to ${action}`,
                 `*Please make the correct changes before trying again!*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true };
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        this.setEphemeral();
+        return this;
+    }
+
+    public addAdminOrOwnerEmbed(): this {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
+        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const embed = this.createEmbedBuilder()
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription(
+                this.context instanceof BaseCommandInteraction ?
+                    [
+                        'Sorry! Only an admin can use this command',
+                        '*If appropriate ask an admin to help!*'
+                    ] : [
+                        'Sorry! Only the creator of this interaction can use this component',
+                        '*If possible try using the command for yourself!*'
+                    ]);
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        this.setEphemeral();
+        return this;
     }
 }

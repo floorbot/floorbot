@@ -12,7 +12,7 @@ export class FlipMessageHandler extends FlipHandler<MessageApplicationCommandDat
 
     public async run(contextMenu: ContextMenuInteraction): Promise<void> {
         const text = contextMenu.options.getMessage('message', true).content;
-        if (!text.length) return contextMenu.reply(new ReplyBuilder(contextMenu).addMissingContentReply('flip'));
+        if (!text.length) return contextMenu.reply(new ReplyBuilder(contextMenu).addMissingContentEmbed('flip'));
         await contextMenu.deferReply();
         const flipped = this.flipText(text);
         const shortened = HandlerUtil.shortenMessage(flipped, { maxLength: 2000 });

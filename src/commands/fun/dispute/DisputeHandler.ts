@@ -25,7 +25,7 @@ export class DisputeHandler extends ContextMenuHandler {
     public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
         const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeHandler.END_DELAY);
         const origMessage = contextMenu.options.getMessage('message', true) as Message;
-        if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentReply('dispute'));
+        if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentEmbed('dispute'));
         if (origMessage.author == contextMenu.user) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeSelfUsedEmbed());
         let disputeResults = await this.database.fetchResults(origMessage);
         if (disputeResults?.total_votes || 0 > 0) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeAlreadyDisputedEmbed(disputeResults!));
