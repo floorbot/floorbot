@@ -21,7 +21,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     public embeds?: EmbedBuilder[];
     public content?: string | null;
 
-    constructor(data: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
+    constructor(data?: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
         if (data) {
             if (data instanceof Interaction) this.context = data;
             else if (data instanceof Message) this.context = data;
