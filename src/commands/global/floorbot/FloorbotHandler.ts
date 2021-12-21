@@ -1,7 +1,7 @@
 import { ApplicationCommand, CommandInteraction, Constants, Guild, Message, SelectMenuInteraction, VoiceChannel } from 'discord.js';
 import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
-import { FloorbotButtonID, FloorbotReplies } from './FloorbotReplies.js';
+import { FloorbotButtonID, FloorbotReplyBuilder } from './FloorbotReplyBuilder.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { FloorbotCommandData } from './FloorbotCommandData.js';
@@ -15,11 +15,8 @@ const { ApplicationCommandTypes } = Constants;
 
 export class FloorbotHandler extends ChatInputHandler {
 
-    private readonly replies: FloorbotReplies;
-
     constructor() {
         super({ group: 'Global', global: true, nsfw: false, data: FloorbotCommandData });
-        this.replies = new FloorbotReplies();
     }
 
     public async execute(command: CommandInteraction<'cached'>): Promise<any> {
@@ -28,11 +25,11 @@ export class FloorbotHandler extends ChatInputHandler {
 
         switch (subCommand) {
             case 'about': {
-                let aboutReplyOptions = this.replies.createAboutReply(command);
+                let aboutReplyOptions = new FloorbotReplyBuilder(command).addFloorbotAboutEmbed();
                 const message = await command.reply({ ...aboutReplyOptions, fetchReply: true });
-                aboutReplyOptions = this.replies.createAboutReply(command, message);
+                aboutReplyOptions = new FloorbotReplyBuilder(command).addFloorbotAboutEmbed(message);
                 const bans = await guild.bans.fetch({ cache: false }).catch(_error => { return undefined; });
-                const guildReplyOptions = this.replies.createGuildReply(command, guild, bans);
+                const guildReplyOptions = new FloorbotReplyBuilder(command).addFloorbotGuildEmbed(guild, bans);
 
                 await command.editReply(aboutReplyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
@@ -48,31 +45,31 @@ export class FloorbotHandler extends ChatInputHandler {
                 break;
             }
             case 'screenshare': {
-                if (!member) return command.reply(this.replies.createGuildOnlyReply(command));
+                if (!member) return command.reply(new FloorbotReplyBuilder(command).addGuildOnlyEmbed());
                 const channel = command.options.getChannel('channel') || member.voice.channel;
-                if (!channel || !(channel instanceof VoiceChannel)) return command.reply(this.replies.createNoVoiceChannelReply(command));
-                return command.reply(this.replies.createScreenshareReply(command, channel));
+                if (!channel || !(channel instanceof VoiceChannel)) return command.reply(new FloorbotReplyBuilder(command).addFloorbotNoVoiceChannelEmbed());
+                return command.reply(new FloorbotReplyBuilder(command).addFloorbotScreenshareEmbed(channel));
             }
             case 'commands': {
-                if (!guild) return command.reply(this.replies.createGuildOnlyReply(command));
-                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(this.replies.createAdminOrOwnerReply(command));
+                if (!guild) return command.reply(new FloorbotReplyBuilder(command).addGuildOnlyEmbed());
+                if (!HandlerUtil.isAdminOrOwner(member)) return command.reply(new FloorbotReplyBuilder(command).addAdminOrOwnerEmbed());
                 await command.deferReply();
                 let groupComponent: SelectMenuInteraction | undefined = undefined;
                 let commandsComponent: SelectMenuInteraction | undefined = undefined;
                 let groupHandlerMap = await this.fetchHandlerMap(guild);
-                const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
+                const response = new FloorbotReplyBuilder(command).addFloorbotCommandsEmbed(groupHandlerMap, groupComponent, commandsComponent);
                 let message = await command.followUp(response) as Message;
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component) => {
                     if (!HandlerUtil.isAdminOrOwner(member, command)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                     if (component.isSelectMenu() && component.customId === 'groups') {
                         await component.deferUpdate();
-                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent = component, commandsComponent = undefined);
+                        const response = new FloorbotReplyBuilder(command).addFloorbotCommandsEmbed(groupHandlerMap, groupComponent = component, commandsComponent = undefined);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isSelectMenu() && component.customId === 'commands') {
                         await component.deferUpdate();
-                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent = component);
+                        const response = new FloorbotReplyBuilder(command).addFloorbotCommandsEmbed(groupHandlerMap, groupComponent, commandsComponent = component);
                         message = await (<Message>component.message).edit(response);
                     }
                     if (component.isButton()) {
@@ -90,7 +87,7 @@ export class FloorbotHandler extends ChatInputHandler {
                             }
                         }
                         groupHandlerMap = await this.fetchHandlerMap(guild);
-                        const response = this.replies.createCommandsReply(command, groupHandlerMap, groupComponent, commandsComponent);
+                        const response = new FloorbotReplyBuilder(command).addFloorbotCommandsEmbed(groupHandlerMap, groupComponent, commandsComponent);
                         message = await (<Message>component.message).edit(response);
                     }
                 }));

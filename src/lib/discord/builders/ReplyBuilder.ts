@@ -1,4 +1,5 @@
 import { BaseCommandInteraction, Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
 import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
@@ -92,13 +93,6 @@ export class ReplyBuilder implements InteractionReplyOptions {
      * This divides the core functions from the flavoured
      */
 
-    /** Temporary method to use until a better solution is implemented */
-    protected getAvatar(avatar: string): AttachmentBuilder {
-        console.log('[dev] ReplyBuilder#getAvatar is a temporary solution...');
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${avatar}.png`);
-        return new AttachmentBuilder(buffer, 'floorbot.png');
-    }
-
     /** This is a special attachment to make embeds as wide as possible */
     protected getEmbedWidenerAttachment(): AttachmentBuilder {
         const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
@@ -121,8 +115,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addUnexpectedErrorEmbed(error: any): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-7.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD_TEARS);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
@@ -138,8 +131,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addNotFoundEmbed(query?: string | null, message?: string | null): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-3.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
@@ -152,8 +144,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addMissingContentEmbed(action: string): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-2.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SMILE_CLOSED);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
@@ -167,8 +158,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addAdminOrOwnerEmbed(): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(
@@ -180,6 +170,21 @@ export class ReplyBuilder implements InteractionReplyOptions {
                         'Sorry! Only the creator of this interaction can use this component',
                         '*If possible try using the command for yourself!*'
                     ]);
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        this.setEphemeral();
+        return this;
+    }
+
+    public addGuildOnlyEmbed(): this {
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
+        const embed = this.createEmbedBuilder()
+            .setContextAuthor(this.context!)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like I can only use this command in guilds!`,
+                '*Make sure you\'re using this in an appropriate guild!*'
+            ].join('\n'));
         this.addEmbed(embed);
         this.addFile(attachment);
         this.setEphemeral();
