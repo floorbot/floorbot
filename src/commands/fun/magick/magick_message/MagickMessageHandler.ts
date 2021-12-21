@@ -3,20 +3,18 @@ import { ImageMagickCLIAction, MagickProgress } from '../../../../lib/tools/imag
 import { ContextMenuHandler } from '../../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
 import { MagickMessageCommandData } from './MagickMessageCommandData.js';
 import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
+import { MagickReplyBuilder } from '../MagickReplyBuilder.js';
 import probe, { ProbeResult } from 'probe-image-size';
-import { MagickReplies } from '../MagickReplies.js';
 import { MagickUtil } from '../MagickUtil.js';
 
 export class MagickMessageHandler extends ContextMenuHandler {
 
     private readonly actions: { [index: string]: ImageMagickCLIAction; };
-    private readonly replies: MagickReplies;
 
     constructor(path?: string) {
         super({ group: 'Fun', global: false, nsfw: false, data: MagickMessageCommandData });
 
         this.actions = MagickUtil.makeActions(path);
-        this.replies = new MagickReplies();
     }
 
     public async execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {
@@ -24,7 +22,7 @@ export class MagickMessageHandler extends ContextMenuHandler {
         const targetMessage = contextMenu.options.getMessage('message', true);
         const metadata = await this.probeMessage(targetMessage);
         if (!metadata) {
-            const replyOptions = this.replies.createNoImageReply(contextMenu, targetMessage);
+            const replyOptions = new MagickReplyBuilder(contextMenu).addMagickNoImageEmbed(targetMessage);
             return contextMenu.followUp(replyOptions);
         }
 
@@ -34,11 +32,11 @@ export class MagickMessageHandler extends ContextMenuHandler {
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
         collector.on('collect', async (component: MessageComponentInteraction<'cached'>) => {
             if (component.isSelectMenu()) {
-                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(this.replies.createAdminOrOwnerReply(component));
+                if (!HandlerUtil.isAdminOrOwner(component.member, contextMenu)) return component.reply(new MagickReplyBuilder(component).addAdminOrOwnerEmbed());
                 await component.deferUpdate();
                 const action = this.actions[component.values[0]!]!;
                 const metadata = (await probe(message.embeds[0]!.image!.url!).catch(() => null))!;
-                const replyOptions = this.replies.createProgressReply(component, metadata, action, {});
+                const replyOptions = new MagickReplyBuilder(component).addMagickProgressEmbed(metadata, action, {});
                 await message.edit(replyOptions);
                 await message.removeAttachments();
                 const response = await this.fetchMagickResponse(component, metadata, action, message);
@@ -75,7 +73,7 @@ export class MagickMessageHandler extends ContextMenuHandler {
         }
 
         // Command first used and not SVG
-        if (!action) return this.replies.createImageReply(interaction, { metadata: metadata, actions: this.actions });
+        if (!action) return new MagickReplyBuilder(interaction).addMagickImageEmbed({ metadata: metadata, actions: this.actions });
 
         let updateTime = 0; // First update will always post
         return action.run(metadata, (progress: MagickProgress) => {
@@ -83,15 +81,15 @@ export class MagickMessageHandler extends ContextMenuHandler {
             if ((updateTime + 1000) <= now) {
                 updateTime = now;
                 if (!(interaction instanceof SelectMenuInteraction)) return;
-                const replyOptions = this.replies.createProgressReply(interaction, metadata, action!, progress);
+                const replyOptions = new MagickReplyBuilder(interaction).addMagickProgressEmbed(metadata, action!, progress);
                 if (message) message.edit(replyOptions).catch(HandlerUtil.handleErrors(this));
             }
         }).then((buffer: Buffer) => {
             const newMetadata = probe.sync(buffer)!;
-            const replyOptions = this.replies.createImageReply(interaction, { metadata: newMetadata, action: action, actions: this.actions, buffer: buffer });
+            const replyOptions = new MagickReplyBuilder(interaction).addMagickImageEmbed({ metadata: newMetadata, action: action, actions: this.actions, buffer: buffer });
             return replyOptions;
         }).catch((_reason) => {
-            return this.replies.createFailedEmbed(interaction, metadata, action!);
+            return new MagickReplyBuilder(interaction).addMagickFailedEmbed(metadata, action!);
         });
     }
 }
