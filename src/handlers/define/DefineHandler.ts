@@ -5,7 +5,7 @@ import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
 import { DefineCommandData } from "./DefineCommandData.js";
 import { DefineReplyBuilder } from "./DefineMixins.js";
-import { Pageable } from "../../lib/utils/Pageable.js";
+import { Pageable } from "../../helpers/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
 
 export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {

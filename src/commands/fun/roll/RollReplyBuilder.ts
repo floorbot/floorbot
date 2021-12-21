@@ -1,4 +1,4 @@
-import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { PageableActionRowBuilder } from '../../../helpers/mixins/PageableMixins.js';
 import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { Util } from 'discord.js';
@@ -46,7 +46,7 @@ export class RollReplyBuilder extends ReplyBuilder {
     }
 
     public addRollPageActionRow(rollData: RollData[]): this {
-        const actionRow = new ActionRowBuilder()
+        const actionRow = new PageableActionRowBuilder()
             .addPreviousPageButton(undefined, rollData.length <= 1)
             .addNextPageButton(undefined, rollData.length <= 1);
         return this.addActionRow(actionRow);

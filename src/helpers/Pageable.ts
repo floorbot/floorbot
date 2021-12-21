@@ -9,6 +9,9 @@ export class Pageable<T> {
     get pageData(): T { return Pageable.resolveArrayPage(this.allPageData, this.currentPage); }
     get currentPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages) + 1; }
 
+    get lastPage(): number { return this.totalPages; };
+    get firstPage(): number { return 1; };
+
     get previousPage(): number {
         const currentPage = this.currentPage;
         return currentPage - 1 < 1 ? this.totalPages : currentPage - 1;
@@ -18,6 +21,7 @@ export class Pageable<T> {
         const currentPage = this.currentPage;
         return currentPage + 1 > this.totalPages ? 1 : currentPage + 1;
     }
+
 
     constructor(allPageData: NonEmptyArray<T>, page: number = 0) {
         this.allPageData = allPageData;

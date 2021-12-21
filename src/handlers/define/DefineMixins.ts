@@ -1,10 +1,10 @@
 import { UrbanDictionaryAPIData } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
-import { ActionRowBuilder } from "../../lib/discord/builders/ActionRowBuilder.js";
+import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
-import { Pageable } from "../../lib/utils/Pageable.js";
+import { Pageable } from "../../helpers/Pageable.js";
 
 export class DefineReplyBuilder extends DefineReplyMixin(ReplyBuilder) { };
 
@@ -37,7 +37,7 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public addDefinitionPageActionRow(pageable: Pageable<UrbanDictionaryAPIData>): this {
-            const actionRow = new ActionRowBuilder();
+            const actionRow = new PageableActionRowBuilder();
             actionRow.addViewOnlineButton(pageable.pageData.permalink);
             actionRow.addPreviousPageButton(null, pageable.totalPages < 2);
             actionRow.addNextPageButton(null, pageable.totalPages < 2);

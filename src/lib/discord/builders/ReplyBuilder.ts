@@ -1,8 +1,9 @@
 import { BaseCommandInteraction, Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
+import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
 import { BuilderContext } from "./BuilderInterfaces.js";
-import { Pageable } from "../../utils/Pageable.js";
+import { Pageable } from "../../../helpers/Pageable.js";
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import path from 'path';
 import fs from 'fs';
@@ -112,7 +113,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     }
 
     public addPageActionRow(link?: string, currentPage?: number | Pageable<any>, disabled?: boolean): this {
-        const actionRow = new ActionRowBuilder();
+        const actionRow = new PageableActionRowBuilder();
         if (link) actionRow.addViewOnlineButton(link);
         actionRow.addPreviousPageButton(currentPage, disabled);
         actionRow.addNextPageButton(currentPage, disabled);

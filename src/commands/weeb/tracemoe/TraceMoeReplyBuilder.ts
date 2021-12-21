@@ -1,7 +1,7 @@
 import { FuzzyDate, Media, MediaRankType } from "../../../lib/apis/anilist/AniListAPI.js";
 import { TraceMoeResult } from "../../../lib/apis/tracemoe/interfaces/TraceMoeResult.js";
 import { AttachmentBuilder } from "../../../lib/discord/builders/AttachmentBuilder.js";
-import { ActionRowBuilder } from "../../../lib/discord/builders/ActionRowBuilder.js";
+import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
 import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
@@ -94,7 +94,7 @@ export class TraceMoeReplyBuilder extends ReplyBuilder {
     public addTraceMoePageActionRow(result: TraceMoeResult, pageData: TraceMoeReplyBuilderPage): this {
         const anilistID = typeof result.anilist === 'number' ? result.anilist : result.anilist.id;
         const url = `https://anilist.co/anime/${anilistID}`;
-        const actionRow = new ActionRowBuilder();
+        const actionRow = new PageableActionRowBuilder();
         actionRow.addViewOnlineButton(url);
         actionRow.addPreviousPageButton(undefined, pageData.pages <= 1);
         actionRow.addNextPageButton(undefined, pageData.pages <= 1);

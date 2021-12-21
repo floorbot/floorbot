@@ -1,15 +1,16 @@
 import { GeocodeData, LatLonData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
+import { SelectMenuBuilder } from '../../../lib/discord/builders/SelectMenuBuilder.js';
+import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { PageableActionRowBuilder } from '../../../helpers/mixins/PageableMixins.js';
+import { ButtonBuilder } from '../../../lib/discord/builders/ButtonBuilder.js';
 import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { EmbedBuilder } from '../../../lib/discord/builders/EmbedBuilder.js';
-import { SelectMenuBuilder } from '../../../lib/discord/builders/SelectMenuBuilder.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { Util, GuildMember, GuildChannel, Constants } from 'discord.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { WeatherLinkRow } from './db/WeatherDatabase.js';
 import { OpenWeatherData } from './WeatherHandler.js';
 import { WeatherEmojis } from './WeatherEmojis.js';
 import { DateTime } from 'luxon';
-import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
-import { ButtonBuilder } from '../../../lib/discord/builders/ButtonBuilder.js';
 
 export const WeatherSelectMenuID = {
     ORDER: 'order'
@@ -273,7 +274,7 @@ export class WeatherReplyBuilder extends ReplyBuilder {
 
     public addWeatherPageActionRow(pageData: WeatherViewData): this {
         if (pageData.page == 0 && pageData.totalPages == 1) return this;
-        const actionRow = new ActionRowBuilder();
+        const actionRow = new PageableActionRowBuilder();
         actionRow.addPreviousPageButton(undefined, pageData.totalPages == 1);
         actionRow.addNextPageButton(undefined, pageData.totalPages == 1);
         return this.addActionRow(actionRow);
