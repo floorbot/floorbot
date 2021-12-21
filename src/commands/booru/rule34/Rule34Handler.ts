@@ -1,18 +1,17 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
 import { Rule34API, Rule34APIAutocomplete } from '../../../lib/apis/rule34/Rule34API.js';
 import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
+import { BooruReplyBuilder } from '../BooruReplyBuilder.js';
 import { Rule34CommandData } from './Rule34CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
-import { BooruReplies } from '../BooruReplies.js';
 
 export class Rule34Handler extends BooruHandler implements Autocomplete {
 
-    protected readonly replies: BooruReplies;
     private readonly api: Rule34API;
+    private readonly apiData = { apiName: 'Rule34', apiIcon: 'https://rule34.xxx/apple-touch-icon-precomposed.png' };
 
     constructor() {
         super({ nsfw: true, data: Rule34CommandData });
-        this.replies = new BooruReplies({ apiName: 'Rule34', apiIcon: 'https://rule34.xxx/apple-touch-icon-precomposed.png' });
         this.api = new Rule34API();
     }
 
@@ -37,9 +36,9 @@ export class Rule34Handler extends BooruHandler implements Autocomplete {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(tags);
             const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total }; });
-            return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
+            return new BooruReplyBuilder(interaction, this.apiData).addSuggestionEmbed({ suggestions, tags, url404 });
         }
         const postURL = `https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;
-        return this.replies.createImageReply(interaction, { imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags });
+        return new BooruReplyBuilder(interaction, this.apiData).addImageEmbed({ imageURL: post.file_url, score: parseInt(post.score), postURL: postURL, tags: tags });
     }
 }

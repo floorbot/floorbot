@@ -2,18 +2,16 @@ import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'd
 import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
 import { DonmaiAPI, DonmaiAPIAuth } from '../../../lib/apis/donmai/DonmaiAPI.js';
 import { DonmaiCommandData } from './DonmaiCommandData.js';
-import { DonmaiReplies } from './DonmaiReplies.js';
+import { DonmaiReplyBuilder } from './DonmaiReplyBuilder.js';
 import { BooruHandler } from '../BooruHandler.js';
 
 export class DonmaiHandler extends BooruHandler implements Autocomplete {
 
-    protected readonly replies: DonmaiReplies;
     private readonly api: DonmaiAPI;
 
     constructor(options: { subDomain: string, auth?: DonmaiAPIAuth, nsfw: boolean; }) {
         const { subDomain, auth, nsfw } = options;
         super({ nsfw: nsfw, data: DonmaiCommandData.create(subDomain) });
-        this.replies = new DonmaiReplies(subDomain);
         this.api = new DonmaiAPI(subDomain, auth);
     }
 
@@ -38,27 +36,27 @@ export class DonmaiHandler extends BooruHandler implements Autocomplete {
             const details = data.message || 'The database timed out running your query.';
             switch (details) {
                 case 'You cannot search for more than 2 tags at a time.':
-                    return this.replies.createTagLimitReply(interaction, 'basic', details.match(/\d+/)![1]!);
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiTagLimitEmbed('basic', details.match(/\d+/)![1]!);
                 case 'You cannot search for more than 6 tags at a time.':
-                    return this.replies.createTagLimitReply(interaction, 'gold', details.match(/\d+/)![1]!);
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiTagLimitEmbed('gold', details.match(/\d+/)![1]!);
                 case 'You cannot search for more than 12 tags at a time.':
-                    return this.replies.createTagLimitReply(interaction, 'platinum', details.match(/\d+/)![1]!);
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiTagLimitEmbed('platinum', details.match(/\d+/)![1]!);
                 case 'The database timed out running your query.':
-                    return this.replies.createTimeoutReply(interaction, tags);
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiTimeoutEmbed(tags);
                 case 'That record was not found.':
                     const url404 = await this.api.get404();
                     const autocomplete = await this.api.autocomplete(tags);
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count }; });
-                    return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addSuggestionEmbed({ suggestions, tags, url404 });
                 default: {
                     console.warn(`[${this.api.subDomain}] Unknown api response details <${details}>`);
-                    return this.replies.createUnknownDetailsReply(interaction, tags, details);
+                    return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiUnknownDetailsEmbed(tags, details);
                 }
             }
         } else if (!('id' in data)) {
-            return this.replies.createRestrictedTagReply(interaction, tags);
+            return new DonmaiReplyBuilder(interaction, this.api.subDomain).addDonmaiRestrictedTagEmbed(tags);
         }
         const postURL = `https://${this.api.subDomain}.donmai.us/posts/${data.id}`;
-        return this.replies.createImageReply(interaction, { imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags });
+        return new DonmaiReplyBuilder(interaction, this.api.subDomain).addImageEmbed({ imageURL: data.large_file_url, score: data.score, postURL: postURL, tags: tags });
     }
 }

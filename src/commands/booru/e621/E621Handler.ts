@@ -1,18 +1,17 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
 import { Autocomplete } from '../../../lib/discord/handlers/interfaces/Autocomplete.js';
 import { E621API, E621APIAuth } from '../../../lib/apis/e621/E621API.js';
+import { BooruReplyBuilder } from '../BooruReplyBuilder.js';
 import { E621CommandData } from './E621CommandData.js';
 import { BooruHandler } from '../BooruHandler.js';
-import { BooruReplies } from '../BooruReplies.js';
 
 export class E621Handler extends BooruHandler implements Autocomplete {
 
-    protected readonly replies: BooruReplies;
     private readonly api: E621API;
+    private readonly apiData = { apiName: 'e621', apiIcon: 'https://en.wikifur.com/w/images/d/dd/E621Logo.png' };
 
     constructor(auth: E621APIAuth) {
         super({ nsfw: true, data: E621CommandData });
-        this.replies = new BooruReplies({ apiName: 'e621', apiIcon: 'https://en.wikifur.com/w/images/d/dd/E621Logo.png' });
         this.api = new E621API(auth);
     }
 
@@ -37,9 +36,9 @@ export class E621Handler extends BooruHandler implements Autocomplete {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(tags);
             const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count }; });
-            return this.replies.createSuggestionReply(interaction, { suggestions, tags, url404 });
+            return new BooruReplyBuilder(interaction, this.apiData).addSuggestionEmbed({ suggestions, tags, url404 });
         }
         const postURL = `https://e621.net/posts/${post.id}`;
-        return this.replies.createImageReply(interaction, { imageURL: post.file.url, score: post.score.total, postURL: postURL, tags: tags });
+        return new BooruReplyBuilder(interaction, this.apiData).addImageEmbed({ imageURL: post.file.url, score: post.score.total, postURL: postURL, tags: tags });
     }
 }

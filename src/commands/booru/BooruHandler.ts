@@ -1,7 +1,8 @@
 import { ChatInputApplicationCommandData, CommandInteraction, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
 import { ChatInputHandler } from '../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { BooruButtonID, BooruReplies, BooruSelectMenuID } from './BooruReplies.js';
+import { ReplyBuilder } from '../../lib/discord/builders/ReplyBuilder.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
+import { BooruComponentID } from './BooruReplyBuilder.js';
 
 export interface BooruHandlerOptions {
     readonly data: ChatInputApplicationCommandData;
@@ -18,8 +19,6 @@ export interface BooruSuggestionData {
 }
 
 export abstract class BooruHandler extends ChatInputHandler {
-
-    protected readonly abstract replies: BooruReplies;
 
     constructor(options: BooruHandlerOptions) {
         super({ group: 'Booru', global: false, ...options });
@@ -41,7 +40,7 @@ export abstract class BooruHandler extends ChatInputHandler {
         return HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction) => {
             if (component.isSelectMenu()) {
                 switch (component.customId) {
-                    case BooruSelectMenuID.SUGGESTIONS: {
+                    case BooruComponentID.SUGGESTIONS: {
                         await component.deferUpdate();
                         query = component.values[0]!;
                         const replyOptions = await this.generateResponse(component, query);
@@ -52,10 +51,10 @@ export abstract class BooruHandler extends ChatInputHandler {
             }
             if (component.isButton()) {
                 switch (component.customId) {
-                    case BooruButtonID.RECYCLE: {
+                    case BooruComponentID.RECYCLE: {
                         const member = component.member as GuildMember;
                         if (!HandlerUtil.isAdminOrOwner(member, source)) {
-                            const replyOptions = this.replies.createAdminOrOwnerReply(component);
+                            const replyOptions = new ReplyBuilder(component).addAdminOrOwnerEmbed();
                             return await component.reply(replyOptions);
                         }
                         await component.deferUpdate();
@@ -63,7 +62,7 @@ export abstract class BooruHandler extends ChatInputHandler {
                         await component.editReply(replyOptions);
                         break;
                     }
-                    case BooruButtonID.REPEAT: {
+                    case BooruComponentID.REPEAT: {
                         await component.deferReply();
                         const replyOptions = await this.generateResponse(component, query);
                         const message = await component.followUp(replyOptions) as Message;
