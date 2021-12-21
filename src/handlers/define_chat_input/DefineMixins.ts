@@ -1,11 +1,11 @@
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "./ResourceMixins.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
 import { UrbanDictionaryAPIData } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
+import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
-import { PageableActionRowBuilder } from "./PageableMixins.js";
-import { Pageable } from "../Pageable.js";
+import { Pageable } from "../../helpers/Pageable.js";
 
 export class DefineReplyBuilder extends DefineReplyMixin(ReplyBuilder) { };
 

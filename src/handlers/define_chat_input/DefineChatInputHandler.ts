@@ -3,8 +3,8 @@ import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDiction
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { DefineChatInputCommandData } from "./DefineChatInputCommandData.js";
-import { DefineReplyBuilder } from "../../helpers/mixins/DefineMixins.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
+import { DefineReplyBuilder } from "./DefineMixins.js";
 import { Pageable } from "../../helpers/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
 
