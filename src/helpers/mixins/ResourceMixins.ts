@@ -11,7 +11,7 @@ export function ResourceAttachmentMixin<T extends MixinConstructor<AttachmentBui
     return class ResourceAttachmentBuilder extends Builder {
 
         public static createAvatarAttachment(expression: AvatarAttachmentExpression): AttachmentBuilder {
-            const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/1-${expression}.png`);
+            const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-${expression}.png`);
             return new AttachmentBuilder(buffer, 'avatar.png');
         }
     };

@@ -1,11 +1,9 @@
-import { AttachmentBuilder } from '../../../lib/discord/builders/AttachmentBuilder.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/mixins/ResourceMixins.js';
 import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { Message, GuildMember, Util } from 'discord.js';
 import { DisputeResults } from './DisputeDatabase.js';
 import { voteStrings } from './DisputeHandler.js';
-import path from 'path';
-import fs from 'fs';
 
 export class DisputeTimeStamp {
     private timestamp;
@@ -54,8 +52,7 @@ export class DisputeReplyBuilder extends ReplyBuilder {
     }
 
     public addDisputeSelfUsedEmbed(): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(`You can't dispute yourself, you fucking idiot. How can you be so fucking stupid??`);
@@ -66,8 +63,7 @@ export class DisputeReplyBuilder extends ReplyBuilder {
     }
 
     public addDisputeAlreadyDisputedEmbed(results: DisputeResults): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([`That message has already been disputed by <@${results.dispute_user_id}>, you fucking idiot. How can you be so fucking stupid??`,
@@ -82,8 +78,7 @@ export class DisputeReplyBuilder extends ReplyBuilder {
     }
 
     public addDisputeNotEnoughVotesEmbed(): this {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-5.png`);
-        const attachment = new AttachmentBuilder(buffer, 'floorbot.png');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(`Not enough people voted. This dispute has been cancelled.`);

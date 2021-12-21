@@ -1,3 +1,4 @@
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/mixins/ResourceMixins.js';
 import { PageableActionRowBuilder } from '../../../helpers/mixins/PageableMixins.js';
 import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
@@ -14,7 +15,7 @@ export interface RollData {
 export class RollReplyBuilder extends ReplyBuilder {
 
     public addRollMaxRollsEmbed(actualRolls: number, maxRolls: number): this {
-        const attachment = this.getAvatar('1-3');
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([

@@ -1,4 +1,5 @@
 import { ActivityUnion, AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../../../lib/apis/anilist/AniListAPI.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
 import { ActionRowBuilder } from "../../../lib/discord/builders/ActionRowBuilder.js";
 import { ButtonBuilder } from "../../../lib/discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
@@ -113,7 +114,7 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
 
         public addAniListErrorsEmbed(errors: AniListError[]): this {
             console.error('[anilist] AniList has responded with errors...', errors);
-            const attachment = this.getAvatar('1-3');
+            const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
             const embed = this.createAniListEmbedBuilder()
                 .setTitle('AniList Error')
                 .setThumbnail(attachment.getEmbedUrl())
