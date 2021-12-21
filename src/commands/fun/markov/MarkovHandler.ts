@@ -155,11 +155,12 @@ export class MarkovHandler extends ChatInputHandler {
                             break;
                         }
                         case MarkovButtonType.BACKOUT: {
-                            HandlerUtil.toggleMessageComponents(message, false);
-                            await message.edit({
-                                ...(message.content && { content: message.content }),
-                                embeds: message.embeds.slice(0, -1),
-                                components: message.components.slice(0, -1),
+                            const updatedMessage = await message.fetch();
+                            HandlerUtil.toggleMessageComponents(updatedMessage, false);
+                            await updatedMessage.edit({
+                                ...(updatedMessage.content && { content: updatedMessage.content }),
+                                embeds: updatedMessage.embeds.slice(0, -1),
+                                components: updatedMessage.components.slice(0, -1),
                             });
                             break;
                         }
