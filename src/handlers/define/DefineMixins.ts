@@ -1,3 +1,4 @@
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
 import { UrbanDictionaryAPIData } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
@@ -45,7 +46,7 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public override addNotFoundEmbed(query?: string | null): this {
-            const attachment = this.getAvatar('2-3');
+            const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
             const embed = this.createDefineEmbedBuilder()
                 .setThumbnail(attachment.getEmbedUrl())
                 .setDescription(query ? [

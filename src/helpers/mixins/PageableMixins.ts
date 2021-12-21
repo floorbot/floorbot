@@ -8,6 +8,8 @@ const { MessageButtonStyles } = Constants;
 
 export enum PageableComponentID {
     PREVIOUS_PAGE = 'previous_page',
+    FIRST_PAGE = 'first_page',
+    LAST_PAGE = 'last_page',
     NEXT_PAGE = 'next_page'
 }
 
@@ -18,7 +20,7 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
 
         public addFirstPageButton(pageable?: null | number | Pageable<T>, disabled?: boolean): this {
             const button = new ButtonBuilder()
-                .setCustomId(PageableComponentID.NEXT_PAGE)
+                .setCustomId(PageableComponentID.FIRST_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
                 .setLabel('First Page')
                 .setDisabled(disabled);
@@ -29,7 +31,7 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
 
         public addLastPageButton(pageable?: null | number | Pageable<T>, disabled?: boolean): this {
             const button = new ButtonBuilder()
-                .setCustomId(PageableComponentID.NEXT_PAGE)
+                .setCustomId(PageableComponentID.LAST_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
                 .setLabel('First Page')
                 .setDisabled(disabled);

@@ -17,9 +17,9 @@ export class DefineHandler extends ApplicationCommandHandler<ChatInputApplicatio
         this.api = new UrbanDictionaryAPI();
     }
 
-    public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
+    public async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
         const partial = interaction.options.getString('query', true);
-        const autocomplete = await this.api.autocomplete(partial).catch(() => null);
+        const autocomplete = await this.api.autocomplete(partial);
         if (!autocomplete) return interaction.respond([]);
         const options = autocomplete.slice(0, 5).map(suggestion => {
             return { name: suggestion.term, value: suggestion.term };
