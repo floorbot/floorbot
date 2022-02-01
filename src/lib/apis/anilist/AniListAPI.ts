@@ -18,14 +18,14 @@ export * from './interfaces/User.js';
 export * from './interfaces/Page.js';
 
 export type QueryVars = MediaVariables & ActivityVariables & {
-    page?: number,
+    page?: number;
     perPage?: number;
 };
 
 export interface AniListAPIConstructorOptions {
     readonly redis: Redis,
     readonly rateLimit?: {
-        readonly reservoir: number,
+        readonly reservoir: number;
         readonly refresh: number;
     };
 }

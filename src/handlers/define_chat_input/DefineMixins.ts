@@ -24,7 +24,7 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public addDefinitionEmbed(pageable: Pageable<UrbanDictionaryAPIData>): this {
-            const definition = pageable.pageData;
+            const definition = pageable.getPage();
             const definitionString = definition.definition.replace(/(\[|\])/g, '*');
             const embed = this.createDefineEmbedBuilder(pageable)
                 .setDescription(HandlerUtil.shortenMessage(definitionString, { maxLength: 1024 }))
@@ -39,7 +39,7 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
 
         public addDefinitionPageActionRow(pageable: Pageable<UrbanDictionaryAPIData>): this {
             const actionRow = new PageableActionRowBuilder();
-            actionRow.addViewOnlineButton(pageable.pageData.permalink);
+            actionRow.addViewOnlineButton(pageable.getPage().permalink);
             actionRow.addPreviousPageButton(null, pageable.totalPages < 2);
             actionRow.addNextPageButton(null, pageable.totalPages < 2);
             return this.addActionRow(actionRow);

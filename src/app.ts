@@ -23,13 +23,13 @@ import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/
 import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/FlipChatInputHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
+import { WeatherChatInputHandler } from './handlers/weather_chat_input/WeatherChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
 import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
-import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
@@ -72,8 +72,9 @@ const poolConfig: PoolConfig = {
     supportBigInt: true
 };
 
+let pool = MariaDB.createPool(poolConfig);
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
-const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
+const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : pool;
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
@@ -91,7 +92,7 @@ const client = new HandlerClient({
         new OwoifyMessageHandler(),
         new DDDHandler(database),
         new MarkovHandler(database),
-        new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
+        new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
         new RollHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),

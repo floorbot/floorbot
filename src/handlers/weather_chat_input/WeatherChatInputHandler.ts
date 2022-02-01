@@ -1,32 +1,31 @@
-import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from './api/OpenWeatherAPI.js';
-import { WeatherComponentID, WeatherReplyBuilder, WeatherSelectMenuID, WeatherTempsOrder } from './WeatherReplyBuilder.js';
-import { CommandInteraction, GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { WeatherCommandData, WeatherSubCommandName } from './WeatherCommandData.js';
-import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
-import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
-import { WeatherDatabase, WeatherLinkRow } from './db/WeatherDatabase.js';
-import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../lib/apis/open-weather/OpenWeatherAPI.js';
+import { CommandInteraction, GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputApplicationCommandData } from 'discord.js';
+import { WeatherComponentID, WeatherReplyBuilder, WeatherSelectMenuID, WeatherTempsOrder } from './WeatherMixins.js';
+import { WeatherCommandData, WeatherSubCommand } from './WeatherChatInputCommandData.js';
+import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { ComponentID } from '../../lib/discord/builders/ActionRowBuilder.js';
+import { HandlerReplies } from '../../lib/discord/helpers/HandlerReplies.js';
+import WeatherLinkRow, { WeatherLinkTable } from './WeatherLinkTable.js';
+import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
+import { Pool } from 'mariadb';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
 
-export class WeatherHandler extends ChatInputHandler {
+export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
-    private readonly database: WeatherDatabase;
+    private readonly database: WeatherLinkTable;
     private readonly openweather: OpenWeatherAPI;
 
-    constructor(pool: HandlerDB, apiKey: string) {
-        super({ group: 'Fun', global: false, nsfw: false, data: WeatherCommandData });
-        this.database = new WeatherDatabase(pool);
-        this.openweather = new OpenWeatherAPI(apiKey);
+    constructor(pool: Pool, apiKey: string) {
+        super(WeatherCommandData);
+        this.database = new WeatherLinkTable(pool);
+        this.openweather = new OpenWeatherAPI({ apiKey: apiKey });
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: CommandInteraction<'cached'>): Promise<any> {
         const subCommand = command.options.getSubcommand();
         switch (subCommand) {
-            case WeatherSubCommandName.LOCATION: {
+            case WeatherSubCommand.LOCATION: {
                 await command.deferReply();
                 const city_name = command.options.getString('city_name', true);
                 const state_code = command.options.getString('state_code');
@@ -48,10 +47,10 @@ export class WeatherHandler extends ChatInputHandler {
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
-            case WeatherSubCommandName.USER: {
+            case WeatherSubCommand.USER: {
                 await command.deferReply();
                 const member = (command.options.getMember('user') || command.member);
-                const link = await this.database.fetchLink(member);
+                const link = await this.database.selectLink(member);
                 if (!link) return command.followUp(new WeatherReplyBuilder(command).addWeatherMissingParamsEmbed(member));
                 const location: LocationQuery = {
                     city_name: link.name,
@@ -70,11 +69,11 @@ export class WeatherHandler extends ChatInputHandler {
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
-            case WeatherSubCommandName.SERVER_TEMPS: {
+            case WeatherSubCommand.SERVER_TEMPS: {
                 await command.deferReply();
                 const { channel, guild } = <{ channel: GuildChannel, guild: Guild; }>command;
                 const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
-                const allLinks = await this.database.fetchAllLinks(guild);
+                const allLinks = await this.database.selectLinks(guild);
                 const loadingEmbed = new WeatherReplyBuilder(command).addWeatherLoadingEmbed(allLinks.length, 0);
                 let lastUpdate = (await command.followUp(loadingEmbed) as Message).createdTimestamp;
                 for (const [i, link] of allLinks.entries()) {
@@ -111,7 +110,7 @@ export class WeatherHandler extends ChatInputHandler {
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
-            case WeatherSubCommandName.LINK: {
+            case WeatherSubCommand.LINK: {
                 const member = (command.options.getMember('user') || command.member);
                 if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(new WeatherReplyBuilder(command).addWeatherMissingAdminEmbed());
                 await command.deferReply();
@@ -126,7 +125,7 @@ export class WeatherHandler extends ChatInputHandler {
                 const weather = await this.fetchWeather(location);
                 if (!weather) return command.followUp(new WeatherReplyBuilder(command).addWeatherUnknownLocationEmbed(location));
                 if (this.openweather.isError(weather)) return command.followUp(new WeatherReplyBuilder(command).addWeatherAPIErrorEmbed(weather));
-                await this.database.setLink(member, weather);
+                await this.database.insertLink(member, weather);
                 const embed = new WeatherReplyBuilder(command).addWeatherLinkedEmbed(weather, member)
                     .addWeatherActionRow(this.chooseButtons(weather), weather);
                 const message = await command.followUp(embed) as Message;
@@ -135,7 +134,7 @@ export class WeatherHandler extends ChatInputHandler {
                 collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
                 break;
             }
-            case WeatherSubCommandName.UNLINK: {
+            case WeatherSubCommand.UNLINK: {
                 const member = (command.options.getMember('user') || command.member);
                 if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
                 await command.deferReply();
@@ -209,6 +208,6 @@ export class WeatherHandler extends ChatInputHandler {
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
-        return super.setup(client).then(() => this.database.createTables()).then(() => true);
+        return super.setup(client).then(() => this.database.createTable()).then(() => true);
     }
 }

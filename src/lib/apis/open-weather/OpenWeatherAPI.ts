@@ -4,27 +4,32 @@ import { GeocodeData } from './interfaces/GeocodeData';
 import fetch, { Headers } from 'node-fetch';
 import Bottleneck from 'bottleneck';
 import CacheMap from 'cache-map';
+import { Redis } from 'ioredis';
 
 export { AirPollutionData, GeocodeData, OneCallData };
 
-export interface OpenWeatherRateLimit {
-    perMonth: number,
-    perMinute: number,
-    dailyOneCall: number
+export interface OpenWeatherAPIConstructorOptions {
+    readonly apiKey: string;
+    readonly redis?: Redis;
+    readonly apiLimits?: {
+        readonly perMonth: number;
+        readonly perMinute: number;
+        readonly dailyOneCall: number;
+    };
 }
 
 export interface LocationQuery {
-    readonly city_name: string,
-    readonly state_code?: string,
-    readonly country_code?: string
+    readonly city_name: string;
+    readonly state_code?: string;
+    readonly country_code?: string;
 }
 
 export interface WeatherAPIError {
-    readonly cod: number,
-    readonly message: string
+    readonly cod: number;
+    readonly message: string;
 }
 
-export type LatLonData = Pick<GeocodeData, 'lat' | 'lon'>
+export type LatLonData = Pick<GeocodeData, 'lat' | 'lon'>;
 
 export class OpenWeatherAPI {
 
@@ -37,32 +42,64 @@ export class OpenWeatherAPI {
     private readonly apiKey: string;
 
 
-    constructor(apiKey: string, apiLimits: OpenWeatherRateLimit = { perMonth: 1000000, perMinute: 60, dailyOneCall: 1000 }) {
+    constructor(options: OpenWeatherAPIConstructorOptions) {
+        const apiLimits = options.apiLimits || { perMonth: 1000000, perMinute: 60, dailyOneCall: 1000 };
         this.expiration = 1000 * 60; // 60 second queue expiration
-        this.apiKey = apiKey;
+        this.apiKey = options.apiKey;
+        const redis = options.redis;
 
         // Creates a monthly (31 day) limit of specified requests (api limits)
         const monthlyLimit = new Bottleneck({
-            id: `openweather-month-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-month-${this.apiKey}`, maxConcurrent: 1, minTime: 0,
             reservoir: Math.floor(apiLimits.perMonth / 31),
             reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31,
-            reservoirRefreshAmount: Math.floor(apiLimits.perMonth / 31)
+            reservoirRefreshAmount: Math.floor(apiLimits.perMonth / 31),
+            highWater: 10, // Same as maxConcurrent
+            strategy: Bottleneck.strategy.OVERFLOW,
+            ...(redis && redis.options && {
+                datastore: 'ioredis',
+                clearDatastore: false,
+                clientOptions: {
+                    host: redis.options.host,
+                    port: redis.options.port
+                }
+            })
         });
 
         // Creates a minutely (60 second) limit of specified requests (api limits)
         this.minutelyLimit = new Bottleneck({
-            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-minute-${this.apiKey}`, maxConcurrent: 1, minTime: 0,
             reservoir: apiLimits.perMinute,
             reservoirRefreshInterval: 1000 * 60,
-            reservoirRefreshAmount: apiLimits.perMinute
+            reservoirRefreshAmount: apiLimits.perMinute,
+            highWater: 10, // Same as maxConcurrent
+            strategy: Bottleneck.strategy.OVERFLOW,
+            ...(redis && redis.options && {
+                datastore: 'ioredis',
+                clearDatastore: false,
+                clientOptions: {
+                    host: redis.options.host,
+                    port: redis.options.port
+                }
+            })
         });
 
         // Creates a daily (24 hour) limit of specified one call requests (api limits)
         this.onecallLimit = new Bottleneck({
-            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-minute-${this.apiKey}`, maxConcurrent: 1, minTime: 0,
             reservoir: apiLimits.dailyOneCall,
             reservoirRefreshInterval: 1000 * 60 * 60 * 24,
-            reservoirRefreshAmount: apiLimits.dailyOneCall
+            reservoirRefreshAmount: apiLimits.dailyOneCall,
+            highWater: 10, // Same as maxConcurrent
+            strategy: Bottleneck.strategy.OVERFLOW,
+            ...(redis && redis.options && {
+                datastore: 'ioredis',
+                clearDatastore: false,
+                clientOptions: {
+                    host: redis.options.host,
+                    port: redis.options.port
+                }
+            })
         });
 
         this.minutelyLimit.chain(monthlyLimit);
@@ -128,7 +165,7 @@ export class OpenWeatherAPI {
         });
     }
 
-    public static getLocationString(scope: LocationQuery | GeocodeData | { name: string, state?: string, country?: string }, space?: boolean): string {
+    public static getLocationString(scope: LocationQuery | GeocodeData | { name: string, state?: string, country?: string; }, space?: boolean): string {
         if ('name' in scope) {
             const countryCode = (scope.country && scope.country.toUpperCase() === 'ANTARCTICA') ? 'AQ' : scope.country;
             const stateCode = (scope.country && scope.country.toUpperCase() === 'ANTARCTICA') ? null : scope.state;

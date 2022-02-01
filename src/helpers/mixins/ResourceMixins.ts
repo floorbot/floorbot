@@ -10,9 +10,9 @@ export enum AvatarAttachmentExpression { SMILE_OPEN = 1, SMILE_CLOSED = 2, FROWN
 export function ResourceAttachmentMixin<T extends MixinConstructor<AttachmentBuilder>>(Builder: T) {
     return class ResourceAttachmentBuilder extends Builder {
 
-        public static createAvatarAttachment(expression: AvatarAttachmentExpression): AttachmentBuilder {
+        public static createAvatarAttachment(expression: AvatarAttachmentExpression): ResourceAttachmentBuilder {
             const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-${expression}.png`);
-            return new AttachmentBuilder(buffer, 'avatar.png');
+            return new ResourceAttachmentBuilder(buffer, 'avatar.png');
         }
     };
 }

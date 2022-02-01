@@ -2,7 +2,7 @@ import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export enum WeatherSubCommandName {
+export enum WeatherSubCommand {
     USER = 'user',
     LOCATION = 'location',
     SERVER_TEMPS = 'server_temps',
@@ -16,7 +16,7 @@ export const WeatherCommandData: ChatInputApplicationCommandData = {
     description: 'Get weather, forecast or air pollution for places',
     options: [{
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: WeatherSubCommandName.USER,
+        name: WeatherSubCommand.USER,
         description: 'Get the weather for yourself or someone else',
         options: [{
             type: ApplicationCommandOptionTypes.USER,
@@ -26,7 +26,7 @@ export const WeatherCommandData: ChatInputApplicationCommandData = {
         }]
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: WeatherSubCommandName.LOCATION,
+        name: WeatherSubCommand.LOCATION,
         description: 'Get the weather for somewhere specific',
         options: [{
             type: ApplicationCommandOptionTypes.STRING,
@@ -46,11 +46,11 @@ export const WeatherCommandData: ChatInputApplicationCommandData = {
         }]
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: WeatherSubCommandName.SERVER_TEMPS,
+        name: WeatherSubCommand.SERVER_TEMPS,
         description: 'Get the weather for everyone with a saved location'
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: WeatherSubCommandName.LINK,
+        name: WeatherSubCommand.LINK,
         description: 'Link a location to your profile',
         options: [{
             type: ApplicationCommandOptionTypes.STRING,
@@ -75,7 +75,7 @@ export const WeatherCommandData: ChatInputApplicationCommandData = {
         }]
     }, {
         type: ApplicationCommandOptionTypes.SUB_COMMAND,
-        name: WeatherSubCommandName.UNLINK,
+        name: WeatherSubCommand.UNLINK,
         description: 'Unlink the location from your profile',
         options: [{
             type: ApplicationCommandOptionTypes.USER,
@@ -84,4 +84,4 @@ export const WeatherCommandData: ChatInputApplicationCommandData = {
             description: '[ADMIN] The user to force unlink the location from'
         }]
     }]
-}
+};
