@@ -2,7 +2,7 @@ import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = Constants;
 
-export const RollCommandData: ChatInputApplicationCommandData = {
+export const RollChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'roll',
     description: 'Roll some dice',
     type: ApplicationCommandTypes.CHAT_INPUT,
@@ -12,4 +12,4 @@ export const RollCommandData: ChatInputApplicationCommandData = {
         required: false,
         name: 'dice'
     }]
-}
+};

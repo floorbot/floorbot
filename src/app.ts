@@ -26,6 +26,7 @@ import { MagickMessageHandler } from './commands/fun/magick/magick_message/Magic
 import { WeatherChatInputHandler } from './handlers/weather_chat_input/WeatherChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
+import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
@@ -36,7 +37,6 @@ import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
 import { E621Handler } from './commands/booru/e621/E621Handler.js';
-import { RollHandler } from './commands/fun/roll/RollHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -93,7 +93,7 @@ const client = new HandlerClient({
         new DDDHandler(database),
         new MarkovHandler(database),
         new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
-        new RollHandler(),
+        new RollChatInputHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeHandler(database),

@@ -1,19 +1,19 @@
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
-import { RollData, RollReplyBuilder } from './RollReplyBuilder.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { CommandInteraction, Message } from 'discord.js';
-import { RollCommandData } from './RollCommandData.js';
+import { ChatInputApplicationCommandData, CommandInteraction, Message } from "discord.js";
+import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
+import { RollChatInputCommandData } from "./RollChatInputCommandData.js";
+import { ApplicationCommandHandler } from "discord.js-handlers";
+import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
+import { RollData, RollReplyBuilder } from "./RollMixins.js";
 
-export class RollHandler extends ChatInputHandler {
+export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private static readonly MAX_ROLLS = 100000;
 
     constructor() {
-        super({ group: 'Fun', global: false, nsfw: false, data: RollCommandData });
+        super(RollChatInputCommandData);
     }
 
-    public async execute(command: CommandInteraction): Promise<any> {
+    public async run(command: CommandInteraction): Promise<void> {
         await command.deferReply();
         const query = command.options.getString('dice') || '1d6';
         const rollStrings = query.split(' ');
@@ -27,10 +27,10 @@ export class RollHandler extends ChatInputHandler {
         });
 
         const totalRolls = rollables.reduce((total, rollable) => total + rollable.rollCount, 0);
-        if (totalRolls > RollHandler.MAX_ROLLS) {
+        if (totalRolls > RollChatInputHandler.MAX_ROLLS) {
             const embed = new RollReplyBuilder(command)
-                .addRollMaxRollsEmbed(totalRolls, RollHandler.MAX_ROLLS);
-            return command.followUp(embed);
+                .addRollMaxRollsEmbed(totalRolls, RollChatInputHandler.MAX_ROLLS);
+            await command.followUp(embed);
         }
 
         let page = 0;
