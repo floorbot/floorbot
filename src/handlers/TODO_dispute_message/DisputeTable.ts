@@ -1,5 +1,6 @@
-import { HandlerDatabase, HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
-import { Message, Interaction, User } from 'discord.js';
+import { MariaDBTable } from "../../helpers/MariaDBTable.js";
+import { Interaction, Message, User } from "discord.js";
+import { Pool } from "mariadb";
 import path from 'path';
 import fs from 'fs';
 
@@ -25,10 +26,10 @@ export interface DisputeResults {
     readonly message_user_id: string;
 }
 
-export class DisputeDatabase extends HandlerDatabase {
+export class DisputeTable extends MariaDBTable<Pick<DisputeRow, 'guild_id' | 'channel_id' | 'message_id' | 'vote_user_id'>, DisputeRow> {
 
-    constructor(db: HandlerDB) {
-        super({ db: db });
+    constructor(pool: Pool) {
+        super(pool, 'weather_link');
     }
 
     public async fetchResults(message: Message): Promise<DisputeResults | null> {
@@ -48,8 +49,8 @@ export class DisputeDatabase extends HandlerDatabase {
             channel_id: message.channel.id,
             message_id: message.id
         };
-        const rows = await this.select(sql, query);
-        return rows.length ? rows[0] : null;
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
+        return rows[0] ?? null;
     }
 
     public async getVoters(message: Message): Promise<DisputeRow[] | null> {
@@ -59,7 +60,7 @@ export class DisputeDatabase extends HandlerDatabase {
             channel_id: message.channel.id,
             message_id: message.id
         };
-        const rows = await this.select(sql, query);
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows : null;
     }
 
@@ -71,13 +72,13 @@ export class DisputeDatabase extends HandlerDatabase {
             message_id: message.id,
             vote_user_id: interaction.user!.id
         };
-        const rows = await this.select(sql, query);
+        const rows = await this.pool.query({ namedPlaceholders: true, sql: sql }, query);
         return rows.length ? rows[0] : null;
     }
 
     public async setDisputeVote(contextMenu: Interaction, user: User, message: Message, choice: boolean) {
         const sql = 'REPLACE INTO dispute VALUES (:epoch, :dispute_user_id, :message_user_id, :guild_id, :channel_id, :message_id, :content, :vote_user_id, :vote_choice)';
-        return await this.exec(sql, {
+        return await this.pool.query({ namedPlaceholders: true, sql: sql }, {
             epoch: message.createdTimestamp,
             dispute_user_id: contextMenu.user.id,
             message_user_id: message.author.id,
@@ -92,23 +93,17 @@ export class DisputeDatabase extends HandlerDatabase {
 
     public async deleteResults(message: Message) {
         const sql = 'delete from dispute where guild_id = :guild_id AND channel_id = :channel_id AND message_id = :message_id';
-        return await this.exec(sql, {
+        return await this.pool.query({ namedPlaceholders: true, sql: sql }, {
             guild_id: message.guild!.id,
             channel_id: message.channel.id,
             message_id: message.id
         });
     }
 
-    public async createTables(): Promise<void> {
-        return Promise.allSettled([
-            this.exec('query' in this.db ?
-                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-mariadb.sql`, 'utf8') :
-                fs.readFileSync(`${path.resolve()}/res/schemas/dispute-sqlite.sql`, 'utf8'))
-        ]).then(ress => {
-            return ress.forEach(res => {
-                if (res.status === 'fulfilled') return;
-                if (res.reason.code !== 'ER_TABLE_EXISTS_ERROR') throw res.reason;
-            });
+    public async createTable(): Promise<void> {
+        const sql = fs.readFileSync(`${path.resolve()}/res/schemas/dispute-mariadb.sql`, 'utf8');
+        return this.query(sql).catch(error => {
+            if (error.code !== 'ER_TABLE_EXISTS_ERROR') throw error.reason;
         });
     }
 }

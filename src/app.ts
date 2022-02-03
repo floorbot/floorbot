@@ -25,12 +25,12 @@ import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/F
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
 import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
+import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
 import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
@@ -96,7 +96,7 @@ const client = new HandlerClient({
         new RollChatInputHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
-        new DisputeHandler(database),
+        new DisputeMessageHandler(pool),
         new TraceMoeHandler(redis),
         new DefineChatInputHandler(),
         new Rule34Handler()

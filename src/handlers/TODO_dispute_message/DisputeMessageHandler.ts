@@ -1,29 +1,29 @@
-import { ContextMenuInteraction, Message, MessageComponentInteraction, Collection } from 'discord.js';
-import { ContextMenuHandler } from '../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
-import { DisputeReplyBuilder, DisputeTimeStamp } from './DisputeReplyBuilder.js';
-import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
-import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { DisputeCommandData } from './DisputeCommandData.js';
-import { DisputeDatabase } from './DisputeDatabase.js';
+import { Collection, ContextMenuInteraction, Message, MessageApplicationCommandData, MessageComponentInteraction } from 'discord.js';
+import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { ComponentID } from '../../lib/discord/builders/ActionRowBuilder.js';
+import { DisputeMessageCommandData } from './DisputeMessageCommandData.js';
+import { DisputeReplyBuilder, DisputeTimeStamp } from './DisputeMixins.js';
+import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
+import { DisputeTable } from './DisputeTable.js';
+import { Pool } from 'mariadb';
 
 export interface voteStrings {
     readonly yes_array: string[],
     readonly no_array: string[];
 }
-export class DisputeHandler extends ContextMenuHandler {
 
-    private readonly database: DisputeDatabase;
+export class DisputeMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
+
+    private readonly database: DisputeTable;
     public static readonly END_DELAY: number = 1000 * 60 * 1;
 
-    constructor(db: HandlerDB) {
-        super({ group: 'Fun', global: false, nsfw: false, data: DisputeCommandData });
-        this.database = new DisputeDatabase(db);
+    constructor(pool: Pool) {
+        super(DisputeMessageCommandData);
+        this.database = new DisputeTable(pool);
     }
 
-    public async execute(contextMenu: ContextMenuInteraction): Promise<any> {
-        const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeHandler.END_DELAY);
+    public async run(contextMenu: ContextMenuInteraction): Promise<any> {
+        const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeMessageHandler.END_DELAY);
         const origMessage = contextMenu.options.getMessage('message', true) as Message;
         if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentEmbed('dispute'));
         if (origMessage.author == contextMenu.user) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeSelfUsedEmbed());
@@ -37,7 +37,7 @@ export class DisputeHandler extends ContextMenuHandler {
             .addDisputeEmbed(origMessage, disputeResults!, votes, timestamp.getTimestamp())
             .addDisputeActionRow();
         const message = await contextMenu.followUp(embed) as Message;
-        const collector = message.createMessageComponentCollector({ time: DisputeHandler.END_DELAY });
+        const collector = message.createMessageComponentCollector({ time: DisputeMessageHandler.END_DELAY });
         collector.on('collect', this.createCollectorFunction(contextMenu, origMessage, collector, timestamp));
         collector.on('end', (collection: Collection<string, MessageComponentInteraction>) => { this.onCollectEnd(contextMenu, message, origMessage, collection, timestamp); });
     }
@@ -60,7 +60,7 @@ export class DisputeHandler extends ContextMenuHandler {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
-                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeMessageHandler.END_DELAY);
                             }
                             await this.database.setDisputeVote(contextMenu, component.user, message, true);
                             await component.deferUpdate();
@@ -76,7 +76,7 @@ export class DisputeHandler extends ContextMenuHandler {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
-                                timestamp.setTimestamp(component.createdTimestamp + DisputeHandler.END_DELAY);
+                                timestamp.setTimestamp(component.createdTimestamp + DisputeMessageHandler.END_DELAY);
                             }
                             await this.database.setDisputeVote(contextMenu, component.user, message, false);
                             await component.deferUpdate();
@@ -117,6 +117,6 @@ export class DisputeHandler extends ContextMenuHandler {
     }
 
     public override async setup(client: HandlerClient): Promise<any> {
-        return super.setup(client).then(() => this.database.createTables()).then(() => true);
+        return super.setup(client).then(() => this.database.createTable()).then(() => true);
     }
 }
