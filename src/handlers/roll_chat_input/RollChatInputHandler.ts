@@ -29,7 +29,7 @@ export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApp
         const totalRolls = rollables.reduce((total, rollable) => total + rollable.rollCount, 0);
         if (totalRolls > RollChatInputHandler.MAX_ROLLS) {
             const embed = new RollReplyBuilder(command)
-                .addRollMaxRollsEmbed(totalRolls, RollChatInputHandler.MAX_ROLLS);
+                .addMaxRollsEmbed(totalRolls, RollChatInputHandler.MAX_ROLLS);
             await command.followUp(embed);
         }
 

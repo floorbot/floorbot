@@ -18,7 +18,7 @@ export class RollReplyBuilder extends RollReplyMixin(ReplyBuilder) { };
 export function RollReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder: T) {
     return class RollReplyBuilder extends Builder {
 
-        public addRollMaxRollsEmbed(actualRolls: number, maxRolls: number): this {
+        public addMaxRollsEmbed(actualRolls: number, maxRolls: number): this {
             const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
             const embed = this.createEmbedBuilder()
                 .setThumbnail(attachment.getEmbedUrl())
