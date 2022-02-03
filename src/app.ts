@@ -23,7 +23,7 @@ import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/
 import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/FlipChatInputHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
-import { WeatherChatInputHandler } from './handlers/weather_chat_input/WeatherChatInputHandler.js';
+import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
