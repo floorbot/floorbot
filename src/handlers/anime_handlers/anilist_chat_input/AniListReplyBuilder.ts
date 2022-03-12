@@ -81,10 +81,10 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
         protected createAniListEmbedBuilder(pageInfo?: PageInfo): EmbedBuilder {
             const iconURL = 'https://anilist.co/img/icons/android-chrome-512x512.png';
             const embed = super.createEmbedBuilder()
-                .setFooter('Powered by AniList', iconURL);
+                .setFooter({ text: 'Powered by AniList', iconURL: iconURL });
             if (pageInfo) {
                 const { currentPage, total } = pageInfo;
-                if (currentPage && total && total > 1) embed.setFooter(`${currentPage}/${total} Powered by AniList`, iconURL);
+                if (currentPage && total && total > 1) embed.setFooter({ text: `${currentPage}/${total} Powered by AniList`, iconURL: iconURL });
             }
             return embed;
         }
@@ -94,12 +94,12 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
             const steURL = user.siteUrl || undefined;
             const embed = this.createAniListEmbedBuilder(pageInfo);
             switch (view) {
-                case AniListComponentID.ACTIVITIES: return embed.setAuthor(`${user.name || 'Unknown user'}'s Activities`, avatarURL, steURL);
+                case AniListComponentID.ACTIVITIES: return embed.setAuthor({ name: `${user.name || 'Unknown user'}'s Activities`, iconURL: avatarURL, url: steURL });
                 case AniListUserStatTypes.ANIME:
-                case AniListComponentID.ANIME_LIST: return embed.setAuthor(`${user.name || 'Unknown user'}'s Anime List`, avatarURL, steURL);
+                case AniListComponentID.ANIME_LIST: return embed.setAuthor({ name: `${user.name || 'Unknown user'}'s Anime List`, iconURL: avatarURL, url: steURL });
                 case AniListUserStatTypes.MANGA:
-                case AniListComponentID.MANGA_LIST: return embed.setAuthor(`${user.name || 'Unknown user'}'s Manga List`, avatarURL, steURL);
-                case AniListComponentID.PROFILE: return embed.setAuthor(`${user.name || 'Unknown user'}'s Profile`, avatarURL, steURL);
+                case AniListComponentID.MANGA_LIST: return embed.setAuthor({ name: `${user.name || 'Unknown user'}'s Manga List`, iconURL: avatarURL, url: steURL });
+                case AniListComponentID.PROFILE: return embed.setAuthor({ name: `${user.name || 'Unknown user'}'s Profile`, iconURL: avatarURL, url: steURL });
             }
         }
 

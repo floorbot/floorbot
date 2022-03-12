@@ -10,7 +10,7 @@ export enum AniListSubCommand {
     USER = 'user'
 }
 
-export const AniListCommandData: ChatInputApplicationCommandData = {
+export const AniListChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'anilist',
     type: ApplicationCommandTypes.CHAT_INPUT,
     description: 'All your AniList needs!',

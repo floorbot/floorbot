@@ -1,24 +1,24 @@
-import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListMixins.js';
+import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListReplyBuilder.js';
+import { AniListChatInputCommandData, AniListSubCommand } from './AniListChatInputCommandData.js';
 import { AniListAPI, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { AniListCommandData, AniListSubCommand } from './AniListCommandData.js';
+import { ChatInputApplicationCommandData, CommandInteraction } from 'discord.js';
 import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { CommandInteraction } from 'discord.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
+import { ApplicationCommandHandler } from 'discord.js-handlers';
 
-export class AniListHandler extends ChatInputHandler {
+export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private readonly api: AniListAPI;
 
     constructor(redis: Redis) {
-        super({ data: AniListCommandData, group: 'Weeb' });
+        super(AniListChatInputCommandData);
         this.api = new AniListAPI({ redis });
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: CommandInteraction<'cached'>): Promise<any> {
         await command.deferReply();
         const subCommand = command.options.getSubcommand(true) as AniListSubCommand;
         const search = command.options.getString('search', true);

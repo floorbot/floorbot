@@ -18,6 +18,7 @@ import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
 import { PregchanChatInputHandler } from './handlers/booru_handlers/pregchan_chat_input/PregchanChatInputHandler.js';
+import { AniListChatInputHandler } from './handlers/anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
 import { OwoifyChatInputHandler } from './handlers/owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
 import { Rule34ChatInputHandler } from './handlers/booru_handlers/rule34_chat_input/Rule34ChatInputHandler.js';
 import { DonmaiChatInputHandler } from './handlers/booru_handlers/donmai_chat_input/DonmaiChatInputHandler.js';
@@ -33,7 +34,6 @@ import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatI
 import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
-import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
@@ -91,7 +91,7 @@ const client = new HandlerClient({
         new FlipMessageHandler(),
 
         new FloorbotHandler(),
-        new AniListHandler(redis),
+        new AniListChatInputHandler(redis),
         new LostHandler(),
         new OwoifyChatInputHandler(),
         new OwoifyMessageHandler(),

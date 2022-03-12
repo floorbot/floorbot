@@ -5,6 +5,7 @@
     "main": "./dist/app.js",
     "type": "module",
     "scripts": {
+        "depcheck": "depcheck",
         "build": "tsc",
         "watch": "tsc-watch --onSuccess \"node --experimental-json-modules --require dotenv/config ./dist/app.js\"",
         "start": "node --experimental-json-modules --require dotenv/config ./dist/app.js",
@@ -24,6 +25,7 @@
     },
     "homepage": "https://github.com/floorbot/floorbot#readme",
     "devDependencies": {
+        "depcheck": "^1.4.3",
         "tsc-watch": "^4.5.0",
         "typescript": "^4.4.4"
     },
