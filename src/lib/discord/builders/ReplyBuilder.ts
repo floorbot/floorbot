@@ -190,4 +190,19 @@ export class ReplyBuilder implements InteractionReplyOptions {
         this.setEphemeral();
         return this;
     }
+
+    public addNSFWChannelOnlyReply(context: Interaction | Message): this {
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.CHEEKY);
+        const embed = this.createEmbedBuilder()
+            .setContextAuthor(context)
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
+                '*Try a different channel or make this one NSFW if it is appropriate!*'
+            ].join('\n'));
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        this.setEphemeral();
+        return this;
+    }
 }

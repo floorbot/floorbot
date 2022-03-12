@@ -20,11 +20,6 @@ export interface BooruPostData {
     readonly tags: string[];
 }
 
-export interface BooruAPIData {
-    readonly apiName: string;
-    readonly apiIcon: string;
-}
-
 export const BooruComponentID = {
     SUGGESTIONS: 'suggestions',
     RECYCLE: 'recycle',
@@ -80,8 +75,8 @@ export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builde
             const actionRow = new BooruActionRowBuilder()
                 .addViewOnlineButton(postData.imageURL)
                 .addRepeatButton(tags)
-                .addRecycleButton()
-                .addTagsButton();
+                .addRecycleButton();
+            if (postData.tags.length) actionRow.addTagsButton();
             return this.addActionRow(actionRow);
         }
 

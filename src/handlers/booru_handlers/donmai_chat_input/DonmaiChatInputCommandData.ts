@@ -2,7 +2,7 @@ import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export const DonmaiCommandData = {
+export const DonmaiChatInputCommandData = {
     create: (subDomain: string): ChatInputApplicationCommandData => {
         return {
             name: subDomain,

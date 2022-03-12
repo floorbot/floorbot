@@ -17,9 +17,12 @@ import { NhentaiCodes } from './automations/NhentaiCodes.js';
 import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
+import { PregchanChatInputHandler } from './handlers/booru_handlers/pregchan_chat_input/PregchanChatInputHandler.js';
 import { OwoifyChatInputHandler } from './handlers/owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
 import { Rule34ChatInputHandler } from './handlers/booru_handlers/rule34_chat_input/Rule34ChatInputHandler.js';
+import { DonmaiChatInputHandler } from './handlers/booru_handlers/donmai_chat_input/DonmaiChatInputHandler.js';
 import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
+import { E621ChatInputHandler } from './handlers/booru_handlers/e621_chat_input/E621ChatInputHandler.js';
 import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/OwoifyMessageHandler.js';
 import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/FlipChatInputHandler.js';
@@ -31,11 +34,9 @@ import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHa
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
-import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
-import { E621Handler } from './commands/booru/e621/E621Handler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -75,6 +76,12 @@ let pool = MariaDB.createPool(poolConfig);
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
+// A *temporary* check for env vars
+const e621EnvAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
+if (Object.values(e621EnvAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
+const donmaiEnvAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
+if (Object.values(donmaiEnvAuth).some(val => !val)) console.warn('[env](donmai) invalid or missing donmai credentials!');
+
 const client = new HandlerClient({
     intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
     // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
@@ -97,29 +104,13 @@ const client = new HandlerClient({
         new DisputeMessageHandler(pool),
         new TraceMoeHandler(redis),
         new DefineChatInputHandler(),
-        new Rule34ChatInputHandler()
+        new Rule34ChatInputHandler(),
+        new PregchanChatInputHandler(),
+        new E621ChatInputHandler({ username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }),
+        new DonmaiChatInputHandler({ subDomain: 'danbooru', nsfw: true, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } }),
+        new DonmaiChatInputHandler({ subDomain: 'safebooru', nsfw: false, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } })
     ],
-    handlerBuilders: [
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
-            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
-            return new DonmaiHandler(options);
-        },
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
-            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
-            return new DonmaiHandler(options);
-        },
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
-            return new E621Handler(envAuth);
-        }
-    ]
+    handlerBuilders: []
 });
 
 client.once('ready', () => {

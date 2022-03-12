@@ -17,9 +17,9 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
         this.nsfw = options.nsfw;
     }
 
-    public abstract fetchPostData(query: string): Promise<BooruPostData | null>;
-    public abstract createImageReply(source: Interaction, query: string, postData: BooruPostData | null): Promise<InteractionReplyOptions>;
-    public abstract createTagsReply(source: Interaction, query: string, postData: BooruPostData | null): Promise<InteractionReplyOptions>;
+    public abstract fetchPostData(query: string): Promise<BooruPostData | string | null>;
+    public abstract createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions>;
+    public abstract createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions>;
 
     public getCommandQuery(command: CommandInteraction): string {
         const tags = command.options.getString('tags');
@@ -28,17 +28,23 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
     };
 
     public async run(command: CommandInteraction<'cached'>): Promise<any> {
-        await command.deferReply();
-        const query = this.getCommandQuery(command);
-        const postData = await this.fetchPostData(query);
-        const response = await this.createImageReply(command, query, postData);
-        const message = await command.followUp(response);
-        const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
-        collector.on('collect', this.createCollectorFunction(query, postData, command));
-        collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+        if (this.nsfw && (command.channel && !HandlerUtil.isNSFW(command.channel))) {
+            const replyOptions = new BooruReplyBuilder(command)
+                .addNSFWChannelOnlyReply(command);
+            return command.reply(replyOptions);
+        } else {
+            await command.deferReply();
+            const query = this.getCommandQuery(command);
+            const postData = await this.fetchPostData(query);
+            const response = await this.createImageReply(command, query, postData);
+            const message = await command.followUp(response);
+            const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
+            collector.on('collect', this.createCollectorFunction(query, postData, command));
+            collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
+        }
     }
 
-    private createCollectorFunction(query: string, postData: BooruPostData | null, source: Interaction) {
+    private createCollectorFunction(query: string, postData: BooruPostData | string | null, source: Interaction) {
         return HandlerUtil.handleCollectorErrors(
             async (component: MessageComponentInteraction<'cached'>) => {
                 if (component.isSelectMenu()) {

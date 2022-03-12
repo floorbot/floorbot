@@ -1,18 +1,18 @@
 import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
-import { Rule34API, Rule34APIAutocomplete } from '../../../lib/apis/rule34/Rule34API.js';
-import { Rule34ChatInputCommandData } from './Rule34ChatInputCommandData.js';
+import { E621API, E621APIAuth } from '../../../lib/apis/e621/E621API.js';
+import { E621ChatInputCommandData } from './E621ChatInputCommandData.js';
 import { BooruChatInputHandler } from '../BooruChatInputHandler.js';
-import { Rule34ReplyBuilder } from './Rule34ReplyBuilder.js';
+import { E621ReplyBuilder } from './E621ReplyBuilder.js';
 import { BooruPostData } from '../BooruReplyBuilder.js';
 import { IAutocomplete } from 'discord.js-handlers';
 
-export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAutocomplete {
+export class E621ChatInputHandler extends BooruChatInputHandler implements IAutocomplete {
 
-    private readonly api: Rule34API;
+    private readonly api: E621API;
 
-    constructor() {
-        super({ nsfw: true, data: Rule34ChatInputCommandData });
-        this.api = new Rule34API();
+    constructor(auth: E621APIAuth) {
+        super({ nsfw: true, data: E621ChatInputCommandData });
+        this.api = new E621API(auth);
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
@@ -23,8 +23,8 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
         const autocomplete = await this.api.autocomplete(partial);
         const options = autocomplete.slice(0, 5).map(tag => {
             return {
-                name: [...tags, tag.value].join('+'),
-                value: [...tags, tag.value].join('+')
+                name: [...tags, tag.name].join('+'),
+                value: [...tags, tag.name].join('+')
             };
         });
         return interaction.respond(options);
@@ -32,12 +32,12 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
 
     public async fetchPostData(query: string): Promise<BooruPostData | string | null> {
         const post = await this.api.random(query);
-        if (!post) return null;
+        if (!('file' in post)) return null;
         return {
-            imageURL: post.file_url,
-            score: parseInt(post.score),
-            tags: post.tags.split(' ').filter(tag => tag.length),
-            postURL: `https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`
+            imageURL: post.file.url,
+            score: post.score.total,
+            postURL: `https://e621.net/posts/${post.id}`,
+            tags: post.tags.general
         };
     }
 
@@ -45,17 +45,17 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
         if (!postData || typeof postData === 'string') {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(query);
-            const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total }; });
-            return new Rule34ReplyBuilder(source).addSuggestionEmbed(query, suggestions, url404);
+            const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count }; });
+            return new E621ReplyBuilder(source).addSuggestionEmbed(query, suggestions, url404);
         }
-        return new Rule34ReplyBuilder(source)
+        return new E621ReplyBuilder(source)
             .addImageEmbed(postData, query)
             .addImageActionRow(postData, query);
     }
 
     public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
         if (!postData || typeof postData === 'string') return this.createImageReply(source, query, postData);
-        return new Rule34ReplyBuilder(source)
+        return new E621ReplyBuilder(source)
             .addTagsEmbed(postData, query)
             .addTagsActionRow(postData, query);
     }
