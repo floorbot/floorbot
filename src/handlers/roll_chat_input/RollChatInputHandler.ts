@@ -1,9 +1,9 @@
 import { ChatInputApplicationCommandData, CommandInteraction, Message } from "discord.js";
-import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
+import { PageableComponentID } from "../../helpers/mixins/PageableMixins.js";
 import { RollChatInputCommandData } from "./RollChatInputCommandData.js";
+import { RollData, RollReplyBuilder } from "./RollReplyBuilder.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
-import { RollData, RollReplyBuilder } from "./RollMixins.js";
 
 export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
@@ -42,8 +42,8 @@ export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApp
         const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 5 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             await component.deferUpdate();
-            if (component.customId === ComponentID.NEXT_PAGE) page++;
-            if (component.customId === ComponentID.PREVIOUS_PAGE) page--;
+            if (component.customId === PageableComponentID.NEXT_PAGE) page++;
+            if (component.customId === PageableComponentID.PREVIOUS_PAGE) page--;
             const embed = new RollReplyBuilder(command)
                 .addRollEmbed(rollData, page);
             rollData.length > 1 && embed.addRollPageActionRow(rollData);

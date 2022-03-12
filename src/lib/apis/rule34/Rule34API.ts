@@ -14,6 +14,7 @@ export class Rule34API {
     private static AUTOCOMPLETE_CACHE = new NodeCache({ stdTTL: 60 * 60 });
     private static COUNT_CACHE = new NodeCache({ stdTTL: 60 * 60 });
 
+    /** PLEASE NOT ARGUMENT "json=1" DOES NOT GET POST COUNTS */
     private async request(endpoint: string, params: [string, string | number][]): Promise<Response> {
         const defaultParams: [string, string | number][] = [['page', 'dapi'], ['s', 'post'], ['q', 'index']];
         const paramString = defaultParams.concat(params).map((param) => `${param[0]}=${param[1]}`).join('&');

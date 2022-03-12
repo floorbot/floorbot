@@ -1,6 +1,5 @@
 import { CommandInteraction, Message, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
 import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
@@ -8,13 +7,14 @@ import { MarkovCommandData } from './MarkovCommandData.js';
 import { MarkovDatabase } from './MarkovDatabase.js';
 import Markov from 'markov-strings';
 import { owoify } from 'owoifyx';
+import { Pool } from 'mariadb';
 
 export class MarkovHandler extends ChatInputHandler {
 
     private static CORPUSES: Collection<string, Markov> = new Collection();
     private readonly database: MarkovDatabase;
 
-    constructor(db: HandlerDB) {
+    constructor(db: Pool) {
         super({ group: 'Fun', global: false, nsfw: false, data: MarkovCommandData });
         this.database = new MarkovDatabase(db);
     }

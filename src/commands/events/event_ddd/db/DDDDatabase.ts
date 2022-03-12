@@ -1,9 +1,10 @@
 import { DDDPartialParticipantRow, DDDParticipantRow } from './interfaces/DDDParticipantRow';
 import { DDDPartialSettingsRow, DDDSettingsRow } from './interfaces/DDDSettingsRow';
-import { HandlerDatabase, HandlerDB } from '../../../../lib/discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase } from '../../../../lib/discord/helpers/HandlerDatabase.js';
 import { DDDPartialNutRow, DDDNutRow } from './interfaces/DDDNutRow';
 import path from 'path';
 import fs from 'fs';
+import { Pool } from 'mariadb';
 
 export { DDDPartialParticipantRow, DDDParticipantRow };
 export { DDDPartialSettingsRow, DDDSettingsRow };
@@ -11,8 +12,8 @@ export { DDDPartialNutRow, DDDNutRow };
 
 export class DDDDatabase extends HandlerDatabase {
 
-    constructor(db: HandlerDB) {
-        super({ db: db });
+    constructor(db: Pool) {
+        super(db);
     }
 
     /** --- Settings Functions --- **/

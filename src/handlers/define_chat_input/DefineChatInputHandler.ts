@@ -1,10 +1,10 @@
 import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, InteractionCollector, Util } from "discord.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
-import { ComponentID } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { DefineChatInputCommandData } from "./DefineChatInputCommandData.js";
+import { PageableComponentID } from "../../helpers/mixins/PageableMixins.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
-import { DefineReplyBuilder } from "./DefineMixins.js";
+import { DefineReplyBuilder } from "./DefineReplyBuilder.js";
 import { Pageable } from "../../helpers/Pageable.js";
 import pVoid from "../../lib/promise-void.js";
 
@@ -46,8 +46,8 @@ export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputA
         const collector = new InteractionCollector(command.client, { message: message, time: 1000 * 60 * 10 });
         collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
             await component.deferUpdate();
-            if (component.customId === ComponentID.NEXT_PAGE) pageable.page++;
-            if (component.customId === ComponentID.PREVIOUS_PAGE) pageable.page--;
+            if (component.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
+            if (component.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
             const replyOptions = new DefineReplyBuilder(command)
                 .addDefinitionEmbed(pageable)
                 .addDefinitionPageActionRow(pageable);

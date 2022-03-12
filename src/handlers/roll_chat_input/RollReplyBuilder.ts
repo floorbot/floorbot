@@ -46,7 +46,7 @@ export function RollReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder
                     `${rollsString} \`Total: ${rollData[page]!.total}\`` :
                     '*Please check the format of your dice (1d6 or 6D9...)*'
                 )
-                .setFooter(`Roll: ${page + 1}/${rollData.length} - Total: ${HandlerUtil.formatCommas(allTotal)} - Failed: ${HandlerUtil.formatCommas(allFails)}`);
+                .setFooter({ text: `Roll: ${page + 1}/${rollData.length} - Total: ${HandlerUtil.formatCommas(allTotal)} - Failed: ${HandlerUtil.formatCommas(allFails)}` });
             return this.addEmbed(embed);
         }
 

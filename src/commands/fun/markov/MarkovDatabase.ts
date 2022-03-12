@@ -1,7 +1,8 @@
-import { HandlerDatabase, HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
+import { HandlerDatabase } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { GuildChannel, User, Message, Guild } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
+import { Pool } from 'mariadb';
 
 export interface MarkovChannelRow {
     readonly guild_id: string,
@@ -36,8 +37,8 @@ export class MarkovDatabase extends HandlerDatabase {
     private static readonly DEFAULT_MESSAGES = 50;
     private static readonly DEAFULT_MINUTES = 100;
 
-    constructor(db: HandlerDB) {
-        super({ db: db });
+    constructor(db: Pool) {
+        super(db);
     }
 
     public async fetchChannel(channel: GuildChannel): Promise<MarkovChannelRow> {

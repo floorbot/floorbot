@@ -1,15 +1,15 @@
 import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
 import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
 import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
-import { HandlerDB } from '../../../lib/discord/helpers/HandlerDatabase.js';
 import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
 import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
 import { DDDButtonID, DDDReplyBuilder } from './DDDReplyBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { DDDCommandData } from './DDDCommandData.js';
+import tzdata from 'tzdata' assert { type: 'json' };
 import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';
-import tzdata from 'tzdata';
+import { Pool } from 'mariadb';
 
 export class DDDHandler extends ChatInputHandler {
 
@@ -19,7 +19,7 @@ export class DDDHandler extends ChatInputHandler {
     private readonly database: DDDDatabase;
     private readonly eventInfo = { eventName: 'Destroy Dick December', eventAcronym: 'DDD' };
 
-    constructor(db: HandlerDB) {
+    constructor(db: Pool) {
         super({ data: DDDCommandData, group: 'Events', global: false, nsfw: false });
         this.database = new DDDDatabase(db);
     }

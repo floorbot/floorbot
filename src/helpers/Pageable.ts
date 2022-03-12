@@ -3,45 +3,37 @@ export type NonEmptyArray<T> = [T, ...T[]];
 export class Pageable<T> {
 
     public array: NonEmptyArray<T>;
-    public perChapter: number;
-    public chapter: number;
+    public perPage: number;
     public page: number;
 
-    get chapterArray(): NonEmptyArray<T[]> {
-        const array = [...this.array];
-        const chapterArray = [];
-        while (array.length) chapterArray.push(array.splice(0, this.perChapter));
-        return chapterArray as NonEmptyArray<T[]>;
-    }
+    get totalPages(): number { return Math.ceil(this.array.length / this.perPage); }
 
-    get totalChapters(): number { return Math.ceil(this.array.length / this.perChapter); }
-    get totalPages(): number { return this.array.length; }
+    // These are the actual pages taking perPage into account
+    get pagedArray(): NonEmptyArray<NonEmptyArray<T>> {
+        const array = [...this.array];
+        const pagedArray = [];
+        while (array.length) pagedArray.push(array.splice(0, this.perPage));
+        return pagedArray as NonEmptyArray<NonEmptyArray<T>>;
+    }
 
     get firstPage(): number { return 0; };
     get lastPage(): number { return this.totalPages - 1; };
     get currentPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages); }
-    get nextPage(): number { return this.currentPage === this.lastPage ? this.firstPage : this.currentPage + 1; }
-    get previousPage(): number { return this.currentPage === this.firstPage ? this.lastPage : this.currentPage - 1; }
+    get nextPage(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages); }
+    get previousPage(): number { return Pageable.resolvePageIndex(this.page - 1, this.totalPages); }
 
-    get firstChapter(): number { return 0; };
-    get lastChapter(): number { return this.totalChapters - 1; };
-    get currentChapter(): number { return Pageable.resolvePageIndex(this.page, this.totalChapters); }
-    get nextChapter(): number { return this.currentChapter === this.lastChapter ? this.firstChapter : this.currentChapter + 1; }
-    get previousChapter(): number { return this.currentChapter === this.firstChapter ? this.lastChapter : this.currentChapter - 1; }
-
-    constructor(array: NonEmptyArray<T>, options?: { page?: number, chapter?: number, perChapter?: number; }) {
-        this.perChapter = (options && options.perChapter) || 5;
-        this.chapter = (options && options.chapter) || 0;
+    constructor(array: NonEmptyArray<T>, options?: { page?: number, perPage?: number; }) {
+        this.perPage = (options && options.perPage) || 1;
         this.page = (options && options.page) || 0;
         this.array = array;
     }
 
-    public getPage(page?: number): T {
-        return Pageable.resolveArrayPage(this.array, page ?? this.page);
+    public getPageFirst(page?: number): T {
+        return this.getPage(page)[0];
     }
 
-    public getChapter(chapter?: number): T[] {
-        return Pageable.resolveArrayPage(this.chapterArray, chapter ?? this.chapter);
+    public getPage(page?: number): NonEmptyArray<T> {
+        return Pageable.resolveArrayPage(this.pagedArray, page ?? this.page);
     }
 
     public static resolvePageIndex(page: number, pages: number): number {
@@ -52,9 +44,7 @@ export class Pageable<T> {
 
     public static resolveArrayPage<T>(array: NonEmptyArray<T>, page: number): T {
         page = Pageable.resolvePageIndex(page, array.length);
-        const value = array[page];
-        if (!value) throw new Error('[HandlerUtil] Failed to resolve array page');
-        return value;
+        return array[page]!;
     }
 
     public static isNonEmptyArray<T>(array: T[]): array is NonEmptyArray<T> {

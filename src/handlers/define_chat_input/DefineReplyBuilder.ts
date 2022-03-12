@@ -1,8 +1,8 @@
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
 import { UrbanDictionaryAPIData } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
-import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
+import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
 import { Pageable } from "../../helpers/Pageable.js";
@@ -14,17 +14,17 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
 
         protected createDefineEmbedBuilder(pageable?: Pageable<UrbanDictionaryAPIData>): EmbedBuilder {
             const embed = super.createEmbedBuilder();
-            const iconURL = 'https://i.pinimg.com/originals/f2/aa/37/f2aa3712516cfd0cf6f215301d87a7c2.jpg';
-            if (pageable) {
-                embed.setFooter(`${pageable.currentPage}/${pageable.totalPages} - Powered by Urban Dictionary`, iconURL);
-            } else {
-                embed.setFooter(`Powered by Urban Dictionary`, iconURL);
-            }
+            embed.setFooter({
+                iconURL: 'https://i.pinimg.com/originals/f2/aa/37/f2aa3712516cfd0cf6f215301d87a7c2.jpg',
+                text: pageable ?
+                    `${pageable.currentPage + 1}/${pageable.totalPages} - Powered by Urban Dictionary` :
+                    'Powered by Urban Dictionary'
+            });
             return embed;
         }
 
         public addDefinitionEmbed(pageable: Pageable<UrbanDictionaryAPIData>): this {
-            const definition = pageable.getPage();
+            const definition = pageable.getPageFirst();
             const definitionString = definition.definition.replace(/(\[|\])/g, '*');
             const embed = this.createDefineEmbedBuilder(pageable)
                 .setDescription(HandlerUtil.shortenMessage(definitionString, { maxLength: 1024 }))
@@ -39,7 +39,7 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
 
         public addDefinitionPageActionRow(pageable: Pageable<UrbanDictionaryAPIData>): this {
             const actionRow = new PageableActionRowBuilder();
-            actionRow.addViewOnlineButton(pageable.getPage().permalink);
+            actionRow.addViewOnlineButton(pageable.getPageFirst().permalink);
             actionRow.addPreviousPageButton(null, pageable.totalPages < 2);
             actionRow.addNextPageButton(null, pageable.totalPages < 2);
             return this.addActionRow(actionRow);

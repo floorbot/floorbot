@@ -2,7 +2,7 @@ import { ContextMenuInteraction, MessageApplicationCommandData } from "discord.j
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { OwoifyMessageCommandData } from "./OwoifyMessageCommandData.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
-import { OwoifyReplyBuilder } from "../OwoifyMixins.js";
+import { OwoifyReplyBuilder } from "../OwoifyReplyBuilder.js";
 
 export class OwoifyMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
 

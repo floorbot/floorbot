@@ -1,7 +1,7 @@
 import { ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
 import { OwoifyChatInputCommandData } from "./OwoifyChatInputCommandData.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
-import { OwoifyReplyBuilder } from "../OwoifyMixins.js";
+import { OwoifyReplyBuilder } from "../OwoifyReplyBuilder.js";
 
 export class OwoifyChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 

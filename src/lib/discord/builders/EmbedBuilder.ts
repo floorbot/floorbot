@@ -11,10 +11,10 @@ export class EmbedBuilder extends MessageEmbed {
         const { member } = context;
         const user = context instanceof Message ? context.author : context.user;
         if (member && member instanceof GuildMember) {
-            this.setAuthor(member.displayName, user.displayAvatarURL());
+            this.setAuthor({ name: member.displayName, iconURL: user.displayAvatarURL() });
             this.setColor(member.displayColor || 14840969);
         } else {
-            this.setAuthor(user.username, user.displayAvatarURL());
+            this.setAuthor({ name: user.username, iconURL: user.displayAvatarURL() });
             this.setColor(14840969);
         }
         return this;

@@ -1,7 +1,7 @@
 import { ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
 import { FlipChatInputCommandData } from "./FlipChatInputCommandData.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
-import { FlipReplyBuilder } from "../FlipMixins.js";
+import { FlipReplyBuilder } from "../FlipReplyBuilder.js";
 
 export class FlipChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 

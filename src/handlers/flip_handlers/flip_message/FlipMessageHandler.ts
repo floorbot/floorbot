@@ -1,7 +1,7 @@
 import { ContextMenuInteraction, MessageApplicationCommandData } from 'discord.js';
 import { FlipMessageCommandData } from './FlipMessageCommandData.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
-import { FlipReplyBuilder } from '../FlipMixins.js';
+import { FlipReplyBuilder } from '../FlipReplyBuilder.js';
 
 export class FlipMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
 

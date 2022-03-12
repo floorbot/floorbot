@@ -4,7 +4,6 @@ console.log = consolePrettifier(console.log);
 
 import { HandlerClient } from './lib/discord/HandlerClient.js';
 import envalid, { num, str } from 'envalid';
-import BetterSqlit3 from 'better-sqlite3';
 import RedisMock from 'ioredis-mock';
 import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
@@ -19,11 +18,12 @@ import { BotUpdater } from './automations/BotUpdater.js';
 
 // Commands
 import { OwoifyChatInputHandler } from './handlers/owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
+import { Rule34ChatInputHandler } from './handlers/booru_handlers/rule34_chat_input/Rule34ChatInputHandler.js';
 import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
 import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/OwoifyMessageHandler.js';
+import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/FlipChatInputHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
-import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
 import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
@@ -31,7 +31,6 @@ import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHa
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
 import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
-import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
 import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
@@ -74,7 +73,6 @@ const poolConfig: PoolConfig = {
 
 let pool = MariaDB.createPool(poolConfig);
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
-const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : pool;
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
@@ -90,8 +88,8 @@ const client = new HandlerClient({
         new LostHandler(),
         new OwoifyChatInputHandler(),
         new OwoifyMessageHandler(),
-        new DDDHandler(database),
-        new MarkovHandler(database),
+        new DDDHandler(pool),
+        new MarkovHandler(pool),
         new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
         new RollChatInputHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
@@ -99,7 +97,7 @@ const client = new HandlerClient({
         new DisputeMessageHandler(pool),
         new TraceMoeHandler(redis),
         new DefineChatInputHandler(),
-        new Rule34Handler()
+        new Rule34ChatInputHandler()
     ],
     handlerBuilders: [
         (_client: HandlerClient) => {

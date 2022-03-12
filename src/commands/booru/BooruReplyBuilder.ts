@@ -46,8 +46,8 @@ export class BooruReplyBuilder extends ReplyBuilder {
     }
 
     protected override createEmbedBuilder(): EmbedBuilder {
-        const embed = super.createEmbedBuilder();
-        embed.setFooter(`Powered by ${this.apiName}`, this.apiIcon);
+        const embed = super.createEmbedBuilder()
+            .setFooter({ text: `Powered by ${this.apiName}`, iconURL: this.apiIcon });
         return embed;
     }
 
