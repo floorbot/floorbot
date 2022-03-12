@@ -1,21 +1,37 @@
+import { AniListAPI, AniListAPIRequest, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
 import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListReplyBuilder.js';
 import { AniListChatInputCommandData, AniListSubCommand } from './AniListChatInputCommandData.js';
-import { AniListAPI, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
 import { ChatInputApplicationCommandData, CommandInteraction } from 'discord.js';
 import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
 
 export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private readonly api: AniListAPI;
+    private readonly requests: {
+        user: AniListAPIRequest;
+        media: AniListAPIRequest;
+        character: AniListAPIRequest;
+        staff: AniListAPIRequest;
+        studio: AniListAPIRequest;
+        activities: AniListAPIRequest;
+    };
 
     constructor(redis: Redis) {
         super(AniListChatInputCommandData);
         this.api = new AniListAPI({ redis });
+        this.requests = {
+            user: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/user_page.gql`, 'utf8')),
+            media: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8')),
+            character: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/characters_page.gql`, 'utf8')),
+            staff: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/staff_page.gql`, 'utf8')),
+            studio: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/studios_page.gql`, 'utf8')),
+            activities: this.api.prepareRequest(fs.readFileSync(`${path.resolve()}/res/queries/activities_page.gql`, 'utf8'))
+        };
     }
 
     public async run(command: CommandInteraction<'cached'>): Promise<any> {
@@ -59,30 +75,12 @@ export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInput
      */
     private async fetchAniListData(subCommand: AniListSubCommand | 'activities', vars: QueryVars): Promise<AniListResponse> {
         switch (subCommand) {
-            case AniListSubCommand.USER: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/user_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.MEDIA: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/media_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.CHARACTER: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/characters_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.STAFF: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/staff_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case AniListSubCommand.STUDIO: {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/studios_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
-            case 'activities': {
-                const query = fs.readFileSync(`${path.resolve()}/res/queries/activities_page.gql`, 'utf8');
-                return this.api.request(query, vars);
-            }
+            case AniListSubCommand.USER: return this.requests.user(vars);
+            case AniListSubCommand.MEDIA: return this.requests.media(vars);
+            case AniListSubCommand.CHARACTER: return this.requests.character(vars);
+            case AniListSubCommand.STAFF: return this.requests.staff(vars);
+            case AniListSubCommand.STUDIO: return this.requests.studio(vars);
+            case 'activities': return this.requests.activities(vars);
         }
     }
 

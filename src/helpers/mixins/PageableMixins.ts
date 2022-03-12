@@ -23,8 +23,8 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
                 .setCustomId(PageableComponentID.FIRST_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
                 .setLabel('First Page')
-                .setDisabled(disabled);
-            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.firstPage}`);
+                .setDisabled(disabled ?? false);
+            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.firstPage + 1}`);
             if (typeof pageable === 'number') button.setLabel(`Page: ${pageable}`);
             return this.addComponents(button);
         }
@@ -34,8 +34,8 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
                 .setCustomId(PageableComponentID.LAST_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
                 .setLabel('Last Page')
-                .setDisabled(disabled);
-            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.lastPage}`);
+                .setDisabled(disabled ?? false);
+            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.lastPage + 1}`);
             if (typeof pageable === 'number') button.setLabel(`Page: ${pageable}`);
             return this.addComponents(button);
         }
@@ -44,9 +44,9 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
             const button = new ButtonBuilder()
                 .setCustomId(PageableComponentID.NEXT_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
-                .setDisabled(disabled)
+                .setDisabled(disabled ?? false)
                 .setLabel('Next');
-            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.nextPage}`);
+            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.nextPage + 1}`);
             if (typeof pageable === 'number') button.setLabel(`Page: ${pageable}`);
             return this.addComponents(button);
         }
@@ -55,9 +55,9 @@ export function PageableActionRowMixin<T extends MixinConstructor<ActionRowBuild
             const button = new ButtonBuilder()
                 .setCustomId(PageableComponentID.PREVIOUS_PAGE)
                 .setStyle(MessageButtonStyles.PRIMARY)
-                .setDisabled(disabled)
+                .setDisabled(disabled ?? false)
                 .setLabel('Previous');
-            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.previousPage}`);
+            if (pageable instanceof Pageable) button.setLabel(`Page: ${pageable.previousPage + 1}`);
             if (typeof pageable === 'number') button.setLabel(`Page: ${pageable}`);
             return this.addComponents(button);
         }

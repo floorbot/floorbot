@@ -22,6 +22,7 @@ import { AniListChatInputHandler } from './handlers/anime_handlers/anilist_chat_
 import { OwoifyChatInputHandler } from './handlers/owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
 import { Rule34ChatInputHandler } from './handlers/booru_handlers/rule34_chat_input/Rule34ChatInputHandler.js';
 import { DonmaiChatInputHandler } from './handlers/booru_handlers/donmai_chat_input/DonmaiChatInputHandler.js';
+import { TraceMoeMessageHandler } from './handlers/anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
 import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
 import { E621ChatInputHandler } from './handlers/booru_handlers/e621_chat_input/E621ChatInputHandler.js';
 import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/OwoifyMessageHandler.js';
@@ -33,7 +34,6 @@ import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMe
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
-import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
 import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
 import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
 import { LostHandler } from './commands/events/lost/LostHandler.js';
@@ -102,7 +102,7 @@ const client = new HandlerClient({
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(),
         new DisputeMessageHandler(pool),
-        new TraceMoeHandler(redis),
+        new TraceMoeMessageHandler(redis),
         new DefineChatInputHandler(),
         new Rule34ChatInputHandler(),
         new PregchanChatInputHandler(),
