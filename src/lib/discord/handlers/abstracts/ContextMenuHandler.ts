@@ -2,13 +2,13 @@ import { ContextMenuInteraction, MessageApplicationCommandData, UserApplicationC
 import { Handler, HandlerOptions } from '../../Handler.js';
 
 export interface ContextMenuHandlerOptions extends Omit<HandlerOptions, 'type'> {
-    readonly data: MessageApplicationCommandData | UserApplicationCommandData
+    readonly data: MessageApplicationCommandData | UserApplicationCommandData;
 }
 
 export abstract class ContextMenuHandler extends Handler<ContextMenuInteraction> {
 
     constructor(options: ContextMenuHandlerOptions) {
-        super({ type: ContextMenuInteraction, ...options })
+        super({ type: ContextMenuInteraction, ...options });
     }
 
     public abstract override execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any>;

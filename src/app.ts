@@ -29,14 +29,12 @@ import { OwoifyMessageHandler } from './handlers/owoify_handlers/owoify_message/
 import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FlipChatInputHandler } from './handlers/flip_handlers/flip_chat_input/FlipChatInputHandler.js';
 import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
+import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/flip_handlers/flip_message/FlipMessageHandler.js';
 import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/roll_chat_input/RollChatInputHandler.js';
 import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
-import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
-import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
-import { LostHandler } from './commands/events/lost/LostHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -92,11 +90,9 @@ const client = new HandlerClient({
 
         new FloorbotHandler(),
         new AniListChatInputHandler(redis),
-        new LostHandler(),
         new OwoifyChatInputHandler(),
         new OwoifyMessageHandler(),
-        new DDDHandler(pool),
-        new MarkovHandler(pool),
+        new MarkovChatInputHandler(pool),
         new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
         new RollChatInputHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),

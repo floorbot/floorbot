@@ -2,7 +2,7 @@ import { ChatInputApplicationCommandData, Constants } from 'discord.js';
 
 const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
 
-export const MarkovCommandData: ChatInputApplicationCommandData = {
+export const MarkovChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'markov',
     description: 'Generate messages from channel history',
     type: ApplicationCommandTypes.CHAT_INPUT,
@@ -42,4 +42,4 @@ export const MarkovCommandData: ChatInputApplicationCommandData = {
             description: 'The users data to generate a message from'
         }]
     }]
-}
+};

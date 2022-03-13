@@ -49,7 +49,7 @@ export class HandlerReplies {
                         'Sorry! Only the creator of this interaction can use this component',
                         '*If possible try using the command for youself!*'
                     ]);
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public createErrorReply(context: Interaction | Message, error: any): InteractionReplyOptions {
@@ -65,8 +65,8 @@ export class HandlerReplies {
                 '',
                 'This error has been reported and will be fixed!'
             ]);
-        console.warn('Unknown Error', error)
-        return { embeds: [embed], files: [attachment] }
+        console.warn('Unknown Error', error);
+        return { embeds: [embed], files: [attachment] };
     }
 
     public createBottleneckErrorReply(context: Interaction | Message, error: Bottleneck.BottleneckError): InteractionReplyOptions {
@@ -82,8 +82,8 @@ export class HandlerReplies {
                 '',
                 '*Please give me some time before trying again!*'
             ]);
-        console.warn('Unknown Error', error)
-        return { embeds: [embed], files: [attachment] }
+        console.warn('Unknown Error', error);
+        return { embeds: [embed], files: [attachment] };
     }
 
     public createGuildOnlyReply(context: Interaction | Message): InteractionReplyOptions {
@@ -96,7 +96,7 @@ export class HandlerReplies {
                 `Sorry! It looks like I can only use this command in guilds!`,
                 '*Make sure you\'re using this in an appropriate guild!*'
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public static createNSFWChannelReply(context: Interaction | Message): InteractionReplyOptions {
@@ -109,7 +109,7 @@ export class HandlerReplies {
                 `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
                 '*Try a different channel or make this one NSFW if it is appropriate!*'
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public static createUnexpectedErrorReply(context: Interaction | Message, error: any): InteractionReplyOptions {
@@ -124,7 +124,7 @@ export class HandlerReplies {
                 '',
                 ...(error && error.message ? [`Message: \`${error.message}\``] : [])
             ]);
-        return { embeds: [embed], files: [attachment] }
+        return { embeds: [embed], files: [attachment] };
     }
 
     // OLD
@@ -139,7 +139,7 @@ export class HandlerReplies {
                 `Sorry! It looks like that message has no content to ${action}`,
                 `*Please make the correct changes before trying again!*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public static createInvalidInputReply(context: Interaction | Message, message: string): InteractionReplyOptions {
@@ -152,7 +152,7 @@ export class HandlerReplies {
                 `Sorry! ${message ?? 'It looks like that input is invalid'}`,
                 `*Please make the correct changes before trying again!*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public static createAdminOrOwnerReply(context: Interaction | Message): InteractionReplyOptions {
@@ -165,7 +165,7 @@ export class HandlerReplies {
                 `Sorry! Only the creator of this interaction can use this component`,
                 `*If possible try using the command for youself!*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment], ephemeral: true }
+        return { embeds: [embed], files: [attachment], ephemeral: true };
     }
 
     public static createNotFoundReply(context: Interaction | Message, query: string, message?: string): InteractionReplyOptions {
@@ -178,7 +178,7 @@ export class HandlerReplies {
                 `Sorry! I could not find \`${query}\``,
                 `*${message ?? 'Please check your spelling or try again later!'}*`
             ].join('\n'));
-        return { embeds: [embed], files: [attachment] }
+        return { embeds: [embed], files: [attachment] };
     }
 
     public static createAPIErrorReply(context: Interaction | Message, handler: Handler<any>, message?: string): InteractionReplyOptions {
@@ -191,6 +191,6 @@ export class HandlerReplies {
                 `Sorry! I seem to have run into an unexpected api error with \`${handler.toString()}\``,
                 `*${message ?? 'This error has been reported and will be fixed!'}*`
             ]);
-        return { embeds: [embed], files: [attachment] }
+        return { embeds: [embed], files: [attachment] };
     }
 }

@@ -1,25 +1,27 @@
-import { CommandInteraction, Message, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction } from 'discord.js';
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { CommandInteraction, Message, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction, ChatInputApplicationCommandData } from 'discord.js';
+import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
-import { MarkovCommandData } from './MarkovCommandData.js';
-import { MarkovDatabase } from './MarkovDatabase.js';
+import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
+import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
+import { MarkovChannelTable } from './MarkovChannelTable.js';
+import { MarkovStringTable } from './MarkovStringTable.js';
 import Markov from 'markov-strings';
 import { owoify } from 'owoifyx';
 import { Pool } from 'mariadb';
 
-export class MarkovHandler extends ChatInputHandler {
+export class MarkovChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private static CORPUSES: Collection<string, Markov> = new Collection();
-    private readonly database: MarkovDatabase;
+    private readonly channelTable: MarkovChannelTable;
+    private readonly stringTable: MarkovStringTable;
 
     constructor(db: Pool) {
-        super({ group: 'Fun', global: false, nsfw: false, data: MarkovCommandData });
-        this.database = new MarkovDatabase(db);
+        super(MarkovChatInputCommandData);
+        this.channelTable = new MarkovChannelTable(db);
+        this.stringTable = new MarkovStringTable(db);
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: CommandInteraction<'cached'>): Promise<any> {
         const subCommand = command.options.getSubcommand();
         const channel = (command.options.getChannel('channel') || command.channel) as GuildChannel;
 
@@ -40,7 +42,7 @@ export class MarkovHandler extends ChatInputHandler {
                 const perMessages = command.options.getInteger('messages') || undefined;
                 const perMinutes = command.options.getInteger('minutes') || undefined;
                 const perMessagesMin = perMessages ? Math.max(perMessages, 5) : perMessages;
-                await this.database.setChannel(channel, { messages: perMessagesMin, minutes: perMinutes });
+                await this.channelTable.insertChannel(channel, { messages: perMessagesMin, minutes: perMinutes });
                 const response = await this.fetchControlPanel(command, channel);
                 const message = await command.followUp(response);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
@@ -59,23 +61,23 @@ export class MarkovHandler extends ChatInputHandler {
     }
 
     private async fetchControlPanel(interaction: Interaction, channel: GuildChannel): Promise<MarkovReplyBuilder> {
-        const totals = await this.database.fetchStringsTotals(channel);
-        const channelData = await this.database.fetchChannel(channel);
+        const totals = await this.stringTable.selectStringsTotals(channel);
+        const channelData = await this.channelTable.selectChannel(channel);
         const embed = new MarkovReplyBuilder(interaction).addMarkovControlPanel(channel, channelData, totals)
             .addMarkovActionRow(channelData);
         return embed;
     }
 
     public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<InteractionReplyOptions | null> {
-        const channelData = await this.database.fetchChannel(channel);
-        if (!MarkovHandler.CORPUSES.has(channel.id)) {
-            const rows = await this.database.fetchStrings(channel, user ? user : undefined);
+        const channelData = await this.channelTable.selectChannel(channel);
+        if (!MarkovChatInputHandler.CORPUSES.has(channel.id)) {
+            const rows = await this.stringTable.selectStrings(channel, user ? user : undefined);
             if (!rows.length) return null;
             const markov = new (<any>Markov).default({ stateSize: rows.length < 1000 ? 1 : 2 }) as Markov;
             markov.addData(rows.map(row => row.content));
-            MarkovHandler.CORPUSES.set(channel.id, markov);
+            MarkovChatInputHandler.CORPUSES.set(channel.id, markov);
         }
-        const markov = MarkovHandler.CORPUSES.get(channel.id)!;
+        const markov = MarkovChatInputHandler.CORPUSES.get(channel.id)!;
         return new Promise((resolve, _reject) => {
             const minLength = Math.floor(Math.random() * 10);
             const res = markov.generate({
@@ -106,32 +108,32 @@ export class MarkovHandler extends ChatInputHandler {
                     switch (component.customId as MarkovButtonType) {
                         case MarkovButtonType.POSTING_ENABLE:
                         case MarkovButtonType.POSTING_DISABLE: {
-                            await this.database.setChannel(channel, { posting: component.customId === MarkovButtonType.POSTING_ENABLE });
+                            await this.channelTable.insertChannel(channel, { posting: component.customId === MarkovButtonType.POSTING_ENABLE });
                             break;
                         }
                         case MarkovButtonType.TRACKING_ENABLE:
                         case MarkovButtonType.TRACKING_DISABLE: {
-                            await this.database.setChannel(channel, { tracking: component.customId === MarkovButtonType.TRACKING_ENABLE });
+                            await this.channelTable.insertChannel(channel, { tracking: component.customId === MarkovButtonType.TRACKING_ENABLE });
                             break;
                         }
                         case MarkovButtonType.LINKS_ENABLE:
                         case MarkovButtonType.LINKS_DISABLE: {
-                            await this.database.setChannel(channel, { links: component.customId === MarkovButtonType.LINKS_ENABLE });
+                            await this.channelTable.insertChannel(channel, { links: component.customId === MarkovButtonType.LINKS_ENABLE });
                             break;
                         }
                         case MarkovButtonType.MENTIONS_ENABLE:
                         case MarkovButtonType.MENTIONS_DISABLE: {
-                            await this.database.setChannel(channel, { mentions: component.customId === MarkovButtonType.MENTIONS_ENABLE });
+                            await this.channelTable.insertChannel(channel, { mentions: component.customId === MarkovButtonType.MENTIONS_ENABLE });
                             break;
                         }
                         case MarkovButtonType.OWOIFY_ENABLE:
                         case MarkovButtonType.OWOIFY_DISABLE: {
-                            await this.database.setChannel(channel, { owoify: component.customId === MarkovButtonType.OWOIFY_ENABLE });
+                            await this.channelTable.insertChannel(channel, { owoify: component.customId === MarkovButtonType.OWOIFY_ENABLE });
                             break;
                         }
                         case MarkovButtonType.QUOTING_ENABLE:
                         case MarkovButtonType.QUOTING_DISABLE: {
-                            await this.database.setChannel(channel, { quoting: component.customId === MarkovButtonType.QUOTING_ENABLE });
+                            await this.channelTable.insertChannel(channel, { quoting: component.customId === MarkovButtonType.QUOTING_ENABLE });
                             break;
                         }
                         case MarkovButtonType.WIPE: {
@@ -146,12 +148,14 @@ export class MarkovHandler extends ChatInputHandler {
                             return;
                         }
                         case MarkovButtonType.WIPE_CONFIRMED: {
-                            await this.database.deleteStrings(channel);
+                            await this.stringTable.deleteStrings(channel);
+                            await this.channelTable.deleteChannels(channel);
                             break;
                         }
 
                         case MarkovButtonType.PURGE_CONFIRMED: {
-                            await this.database.purge(component.guild);
+                            await this.stringTable.deleteStrings(component.guild);
+                            await this.channelTable.deleteChannels(component.guild);
                             break;
                         }
                         case MarkovButtonType.BACKOUT: {
@@ -173,13 +177,16 @@ export class MarkovHandler extends ChatInputHandler {
         };
     }
 
-    public override async setup(client: HandlerClient): Promise<any> {
-        await super.setup(client).then(() => this.database.createTables()).then(() => true);
+    public override async setup(client: HandlerClient): Promise<void> {
+        await super.setup(client).then(async () => {
+            await this.stringTable.createTable();
+            await this.channelTable.createTable();
+        }).then(() => true);
         client.on('messageCreate', (message) => this.onMessageCreate(message));
         client.on('messageUpdate', (_oldMessage, newMessage) => this.onMessageCreate(<Message>newMessage));
         setInterval(() => {
             return client.guilds.cache.forEach(async guild => {
-                const rows = await this.database.fetchAllChannels(guild);
+                const rows = await this.channelTable.selectChannels(guild);
                 return rows.filter(row => row.posting).forEach(async data => {
                     const channel = await client.channels.fetch(data.channel_id) as TextChannel | null;
                     const random = Math.floor(Math.random() * data.minutes);
@@ -190,26 +197,21 @@ export class MarkovHandler extends ChatInputHandler {
                 });
             });
         }, 1000 * 60); // Every minute
-        return { message: 'Setup Database and created auto-post interval' };
     }
 
     private async onMessageCreate(message: Message) {
         if (message.guild && message.channel instanceof TextChannel) {
-            const commands = await message.guild.commands.fetch();
-            const enabled = commands.some(command => command.name === this.data.name && command.type === 'CHAT_INPUT');
-            if (enabled) {
-                const row = await this.database.fetchChannel(message.channel);
-                if (row.tracking) {
-                    await this.database.setStrings(message);
-                    const markov = MarkovHandler.CORPUSES.get(message.channel.id);
-                    if (markov && message.content.length) markov.addData([message.content]);
-                }
-                if (row.posting && !message.editedTimestamp) {
-                    const random = Math.floor(Math.random() * row.messages);
-                    if (!random) {
-                        const response = await this.fetchMarkovResponse(message.channel, null);
-                        if (response) await message.channel.send(response);
-                    }
+            const row = await this.channelTable.selectChannel(message.channel);
+            if (row.tracking) {
+                await this.stringTable.insertString(message);
+                const markov = MarkovChatInputHandler.CORPUSES.get(message.channel.id);
+                if (markov && message.content.length) markov.addData([message.content]);
+            }
+            if (row.posting && !message.editedTimestamp) {
+                const random = Math.floor(Math.random() * row.messages);
+                if (!random) {
+                    const response = await this.fetchMarkovResponse(message.channel, null);
+                    if (response) await message.channel.send(response);
                 }
             }
         }

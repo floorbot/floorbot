@@ -3,11 +3,12 @@ import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../
 import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { ActionRowBuilder } from "./ActionRowBuilder.js";
-import { BuilderContext } from "./BuilderInterfaces.js";
 import { Pageable } from "../../../helpers/Pageable.js";
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import path from 'path';
 import fs from 'fs';
+
+export type BuilderContext = Interaction | Message;
 
 export class ReplyBuilder implements InteractionReplyOptions {
 

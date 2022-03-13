@@ -17,7 +17,7 @@ import { DateTime } from "luxon";
 export class WeatherReplyBuilder extends WeatherReplyMixin(ReplyBuilder) { };
 
 export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder: T) {
-    return class WeathereReplyBuilder extends Builder {
+    return class WeatherReplyBuilder extends Builder {
 
         // protected createWeatherEmbedBuilder(pageable?: Pageable<Weather>): EmbedBuilder {
         //     const embed = super.createEmbedBuilder();

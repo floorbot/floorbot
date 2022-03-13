@@ -1,5 +1,4 @@
-import { MessageEmbed, MessageEmbedOptions, InteractionReplyOptions, Message, GuildMember } from 'discord.js';
-import { BuilderContext } from './BuilderInterfaces.js';
+import { MessageEmbed, MessageEmbedOptions, InteractionReplyOptions, Message, GuildMember, Interaction } from 'discord.js';
 
 export class EmbedBuilder extends MessageEmbed {
 
@@ -7,7 +6,7 @@ export class EmbedBuilder extends MessageEmbed {
         super(data);
     }
 
-    public setContextAuthor(context: BuilderContext): this {
+    public setContextAuthor(context: Interaction | Message): this {
         const { member } = context;
         const user = context instanceof Message ? context.author : context.user;
         if (member && member instanceof GuildMember) {
