@@ -1,10 +1,10 @@
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/mixins/ResourceMixins.js';
-import { ImageMagickCLIAction, MagickProgress } from '../../../lib/tools/image-magick/ImageMagickCLIAction.js';
-import { AttachmentBuilder } from '../../../lib/discord/builders/AttachmentBuilder.js';
-import { SelectMenuBuilder } from '../../../lib/discord/builders/SelectMenuBuilder.js';
-import { ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
-import { EmbedBuilder } from '../../../lib/discord/builders/EmbedBuilder.js';
-import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/mixins/ResourceMixins.js';
+import { ImageMagickCLIAction, MagickProgress } from '../../lib/tools/image-magick/ImageMagickCLIAction.js';
+import { AttachmentBuilder } from '../../lib/discord/builders/AttachmentBuilder.js';
+import { SelectMenuBuilder } from '../../lib/discord/builders/SelectMenuBuilder.js';
+import { ReplyBuilder } from '../../lib/discord/builders/ReplyBuilder.js';
+import { EmbedBuilder } from '../../lib/discord/builders/EmbedBuilder.js';
+import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 import humanizeDuration from 'humanize-duration';
 import { ProbeResult } from 'probe-image-size';
 import { Message } from 'discord.js';
@@ -14,7 +14,7 @@ export class MagickReplyBuilder extends ReplyBuilder {
     protected override createEmbedBuilder(): EmbedBuilder {
         const embed = super.createEmbedBuilder();
         const iconURL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ImageMagick_logo.svg/1200px-ImageMagick_logo.svg.png';
-        embed.setFooter(`Powered by ImageMagick`, iconURL);
+        embed.setFooter({ text: `Powered by ImageMagick`, iconURL: iconURL });
         return embed;
     }
 
@@ -79,7 +79,7 @@ export class MagickReplyBuilder extends ReplyBuilder {
             embed.setImage(attachment.getEmbedUrl());
             const kb = Math.round((metadata.length || Buffer.byteLength(buffer) / 1000));
             const metaString = ` ${metadata.width}x${metadata.height} ${HandlerUtil.formatCommas(kb)}KB`;
-            embed.setFooter(`${metadata.type.toUpperCase()}${metaString} in ${timeString}`);
+            embed.setFooter({ text: `${metadata.type.toUpperCase()}${metaString} in ${timeString}` });
             this.addEmbed(embed)
                 .addFile(attachment)
                 .addActionRow(selectMenu.toActionRow());
@@ -87,7 +87,7 @@ export class MagickReplyBuilder extends ReplyBuilder {
         } else {
             embed.setImage(metadata.url);
             const metaString = ` ${metadata.width}x${metadata.height} ${HandlerUtil.formatCommas(Math.round(metadata.length / 1000))}KB`;
-            embed.setFooter(`${metadata.type.toUpperCase()}${metaString} in ${timeString}`);
+            embed.setFooter({ text: `${metadata.type.toUpperCase()}${metaString} in ${timeString}` });
             this.addEmbed(embed)
                 .addActionRow(selectMenu.toActionRow());
             return this;

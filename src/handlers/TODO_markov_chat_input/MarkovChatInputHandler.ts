@@ -1,4 +1,5 @@
-import { CommandInteraction, Message, User, GuildChannel, TextChannel, InteractionReplyOptions, MessageComponentInteraction, Collection, Interaction, ChatInputApplicationCommandData } from 'discord.js';
+import { CommandInteraction, Message, User, GuildChannel, TextChannel, MessageComponentInteraction, Collection, Interaction, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
+import { ResponseOptions } from '../../lib/discord/builders/ReplyBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
 import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
@@ -21,7 +22,7 @@ export class MarkovChatInputHandler extends ApplicationCommandHandler<ChatInputA
         this.stringTable = new MarkovStringTable(db);
     }
 
-    public async run(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         const subCommand = command.options.getSubcommand();
         const channel = (command.options.getChannel('channel') || command.channel) as GuildChannel;
 
@@ -68,7 +69,7 @@ export class MarkovChatInputHandler extends ApplicationCommandHandler<ChatInputA
         return embed;
     }
 
-    public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<InteractionReplyOptions | null> {
+    public async fetchMarkovResponse(channel: GuildChannel, user: User | null): Promise<ResponseOptions | null> {
         const channelData = await this.channelTable.selectChannel(channel);
         if (!MarkovChatInputHandler.CORPUSES.has(channel.id)) {
             const rows = await this.stringTable.selectStrings(channel, user ? user : undefined);

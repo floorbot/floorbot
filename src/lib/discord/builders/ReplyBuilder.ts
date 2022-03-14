@@ -1,28 +1,33 @@
-import { BaseCommandInteraction, Interaction, InteractionReplyOptions, Message, MessageMentionOptions } from "discord.js";
+import { CommandInteraction, Interaction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
 import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
-import { ActionRowBuilder } from "./ActionRowBuilder.js";
 import { Pageable } from "../../../helpers/Pageable.js";
+import { ArrayElementType } from "../../util-types.js";
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import path from 'path';
 import fs from 'fs';
 
 export type BuilderContext = Interaction | Message;
+export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions & MessageOptions & ReplyMessageOptions;
 
-export class ReplyBuilder implements InteractionReplyOptions {
+export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateOptions {
 
-    protected context?: BuilderContext;
+    public readonly context?: BuilderContext;
 
-    public allowed_mentions?: MessageMentionOptions;
-    public attachments?: AttachmentBuilder[];
-    public components?: ActionRowBuilder[];
-    public ephemeral?: boolean | undefined;
-    public files?: AttachmentBuilder[];
-    public embeds?: EmbedBuilder[];
-    public content?: string | null;
+    public ephemeral: ResponseOptions['ephemeral']; // reply only
+    public fetchReply: ResponseOptions['fetchReply'];
+    public flags: ResponseOptions['flags'];
+    public tts: ResponseOptions['tts']; // reply only
+    public nonce: ResponseOptions['nonce']; // reply only
+    public content: ResponseOptions['content'];
+    public embeds: ResponseOptions['embeds'];
+    public allowedMentions: ResponseOptions['allowedMentions'];
+    public files: ResponseOptions['files'];
+    public components: ResponseOptions['components'];
+    public attachments: ResponseOptions['attachments'];
 
-    constructor(data?: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
+    constructor(data?: BuilderContext | (ResponseOptions & { context?: BuilderContext; })) {
         if (data) {
             if (data instanceof Interaction) this.context = data;
             else if (data instanceof Message) this.context = data;
@@ -30,54 +35,124 @@ export class ReplyBuilder implements InteractionReplyOptions {
         }
     }
 
-    public setContent(content: string | null): this {
+    public setEphemeral(ephemeral: ResponseOptions['ephemeral'] = true): this {
+        this.ephemeral = ephemeral;
+        return this;
+    }
+
+    public setFetchReply(fetchReply: ResponseOptions['fetchReply'] = true): this {
+        this.fetchReply = fetchReply;
+        return this;
+    }
+
+    public setFlags(flags: ResponseOptions['flags']): this {
+        this.flags = flags;
+        return this;
+    }
+
+    public setTTS(tts: ResponseOptions['tts'] = true): this {
+        this.tts = tts;
+        return this;
+    }
+
+    public setNonce(nonce: ResponseOptions['nonce']): this {
+        this.nonce = nonce;
+        return this;
+    }
+
+    public setContent(content: ResponseOptions['content'] | string[]): this {
+        if (Array.isArray(content)) return this.setContent(content.join('\n'));
         this.content = content;
         return this;
     }
 
-    public setAllowedMentions(allowedMentions?: MessageMentionOptions): this {
-        this.allowed_mentions = allowedMentions;
+    public setEmbeds(embeds: ResponseOptions['embeds']): this {
+        this.embeds = embeds;
         return this;
     }
 
-    public suppressMentions(): this {
-        this.allowed_mentions = { ...this.allowed_mentions, parse: [] };
-        return this;
-    }
-
-    public addEmbed(embed: EmbedBuilder): this {
+    public addEmbed(embed: EmbedBuilder | ArrayElementType<NonNullable<ResponseOptions['embeds']>>): this {
+        if (embed instanceof EmbedBuilder) return this.addEmbed(embed.toJSON());
         return this.addEmbeds(embed);
     }
 
-    public addEmbeds(...embeds: EmbedBuilder[]): this {
+    public addEmbeds(...embeds: NonNullable<ResponseOptions['embeds']>): this {
         if (!this.embeds) this.embeds = [];
         this.embeds.push(...embeds);
         return this;
     }
 
-    public addActionRow(actionRow: ActionRowBuilder): this {
-        return this.addActionRows(actionRow);
-    }
-
-    public addActionRows(...actionRows: ActionRowBuilder[]): this {
-        if (!this.components) this.components = [];
-        this.components.push(...actionRows);
+    public setAllowedMentions(allowedMentions: ResponseOptions['allowedMentions']): this {
+        this.allowedMentions = allowedMentions;
         return this;
     }
 
-    public addFile(attachment: AttachmentBuilder): this {
-        return this.addFiles(attachment);
+    public setFiles(files: ResponseOptions['files']): this {
+        this.files = files;
+        return this;
     }
 
-    public addFiles(...attachments: AttachmentBuilder[]): this {
+    public addFile(file: ArrayElementType<NonNullable<ResponseOptions['files']>>): this {
+        return this.addFiles(file);
+    }
+
+    public addFiles(...files: NonNullable<ResponseOptions['files']>): this {
         if (!this.files) this.files = [];
-        this.files.push(...attachments);
+        this.files.push(...files);
         return this;
     }
 
-    public clearAttachments(): this {
-        this.attachments = [];
+    public setComponents(components: ResponseOptions['components']): this {
+        this.components = components;
         return this;
+    }
+
+    public addComponent(component: ArrayElementType<NonNullable<ResponseOptions['components']>>): this {
+        return this.addComponents(component);
+    }
+
+    public addComponents(...components: NonNullable<ResponseOptions['components']>): this {
+        if (!this.components) this.components = [];
+        this.components.push(...components);
+        return this;
+    }
+
+    public setAttachments(attachments: ResponseOptions['attachments']): this {
+        this.attachments = attachments;
+        return this;
+    }
+
+    public addAttachment(attachment: ArrayElementType<NonNullable<ResponseOptions['attachments']>>): this {
+        return this.addAttachments(attachment);
+    }
+
+    public addAttachments(...attachments: NonNullable<ResponseOptions['attachments']>): this {
+        if (!this.attachments) this.attachments = [];
+        this.attachments.push(...attachments);
+        return this;
+    }
+
+    /**
+     * These are some useful/alias functions
+     */
+
+    public suppressMentions(): this {
+        this.allowedMentions = { ...this.allowedMentions, parse: [] };
+        return this;
+    }
+
+    public suppressEmbeds(): this {
+        const flagsBitField = new MessageFlagsBitField(MessageFlags.SuppressEmbeds);
+        if (this.flags) flagsBitField.add(this.flags as number); // workaround
+        return this.setFlags(flagsBitField.bitfield);
+    }
+
+    public addActionRow(component: ArrayElementType<NonNullable<ResponseOptions['components']>>): this {
+        return this.addComponent(component);
+    }
+
+    public addActionRows(...components: NonNullable<ResponseOptions['components']>): this {
+        return this.addComponents(...components);
     }
 
     public clearComponents(): this {
@@ -85,8 +160,8 @@ export class ReplyBuilder implements InteractionReplyOptions {
         return this;
     }
 
-    public setEphemeral(ephemeral: boolean = true): this {
-        this.ephemeral = ephemeral;
+    public clearAttachments(): this {
+        this.attachments = [];
         return this;
     }
 
@@ -103,7 +178,7 @@ export class ReplyBuilder implements InteractionReplyOptions {
     /** This is a unique helper function for consistent embeds */
     protected createEmbedBuilder(): EmbedBuilder {
         const embed = new EmbedBuilder();
-        if (this.context) embed.setContextAuthor(this.context);
+        if (this.context) embed.setAuthor(this.context);
         return embed;
     }
 
@@ -163,14 +238,13 @@ export class ReplyBuilder implements InteractionReplyOptions {
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(
-                this.context instanceof BaseCommandInteraction ?
-                    [
-                        'Sorry! Only an admin can use this command',
-                        '*If appropriate ask an admin to help!*'
-                    ] : [
-                        'Sorry! Only the creator of this interaction can use this component',
-                        '*If possible try using the command for yourself!*'
-                    ]);
+                this.context instanceof CommandInteraction ? [
+                    'Sorry! Only an admin can use this command',
+                    '*If appropriate ask an admin to help!*'
+                ] : [
+                    'Sorry! Only the creator of this interaction can use this component',
+                    '*If possible try using the command for yourself!*'
+                ]);
         this.addEmbed(embed);
         this.addFile(attachment);
         this.setEphemeral();
@@ -180,27 +254,27 @@ export class ReplyBuilder implements InteractionReplyOptions {
     public addGuildOnlyEmbed(): this {
         const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
         const embed = this.createEmbedBuilder()
-            .setContextAuthor(this.context!)
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
                 `Sorry! It looks like I can only use this command in guilds!`,
                 '*Make sure you\'re using this in an appropriate guild!*'
             ].join('\n'));
+        if (this.context) embed.setAuthor(this.context);
         this.addEmbed(embed);
         this.addFile(attachment);
         this.setEphemeral();
         return this;
     }
 
-    public addNSFWChannelOnlyReply(context: Interaction | Message): this {
+    public addNSFWChannelOnlyEmbed(): this {
         const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.CHEEKY);
         const embed = this.createEmbedBuilder()
-            .setContextAuthor(context)
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
                 `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
                 '*Try a different channel or make this one NSFW if it is appropriate!*'
             ].join('\n'));
+        if (this.context) embed.setAuthor(this.context);
         this.addEmbed(embed);
         this.addFile(attachment);
         this.setEphemeral();

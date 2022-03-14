@@ -1,23 +1,24 @@
-import { ContextMenuInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ImageMagickCLIAction, MagickProgress } from '../../../../lib/tools/image-magick/ImageMagickCLIAction.js';
-import { ContextMenuHandler } from '../../../../lib/discord/handlers/abstracts/ContextMenuHandler.js';
+import { Interaction, Message, MessageApplicationCommandData, MessageComponentInteraction, MessageContextMenuCommandInteraction, SelectMenuInteraction } from 'discord.js';
+import { ImageMagickCLIAction, MagickProgress } from '../../../lib/tools/image-magick/ImageMagickCLIAction.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { MagickMessageCommandData } from './MagickMessageCommandData.js';
-import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { MagickReplyBuilder } from '../MagickReplyBuilder.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import { MagickUtil } from '../MagickUtil.js';
 
-export class MagickMessageHandler extends ContextMenuHandler {
+export class MagickMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
 
     private readonly actions: { [index: string]: ImageMagickCLIAction; };
 
     constructor(path?: string) {
-        super({ group: 'Fun', global: false, nsfw: false, data: MagickMessageCommandData });
+        super(MagickMessageCommandData);
 
         this.actions = MagickUtil.makeActions(path);
     }
 
-    public async execute(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {
+    public async run(contextMenu: MessageContextMenuCommandInteraction<'cached'>): Promise<any> {
         await contextMenu.deferReply();
         const targetMessage = contextMenu.options.getMessage('message', true);
         const metadata = await this.probeMessage(targetMessage);
@@ -64,7 +65,7 @@ export class MagickMessageHandler extends ContextMenuHandler {
         return metadata || null;
     }
 
-    private async fetchMagickResponse(interaction: Interaction, metadata: ProbeResult, action?: ImageMagickCLIAction, message?: Message): Promise<InteractionReplyOptions> {
+    private async fetchMagickResponse(interaction: Interaction, metadata: ProbeResult, action?: ImageMagickCLIAction, message?: Message): Promise<ResponseOptions> {
 
         // Need to convert SVG files since they dont embed
         if (metadata.type === 'svg') {

@@ -1,27 +1,25 @@
-import { ChatInputApplicationCommandData, Constants } from 'discord.js';
-
-const { ApplicationCommandOptionTypes, ChannelTypes } = Constants
+import { ApplicationCommandOptionType, ChannelType, ChatInputApplicationCommandData } from 'discord.js';
 
 export const FloorbotCommandData: ChatInputApplicationCommandData = {
     name: 'floorbot',
     description: 'Base commands for floorbot',
     options: [{
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: 'commands',
         description: '[ADMIN] enable and disable commands for the guild'
     }, {
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: 'about',
         description: 'See floorbot info (ping, invite, stats)'
     }, {
         name: 'screenshare',
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         description: 'Create a link to screenshare in a voice channel',
         options: [{
             name: 'channel',
-            type: ApplicationCommandOptionTypes.CHANNEL,
+            type: ApplicationCommandOptionType.Channel,
             description: 'The channel to get a screenshare link for',
-            channelTypes: [ChannelTypes.GUILD_VOICE]
+            channelTypes: [ChannelType.GuildVoice]
         }]
     }]
-}
+};

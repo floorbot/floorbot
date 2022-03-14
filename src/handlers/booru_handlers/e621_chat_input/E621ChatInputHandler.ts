@@ -1,7 +1,8 @@
-import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { E621API, E621APIAuth } from '../../../lib/apis/e621/E621API.js';
 import { E621ChatInputCommandData } from './E621ChatInputCommandData.js';
 import { BooruChatInputHandler } from '../BooruChatInputHandler.js';
+import { AutocompleteInteraction, Interaction } from 'discord.js';
 import { E621ReplyBuilder } from './E621ReplyBuilder.js';
 import { BooruPostData } from '../BooruReplyBuilder.js';
 import { IAutocomplete } from 'discord.js-handlers';
@@ -41,7 +42,7 @@ export class E621ChatInputHandler extends BooruChatInputHandler implements IAuto
         };
     }
 
-    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(query);
@@ -53,7 +54,7 @@ export class E621ChatInputHandler extends BooruChatInputHandler implements IAuto
             .addImageActionRow(postData, query);
     }
 
-    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') return this.createImageReply(source, query, postData);
         return new E621ReplyBuilder(source)
             .addTagsEmbed(postData, query)

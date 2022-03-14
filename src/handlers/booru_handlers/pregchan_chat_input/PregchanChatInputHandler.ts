@@ -1,7 +1,8 @@
-import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { PregchanChatInputCommandData } from './PregchanChatInputCommandData.js';
 import { PregchanAPI } from '../../../lib/apis/pregchan/PregchanAPI.js';
 import { BooruChatInputHandler } from '../BooruChatInputHandler.js';
+import { AutocompleteInteraction, Interaction } from 'discord.js';
 import { PregchanReplyBuilder } from './PregchanReplyBuilder.js';
 import { BooruPostData } from '../BooruReplyBuilder.js';
 import { IAutocomplete } from 'discord.js-handlers';
@@ -38,7 +39,7 @@ export class PregchanChatInputHandler extends BooruChatInputHandler implements I
         };
     }
 
-    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') {
             return new PregchanReplyBuilder(source)
                 .addSuggestionEmbed(query, []);
@@ -48,7 +49,7 @@ export class PregchanChatInputHandler extends BooruChatInputHandler implements I
             .addImageActionRow(postData, query);
     }
 
-    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') return this.createImageReply(source, query, postData);
         return new PregchanReplyBuilder(source)
             .addTagsEmbed(postData, query)

@@ -73,11 +73,13 @@ export function TraceMoeReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Bui
                 ];
                 const infoString = `Info [${HandlerUtil.capitalizeString(media.type || 'unknown')}]`;
                 if (lines.length <= 4) {
-                    embed.addField(infoString, [`**${infoString}**`, ...lines]), false;
+                    embed.addField({ name: infoString, value: [`**${infoString}**`, ...lines].join('\n'), inline: false });
                 } else {
                     const half = Math.ceil(lines.length / 2);
-                    embed.addField(infoString, lines.slice(0, half), true);
-                    embed.addField('\u200b', lines.slice(-half), true);
+                    embed.addFields(
+                        { name: infoString, value: lines.slice(0, half).join('\n'), inline: true },
+                        { name: '\u200b', value: lines.slice(-half).join('\n'), inline: true }
+                    );
                 }
             }
             return this.addEmbed(embed);

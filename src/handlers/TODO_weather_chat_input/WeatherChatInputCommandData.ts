@@ -1,6 +1,4 @@
-import { ChatInputApplicationCommandData, Constants } from 'discord.js';
-
-const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputApplicationCommandData } from 'discord.js';
 
 export enum WeatherSubCommand {
     USER = 'user',
@@ -12,73 +10,73 @@ export enum WeatherSubCommand {
 
 export const WeatherCommandData: ChatInputApplicationCommandData = {
     name: 'weather',
-    type: ApplicationCommandTypes.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     description: 'Get weather, forecast or air pollution for places',
     options: [{
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: WeatherSubCommand.USER,
         description: 'Get the weather for yourself or someone else',
         options: [{
-            type: ApplicationCommandOptionTypes.USER,
+            type: ApplicationCommandOptionType.User,
             name: 'user',
             description: 'A specific user to get weather for',
             required: false
         }]
     }, {
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: WeatherSubCommand.LOCATION,
         description: 'Get the weather for somewhere specific',
         options: [{
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'city_name',
             description: 'The city to use (eg: \"Sydney\")',
             required: true
         }, {
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'country_code',
             description: 'The country (ISO 3166) code to use (eg: \"AU\")',
             required: false
         }, {
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'state_code',
             description: 'The state code to use (eg: \"NSW\")',
             required: false
         }]
     }, {
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: WeatherSubCommand.SERVER_TEMPS,
         description: 'Get the weather for everyone with a saved location'
     }, {
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: WeatherSubCommand.LINK,
         description: 'Link a location to your profile',
         options: [{
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'city_name',
             description: 'The city to use (eg: \"Sydney\")',
             required: true
         }, {
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'country_code',
             description: 'The country (ISO 3166) code to use (eg: \"AU\")',
             required: false
         }, {
-            type: ApplicationCommandOptionTypes.STRING,
+            type: ApplicationCommandOptionType.String,
             name: 'state_code',
             description: 'The state code to use (eg: \"NSW\")',
             required: false
         }, {
-            type: ApplicationCommandOptionTypes.USER,
+            type: ApplicationCommandOptionType.User,
             name: 'user',
             required: false,
             description: '[ADMIN] The user to force link the location to'
         }]
     }, {
-        type: ApplicationCommandOptionTypes.SUB_COMMAND,
+        type: ApplicationCommandOptionType.Subcommand,
         name: WeatherSubCommand.UNLINK,
         description: 'Unlink the location from your profile',
         options: [{
-            type: ApplicationCommandOptionTypes.USER,
+            type: ApplicationCommandOptionType.User,
             name: 'user',
             required: false,
             description: '[ADMIN] The user to force unlink the location from'

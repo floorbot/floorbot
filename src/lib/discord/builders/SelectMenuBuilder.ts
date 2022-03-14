@@ -1,17 +1,7 @@
-import { MessageSelectMenu, MessageSelectMenuOptions } from 'discord.js';
-import { ActionRowBuilder } from './ActionRowBuilder.js';
+import { SelectMenuActionRowBuilder } from './SelectMenuActionRowBuilder.js';
+import * as Builders from '@discordjs/builders';
 
-export class SelectMenuBuilder<T = string> extends MessageSelectMenu {
-
-    constructor(data?: MessageSelectMenu | MessageSelectMenuOptions) {
-        super(data);
-    }
-
-    public get customData() {
-        if (!this.customId) return this.customId;
-        if (typeof this.customId === 'string') return this.customId;
-        return this.decode(this.customId);
-    }
+export class SelectMenuBuilder<T = string> extends Builders.SelectMenuBuilder {
 
     public override setCustomId(data: string | T): this {
         if (typeof data === 'string') return super.setCustomId(data);
@@ -26,7 +16,7 @@ export class SelectMenuBuilder<T = string> extends MessageSelectMenu {
         return JSON.parse(id);
     }
 
-    public toActionRow(): ActionRowBuilder {
-        return new ActionRowBuilder().addComponents(this);
+    public toActionRow(): SelectMenuActionRowBuilder {
+        return new SelectMenuActionRowBuilder().addComponents(this);
     }
 }

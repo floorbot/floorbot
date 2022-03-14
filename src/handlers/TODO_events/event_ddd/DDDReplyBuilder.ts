@@ -1,11 +1,10 @@
-import { BuilderContext, ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
-import { ActionRowBuilder } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { BuilderContext, ResponseOptions, ReplyBuilder } from '../../../lib/discord/builders/ReplyBuilder.js';
+import { ButtonActionRowBuilder } from '../../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { DDDEventDetails, DDDParticipantStats, DDDZoneDetails } from './DDDUtil.js';
 import { DDDNutRow, DDDParticipantRow, DDDSettingsRow } from './db/DDDDatabase.js';
 import { ButtonBuilder } from '../../../lib/discord/builders/ButtonBuilder.js';
 import { EmbedBuilder } from '../../../lib/discord/builders/EmbedBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { InteractionReplyOptions } from 'discord.js';
 
 export const DDDButtonID = {
     SET_EVENT_CHANNEL: 'set_event_channel',
@@ -23,7 +22,7 @@ export class DDDReplyBuilder extends ReplyBuilder {
     private readonly eventAcronym: string;
     private readonly eventName: string;
 
-    constructor(options: { eventName: string, eventAcronym: string; }, data?: BuilderContext | ReplyBuilder | (InteractionReplyOptions & { context: BuilderContext; })) {
+    constructor(options: { eventName: string, eventAcronym: string; }, data?: BuilderContext | (ResponseOptions & { context?: BuilderContext; })) {
         super(data);
         this.eventAcronym = options.eventAcronym;
         this.eventName = options.eventName;
@@ -31,7 +30,7 @@ export class DDDReplyBuilder extends ReplyBuilder {
 
     protected override createEmbedBuilder(eventDetails?: DDDEventDetails): EmbedBuilder {
         const embed = super.createEmbedBuilder()
-            .setFooter(`😩 ${this.eventName} ${eventDetails ? eventDetails.year : ''} 🍆`);
+            .setFooter({ text: `😩 ${this.eventName} ${eventDetails ? eventDetails.year : ''} 🍆` });
         return embed;
     }
 
@@ -157,20 +156,20 @@ export class DDDReplyBuilder extends ReplyBuilder {
     }
 
     private addDDDSettingsActionRow(settings: DDDSettingsRow): this {
-        const actionRow1 = new ActionRowBuilder();
-        actionRow1.addComponents([
+        const actionRow1 = new ButtonActionRowBuilder();
+        actionRow1.addComponents(
             ...(!settings.channel_id ? [new ButtonBuilder().setLabel('Set Event Channel').setCustomId(DDDButtonID.SET_EVENT_CHANNEL)] : []),
             ...(settings.channel_id ? [new ButtonBuilder().setLabel('Clear Event Channel').setCustomId(DDDButtonID.CLEAR_EVENT_CHANNEL)] : []),
             ...(!settings.event_role_id ? [new ButtonBuilder().setLabel('Create Event Role').setCustomId(DDDButtonID.CREATE_EVENT_ROLE)] : []),
             ...(settings.event_role_id ? [new ButtonBuilder().setLabel('Delete Event Role').setCustomId(DDDButtonID.DELETE_EVENT_ROLE)] : [])
-        ]);
-        const actionRow2 = new ActionRowBuilder();
-        actionRow2.addComponents([
+        );
+        const actionRow2 = new ButtonActionRowBuilder();
+        actionRow2.addComponents(
             ...(!settings.passing_role_id ? [new ButtonBuilder().setLabel('Create Passing Role').setCustomId(DDDButtonID.CREATE_PASSING_ROLE)] : []),
             ...(settings.passing_role_id ? [new ButtonBuilder().setLabel('Delete Passing Role').setCustomId(DDDButtonID.DELETE_PASSING_ROLE)] : []),
             ...(!settings.failed_role_id ? [new ButtonBuilder().setLabel('Create Failed Role').setCustomId(DDDButtonID.CREATE_FAILED_ROLE)] : []),
             ...(settings.failed_role_id ? [new ButtonBuilder().setLabel('Delete Failed Role').setCustomId(DDDButtonID.DELETE_FAILED_ROLE)] : [])
-        ]);
+        );
         return this.addActionRows(actionRow1, actionRow2);
     }
 
@@ -252,7 +251,7 @@ export class DDDReplyBuilder extends ReplyBuilder {
     public addDDDNutFailEmbed(eventDetails: DDDEventDetails, participantZoneDetails: DDDZoneDetails | null): this {
         const eventID = this.getEventID(eventDetails);
         const embed = this.createEmbedBuilder(eventDetails)
-            .setContextAuthor(this.context!)
+            .setAuthor(this.context!)
             .setDescription([
                 ...(participantZoneDetails ?
                     [`Sorry! It looks like ${eventID} has not started in your timezone (\`${participantZoneDetails.zone}\`) yet! You can start reporting your nuts <t:${Math.round(participantZoneDetails.startDate.toSeconds())}:R>!`] :

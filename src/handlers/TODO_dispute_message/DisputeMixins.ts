@@ -1,5 +1,5 @@
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
-import { ActionRowBuilder } from "../../lib/discord/builders/ActionRowBuilder.js";
+import { ButtonActionRowBuilder } from "../../lib/discord/builders/ButtonActionRowBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
 import { voteStrings } from "./DisputeMessageHandler.js";
@@ -40,8 +40,10 @@ export function DisputeReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                 Util.splitMessage(`> ${message.content} - ${message.author}`, { char: '', append: '...', maxLength: 250 })[0]!,
                     ``,
                 `Vote Ends: <t:${newTargetTimestamp}:R>`].join('\n'))
-                .addField(`*Yes Votes: ${results.yes_votes}*`, (`${yes_string ? yes_string : 'None'}`), true)
-                .addField(`*No Votes: ${results.no_votes}*`, (`${no_string ? no_string : 'None'}`), true)
+                .addFields(
+                    { name: `*Yes Votes: ${results.yes_votes}*`, value: (`${yes_string ? yes_string : 'None'}`), inline: true },
+                    { name: `*No Votes: ${results.no_votes}*`, value: (`${no_string ? no_string : 'None'}`), inline: true }
+                )
                 .setURL(message.url);
             return this.addEmbed(embed);
         }
@@ -94,7 +96,7 @@ export function DisputeReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
         }
 
         public addDisputeActionRow(): this {
-            const actionRow = new ActionRowBuilder()
+            const actionRow = new ButtonActionRowBuilder()
                 .addYesButton()
                 .addNoButton();
             return this.addActionRow(actionRow);

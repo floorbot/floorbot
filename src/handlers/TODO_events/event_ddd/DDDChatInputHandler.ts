@@ -1,17 +1,15 @@
-import { AutocompleteInteraction, Client, Collection, CommandInteraction, MessageComponentInteraction, TextChannel } from 'discord.js';
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { HandlerReplies } from '../../../lib/discord/helpers/HandlerReplies.js';
-import { HandlerClient } from '../../../lib/discord/HandlerClient.js';
+import { AutocompleteInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, Client, Collection, MessageComponentInteraction, TextChannel } from 'discord.js';
 import { DDDDatabase, DDDParticipantRow } from './db/DDDDatabase.js';
 import { DDDButtonID, DDDReplyBuilder } from './DDDReplyBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { DDDCommandData } from './DDDCommandData.js';
 import tzdata from 'tzdata' assert { type: 'json' };
 import { DDDUtil } from './DDDUtil.js';
 import Schedule from 'node-schedule';
 import { Pool } from 'mariadb';
 
-export class DDDHandler extends ChatInputHandler {
+export class DDDChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private static readonly ZONES = Object.keys(tzdata.zones);
 
@@ -20,13 +18,13 @@ export class DDDHandler extends ChatInputHandler {
     private readonly eventInfo = { eventName: 'Destroy Dick December', eventAcronym: 'DDD' };
 
     constructor(db: Pool) {
-        super({ data: DDDCommandData, group: 'Events', global: false, nsfw: false });
+        super(DDDCommandData);
         this.database = new DDDDatabase(db);
     }
 
     public async autocomplete(interaction: AutocompleteInteraction): Promise<any> {
         const partial = interaction.options.getString('zone', true).toLowerCase();
-        const suggestions = DDDHandler.ZONES.filter(zone => zone.toLowerCase().includes(partial));
+        const suggestions = DDDChatInputHandler.ZONES.filter(zone => zone.toLowerCase().includes(partial));
         const options = suggestions.slice(0, 25).map(suggestion => ({ name: suggestion, value: suggestion }));
         return interaction.respond(options);
     }
@@ -84,7 +82,7 @@ export class DDDHandler extends ChatInputHandler {
         }
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         const { client, guild, member, channel } = command;
         const subCommand = command.options.getSubcommand();
         const eventDetails = DDDUtil.getEventDetails();
@@ -151,7 +149,10 @@ export class DDDHandler extends ChatInputHandler {
                 const message = await command.followUp(replyOptions);
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', HandlerUtil.handleCollectorErrors(async (component: MessageComponentInteraction<'cached'>) => {
-                    if (!HandlerUtil.isAdminOrOwner(component.member)) return component.reply(HandlerReplies.createAdminOrOwnerReply(command));
+                    if (!HandlerUtil.isAdminOrOwner(component.member)) {
+                        const replyOptions = new DDDReplyBuilder(this.eventInfo, command).addAdminOrOwnerEmbed();
+                        return component.reply(replyOptions);
+                    }
                     if (!component.isButton()) { throw component; }
                     await component.deferUpdate();
                     switch (component.customId) {

@@ -1,4 +1,4 @@
-import { ContextMenuInteraction, Interaction, MessageApplicationCommandData } from 'discord.js';
+import { ContextMenuCommandInteraction, Interaction, MessageApplicationCommandData } from 'discord.js';
 import { TraceMoeAPI, TraceMoeResult } from '../../../lib/apis/tracemoe/TraceMoeAPI.js';
 import { PageableComponentID } from '../../../helpers/mixins/PageableMixins.js';
 import { TraceMoeMessageCommandData } from './TraceMoeMessageCommandData.js';
@@ -22,7 +22,7 @@ export class TraceMoeMessageHandler extends ApplicationCommandHandler<MessageApp
         this.anilist = new AniListAPI({ redis });
     }
 
-    public async run(contextMenu: ContextMenuInteraction<'cached'>): Promise<any> {
+    public async run(contextMenu: ContextMenuCommandInteraction<'cached'>): Promise<any> {
         await contextMenu.deferReply();
 
         // Get the image url if there is one

@@ -1,8 +1,8 @@
 import { AniListAPI, AniListAPIRequest, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, CommandInteraction } from 'discord.js';
 import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListReplyBuilder.js';
 import { AniListChatInputCommandData, AniListSubCommand } from './AniListChatInputCommandData.js';
-import { ChatInputApplicationCommandData, CommandInteraction } from 'discord.js';
-import { ComponentID } from '../../../lib/discord/builders/ActionRowBuilder.js';
+import { ButtonComponentID } from '../../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
@@ -34,7 +34,7 @@ export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInput
         };
     }
 
-    public async run(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         await command.deferReply();
         const subCommand = command.options.getSubcommand(true) as AniListSubCommand;
         const search = command.options.getString('search', true);
@@ -56,8 +56,8 @@ export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInput
                     await component.deferUpdate();
                     let { pageInfo } = res.data.Page || {};
                     const totalPages = pageInfo ? (pageInfo.total || 1) : 1;
-                    if (component.customId === ComponentID.NEXT_PAGE) vars.page++;
-                    if (component.customId === ComponentID.PREVIOUS_PAGE) vars.page--;
+                    if (component.customId === ButtonComponentID.NEXT_PAGE) vars.page++;
+                    if (component.customId === ButtonComponentID.PREVIOUS_PAGE) vars.page--;
                     vars.page = vars.page % totalPages;
                     vars.page = vars.page >= 1 ? vars.page : totalPages + vars.page;
                     res = await this.fetchAniListData(subCommand, vars);

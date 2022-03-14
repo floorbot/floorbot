@@ -1,9 +1,7 @@
-import { ChatInputApplicationCommandData, Constants } from 'discord.js';
-
-const { ApplicationCommandTypes } = Constants;
+import { ApplicationCommandType, ChatInputApplicationCommandData } from 'discord.js';
 
 export const LostCommandData: ChatInputApplicationCommandData = {
     name: 'lost',
-    type: ApplicationCommandTypes.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     description: 'I lost'
-}
+};

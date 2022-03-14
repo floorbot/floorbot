@@ -1,8 +1,6 @@
-import { Constants, MessageApplicationCommandData } from 'discord.js';
-
-const { ApplicationCommandTypes } = Constants;
+import { ApplicationCommandType, MessageApplicationCommandData } from 'discord.js';
 
 export const TraceMoeMessageCommandData: MessageApplicationCommandData = {
     name: 'trace moe',
-    type: ApplicationCommandTypes.MESSAGE
+    type: ApplicationCommandType.Message
 };

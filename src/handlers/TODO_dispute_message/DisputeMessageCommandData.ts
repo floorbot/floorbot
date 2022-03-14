@@ -1,8 +1,6 @@
-import { Constants, MessageApplicationCommandData } from 'discord.js';
-
-const { ApplicationCommandTypes } = Constants;
+import { ApplicationCommandType, MessageApplicationCommandData } from 'discord.js';
 
 export const DisputeMessageCommandData: MessageApplicationCommandData = {
     name: 'dispute',
-    type: ApplicationCommandTypes.MESSAGE
+    type: ApplicationCommandType.Message
 };

@@ -1,4 +1,4 @@
-import { ActivitiesOptions, Client } from 'discord.js';
+import { ActivitiesOptions, ActivityType, Client } from 'discord.js';
 
 export class PresenceController {
 
@@ -8,23 +8,23 @@ export class PresenceController {
     };
 
     private static ACTIVITIES: Array<ActivitiesOptions> = [
-        { type: "COMPETING", name: " NNN 😄" },
-        { type: "LISTENING", name: "japan asmr" },
-        { type: "LISTENING", name: "soft loli breathing" },
-        { type: "LISTENING", name: "the rain" },
-        { type: "LISTENING", name: "you" },
-        { type: "WATCHING", name: "anime" },
-        { type: "WATCHING", name: "for feet" },
-        { type: "WATCHING", name: "hentai" },
-        { type: "WATCHING", name: "hentai again" },
-        { type: "WATCHING", name: "more hentai" },
-        { type: "WATCHING", name: "the weather" },
-        { type: "WATCHING", name: "the clouds" },
-        { type: "PLAYING", name: "on the floor" },
-        { type: "PLAYING", name: "with the carpet" },
-        { type: "PLAYING", name: "with ur mum" },
-        { type: "COMPETING", name: "your harem" },
-        { type: "WATCHING", name: "for numbers" }
+        { type: ActivityType.Competing, name: " NNN 😄" },
+        { type: ActivityType.Listening, name: "japan asmr" },
+        { type: ActivityType.Listening, name: "soft loli breathing" },
+        { type: ActivityType.Listening, name: "the rain" },
+        { type: ActivityType.Listening, name: "you" },
+        { type: ActivityType.Watching, name: "anime" },
+        { type: ActivityType.Watching, name: "for feet" },
+        { type: ActivityType.Watching, name: "hentai" },
+        { type: ActivityType.Watching, name: "hentai again" },
+        { type: ActivityType.Watching, name: "more hentai" },
+        { type: ActivityType.Watching, name: "the weather" },
+        { type: ActivityType.Watching, name: "the clouds" },
+        { type: ActivityType.Playing, name: "on the floor" },
+        { type: ActivityType.Playing, name: "with the carpet" },
+        { type: ActivityType.Playing, name: "with ur mum" },
+        { type: ActivityType.Playing, name: "your harem" },
+        { type: ActivityType.Playing, name: "for numbers" }
         // { type: "COMPETING", name: "for your love" } // "competing in"
     ];
 

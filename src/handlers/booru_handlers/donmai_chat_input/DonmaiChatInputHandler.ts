@@ -1,7 +1,8 @@
-import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { DonmaiAPI, DonmaiAPIAuth } from '../../../lib/apis/donmai/DonmaiAPI.js';
 import { DonmaiChatInputCommandData } from './DonmaiChatInputCommandData.js';
 import { BooruChatInputHandler } from '../BooruChatInputHandler.js';
+import { AutocompleteInteraction, Interaction } from 'discord.js';
 import { DonmaiReplyBuilder } from './DonmaiReplyBuilder.js';
 import { BooruPostData } from '../BooruReplyBuilder.js';
 import { IAutocomplete } from 'discord.js-handlers';
@@ -43,7 +44,7 @@ export class DonmaiChatInputHandler extends BooruChatInputHandler implements IAu
         };
     }
 
-    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData) {
             return new DonmaiReplyBuilder(source).addDonmaiRestrictedTagEmbed(query);
         } else if (typeof postData === 'string') {
@@ -72,7 +73,7 @@ export class DonmaiChatInputHandler extends BooruChatInputHandler implements IAu
             .addImageActionRow(postData, query);
     }
 
-    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') return this.createImageReply(source, query, postData);
         return new DonmaiReplyBuilder(source)
             .addTagsEmbed(postData, query)

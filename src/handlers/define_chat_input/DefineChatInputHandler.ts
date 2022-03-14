@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputApplicationCommandData, CommandInteraction, InteractionCollector, Util } from "discord.js";
+import { AutocompleteInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, InteractionCollector, Util } from "discord.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { DefineChatInputCommandData } from "./DefineChatInputCommandData.js";
@@ -27,7 +27,7 @@ export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputA
         return interaction.respond(options);
     }
 
-    public async run(command: CommandInteraction): Promise<void> {
+    public async run(command: ChatInputCommandInteraction): Promise<void> {
         await command.deferReply();
         const query = command.options.getString('query');
         const definitions = query ?

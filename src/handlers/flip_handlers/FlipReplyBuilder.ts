@@ -10,8 +10,10 @@ export function FlipReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder
         public addCoinFlipEmbed(heads: number, flips: number): this {
             const embed = this.createEmbedBuilder()
                 .setTitle(`You flipped ${HandlerUtil.formatCommas(flips)} coin${flips > 1 ? 's' : ''}`)
-                .addField('Heads', HandlerUtil.formatCommas(heads), true)
-                .addField('Tails', HandlerUtil.formatCommas(flips - heads), true);
+                .addFields(
+                    { name: 'Heads', value: HandlerUtil.formatCommas(heads), inline: true },
+                    { name: 'Tails', value: HandlerUtil.formatCommas(flips - heads), inline: true }
+                );
             return this.addEmbed(embed);
         }
 

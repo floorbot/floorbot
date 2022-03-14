@@ -1,4 +1,4 @@
-import { ChatInputApplicationCommandData, CommandInteraction, Message } from "discord.js";
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Message } from "discord.js";
 import { PageableComponentID } from "../../helpers/mixins/PageableMixins.js";
 import { RollChatInputCommandData } from "./RollChatInputCommandData.js";
 import { RollData, RollReplyBuilder } from "./RollReplyBuilder.js";
@@ -13,7 +13,7 @@ export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApp
         super(RollChatInputCommandData);
     }
 
-    public async run(command: CommandInteraction): Promise<void> {
+    public async run(command: ChatInputCommandInteraction): Promise<void> {
         await command.deferReply();
         const query = command.options.getString('dice') || '1d6';
         const rollStrings = query.split(' ');

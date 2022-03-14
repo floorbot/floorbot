@@ -1,9 +1,7 @@
-import { Constants, MessageActionRow, MessageActionRowOptions } from 'discord.js';
-import { ButtonBuilder } from './ButtonBuilder.js';
+import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
+import { ButtonStyle } from 'discord.js';
 
-const { MessageButtonStyles } = Constants;
-
-export enum ComponentID {
+export enum ButtonComponentID {
     PREVIOUS_PAGE = 'past_page',
     NEXT_PAGE = 'next_page',
     DELETE = 'delete',
@@ -11,16 +9,12 @@ export enum ComponentID {
     NO = 'no'
 }
 
-export class ActionRowBuilder extends MessageActionRow {
-
-    constructor(data?: MessageActionRow | MessageActionRowOptions) {
-        super(data);
-    }
+export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
 
     public addViewOnlineButton(url: string): this {
         const button = new ButtonBuilder()
             .setURL(url)
-            .setStyle(MessageButtonStyles.LINK)
+            .setStyle(ButtonStyle.Link)
             .setLabel('View Online');
         return this.addComponents(button);
     }
@@ -28,24 +22,24 @@ export class ActionRowBuilder extends MessageActionRow {
     public addDeleteButton(): this {
         const button = new ButtonBuilder()
             .setLabel('✖️')
-            .setStyle(MessageButtonStyles.DANGER)
-            .setCustomId(ComponentID.DELETE);
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.DELETE);
         return this.addComponents(button);
     }
 
     public addYesButton(): this {
         const button = new ButtonBuilder()
             .setLabel('Yes')
-            .setStyle(MessageButtonStyles.SUCCESS)
-            .setCustomId(ComponentID.YES);
+            .setStyle(ButtonStyle.Success)
+            .setCustomId(ButtonComponentID.YES);
         return this.addComponents(button);
     }
 
     public addNoButton(): this {
         const button = new ButtonBuilder()
             .setLabel('No')
-            .setStyle(MessageButtonStyles.DANGER)
-            .setCustomId(ComponentID.NO);
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.NO);
         return this.addComponents(button);
     }
-}
+};

@@ -1,6 +1,6 @@
-import { Collection, ContextMenuInteraction, Message, MessageApplicationCommandData, MessageComponentInteraction } from 'discord.js';
+import { Collection, ContextMenuCommandInteraction, Message, MessageApplicationCommandData, MessageComponentInteraction } from 'discord.js';
+import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
-import { ComponentID } from '../../lib/discord/builders/ActionRowBuilder.js';
 import { DisputeMessageCommandData } from './DisputeMessageCommandData.js';
 import { DisputeReplyBuilder, DisputeTimeStamp } from './DisputeMixins.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
@@ -22,9 +22,9 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
         this.database = new DisputeTable(pool);
     }
 
-    public async run(contextMenu: ContextMenuInteraction): Promise<any> {
+    public async run(contextMenu: ContextMenuCommandInteraction<'cached'>): Promise<any> {
         const timestamp = new DisputeTimeStamp(contextMenu.createdTimestamp + DisputeMessageHandler.END_DELAY);
-        const origMessage = contextMenu.options.getMessage('message', true) as Message;
+        const origMessage = contextMenu.options.getMessage('message', true);
         if (!origMessage.content.length) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addMissingContentEmbed('dispute'));
         if (origMessage.author == contextMenu.user) return contextMenu.reply(new DisputeReplyBuilder(contextMenu).addDisputeSelfUsedEmbed());
         let disputeResults = await this.database.fetchResults(origMessage);
@@ -51,12 +51,12 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
         return { yes_array, no_array };
     }
 
-    private createCollectorFunction(contextMenu: ContextMenuInteraction, message: Message, collector: any, timestamp: DisputeTimeStamp): (component: MessageComponentInteraction) => void {
+    private createCollectorFunction(contextMenu: ContextMenuCommandInteraction, message: Message, collector: any, timestamp: DisputeTimeStamp): (component: MessageComponentInteraction) => void {
         return async (component: MessageComponentInteraction) => {
             try {
                 if (component.isButton()) {
                     switch (component.customId) {
-                        case ComponentID.YES: {
+                        case ButtonComponentID.YES: {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
@@ -72,7 +72,7 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
                             await component.editReply(embed);
                             break;
                         }
-                        case ComponentID.NO: {
+                        case ButtonComponentID.NO: {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
@@ -94,7 +94,7 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
         };
     }
 
-    private async onCollectEnd(contextMenu: ContextMenuInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>, timestamp: DisputeTimeStamp) {
+    private async onCollectEnd(contextMenu: ContextMenuCommandInteraction, message: Message, origMessage: Message, collection: Collection<string, MessageComponentInteraction>, timestamp: DisputeTimeStamp) {
         const updatedMessage = await message.fetch();
         await HandlerUtil.deleteComponentsOnEnd(updatedMessage)(new Collection(), '');
         let disputeResults = await this.database.fetchResults(origMessage);

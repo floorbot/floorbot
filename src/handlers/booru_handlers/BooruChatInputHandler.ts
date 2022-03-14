@@ -1,5 +1,6 @@
-import { ChatInputApplicationCommandData, CommandInteraction, Interaction, InteractionReplyOptions, MessageComponentInteraction } from 'discord.js';
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Interaction, MessageComponentInteraction } from 'discord.js';
 import { BooruComponentID, BooruPostData, BooruReplyBuilder } from './BooruReplyBuilder.js';
+import { ResponseOptions } from '../../lib/discord/builders/ReplyBuilder.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 
@@ -18,19 +19,19 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
     }
 
     public abstract fetchPostData(query: string): Promise<BooruPostData | string | null>;
-    public abstract createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions>;
-    public abstract createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions>;
+    public abstract createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions>;
+    public abstract createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions>;
 
-    public getCommandQuery(command: CommandInteraction): string {
+    public getCommandQuery(command: ChatInputCommandInteraction): string {
         const tags = command.options.getString('tags');
         const thread = command.options.getString('thread');
         return (tags || thread || '').replace(/ /g, '+');
     };
 
-    public async run(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         if (this.nsfw && (command.channel && !HandlerUtil.isNSFW(command.channel))) {
             const replyOptions = new BooruReplyBuilder(command)
-                .addNSFWChannelOnlyReply(command);
+                .addNSFWChannelOnlyEmbed();
             return command.reply(replyOptions);
         } else {
             await command.deferReply();

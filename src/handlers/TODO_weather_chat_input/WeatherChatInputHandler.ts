@@ -1,10 +1,9 @@
+import { GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../lib/apis/open-weather/OpenWeatherAPI.js';
-import { CommandInteraction, GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputApplicationCommandData } from 'discord.js';
 import { WeatherComponentID, WeatherReplyBuilder, WeatherSelectMenuID, WeatherTempsOrder } from './WeatherMixins.js';
 import { WeatherCommandData, WeatherSubCommand } from './WeatherChatInputCommandData.js';
+import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
-import { ComponentID } from '../../lib/discord/builders/ActionRowBuilder.js';
-import { HandlerReplies } from '../../lib/discord/helpers/HandlerReplies.js';
 import WeatherLinkRow, { WeatherLinkTable } from './WeatherLinkTable.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 import { Pool } from 'mariadb';
@@ -22,7 +21,7 @@ export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInput
         this.openweather = new OpenWeatherAPI({ apiKey: apiKey });
     }
 
-    public async run(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         const subCommand = command.options.getSubcommand();
         switch (subCommand) {
             case WeatherSubCommand.LOCATION: {
@@ -97,8 +96,8 @@ export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInput
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', async component => {
                     await component.deferUpdate();
-                    if (component.isButton() && component.customId === ComponentID.NEXT_PAGE) { viewData.page++; }
-                    if (component.isButton() && component.customId === ComponentID.PREVIOUS_PAGE) { viewData.page--; }
+                    if (component.isButton() && component.customId === ButtonComponentID.NEXT_PAGE) { viewData.page++; }
+                    if (component.isButton() && component.customId === ButtonComponentID.PREVIOUS_PAGE) { viewData.page--; }
                     if (component.isSelectMenu() && component.customId === WeatherSelectMenuID.ORDER) { viewData.order = component.values[0] as WeatherTempsOrder; }
                     viewData.page = viewData.page % (Math.floor(links.length / viewData.perPage) + 1);
                     viewData.page = viewData.page >= 0 ? viewData.page : (Math.floor(links.length / viewData.perPage) + 1) + viewData.page;
@@ -136,7 +135,10 @@ export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInput
             }
             case WeatherSubCommand.UNLINK: {
                 const member = (command.options.getMember('user') || command.member);
-                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) return command.reply(HandlerReplies.createAdminOrOwnerReply(command));
+                if (command.member !== member && !HandlerUtil.isAdminOrOwner(command.member)) {
+                    const replyOptions = new WeatherReplyBuilder(command).addAdminOrOwnerEmbed();
+                    return command.reply(replyOptions);
+                }
                 await command.deferReply();
                 await this.database.deleteLink(member);
                 const embed = new WeatherReplyBuilder(command).addWeatherUnlinkedEmbed(member)

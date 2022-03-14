@@ -1,16 +1,14 @@
 import { ActivityUnion, AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../../../lib/apis/anilist/AniListAPI.js";
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
-import { ActionRowBuilder } from "../../../lib/discord/builders/ActionRowBuilder.js";
+import { ButtonActionRowBuilder } from "../../../lib/discord/builders/ButtonActionRowBuilder.js";
 import { ButtonBuilder } from "../../../lib/discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
 import { MixinConstructor } from "../../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
 import humanizeDuration from "humanize-duration";
-import { Constants } from "discord.js";
+import { ButtonStyle } from "discord.js";
 import { DateTime } from "luxon";
-
-const { MessageButtonStyles } = Constants;
 
 export enum AniListUserStatTypes {
     ANIME = 'anime',
@@ -24,15 +22,15 @@ export enum AniListComponentID {
 }
 
 export class AniListReplyBuilder extends AniListReplyMixin(ReplyBuilder) { };
-export class AniListActionRowBuilder extends AniListActionRowMixin(ActionRowBuilder) { };
+export class AniListActionRowBuilder extends AniListActionRowMixin(ButtonActionRowBuilder) { };
 
-export function AniListActionRowMixin<T extends MixinConstructor<ActionRowBuilder>>(Builder: T) {
+export function AniListActionRowMixin<T extends MixinConstructor<ButtonActionRowBuilder>>(Builder: T) {
     return class AniListActionRowBuilder extends Builder {
 
         public addProfileButton(current?: AniListComponentID): this {
             const button = new ButtonBuilder()
                 .setLabel('Profile')
-                .setStyle(MessageButtonStyles.SUCCESS)
+                .setStyle(ButtonStyle.Success)
                 .setCustomId(AniListComponentID.PROFILE)
                 .setDisabled(current === AniListComponentID.PROFILE);
             return this.addComponents(button);
@@ -41,12 +39,12 @@ export function AniListActionRowMixin<T extends MixinConstructor<ActionRowBuilde
         public addAnimeListButton(stats: UserStatisticTypes, current?: AniListComponentID): this {
             const button = new ButtonBuilder()
                 .setLabel('Anime List')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(AniListComponentID.ANIME_LIST)
                 .setDisabled(current === AniListComponentID.ANIME_LIST);
             if (!(stats.anime && stats.anime.count)) {
                 button.setDisabled(true)
-                    .setStyle(MessageButtonStyles.DANGER);
+                    .setStyle(ButtonStyle.Danger);
             }
             return this.addComponents(button);
         }
@@ -54,12 +52,12 @@ export function AniListActionRowMixin<T extends MixinConstructor<ActionRowBuilde
         public addMangaListButton(stats: UserStatisticTypes, current?: AniListComponentID): this {
             const button = new ButtonBuilder()
                 .setLabel('Manga List')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(AniListComponentID.MANGA_LIST)
                 .setDisabled(current === AniListComponentID.MANGA_LIST);
             if (!(stats.manga && stats.manga.count)) {
                 button.setDisabled(true)
-                    .setStyle(MessageButtonStyles.DANGER);
+                    .setStyle(ButtonStyle.Danger);
             }
             return this.addComponents(button);
         }
@@ -67,7 +65,7 @@ export function AniListActionRowMixin<T extends MixinConstructor<ActionRowBuilde
         public addActivitiesButton(current?: AniListComponentID): this {
             const button = new ButtonBuilder()
                 .setLabel('Activities')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(AniListComponentID.ACTIVITIES)
                 .setDisabled(current === AniListComponentID.ACTIVITIES);
             return this.addComponents(button);
@@ -154,18 +152,20 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
             if (!stats || !stats.count) {
                 embed.setDescription('they exist but haven\'t done anything ¯\\_(ツ)_/¯');
             } else {
-                embed.addField(`${typeName} Stats`, [
-                    `Total ${typeName}: **${stats.count}**`,
-                    ...(stats.chaptersRead ? [`Chapters: **${stats.chaptersRead}**`] : []),
-                    ...(stats.volumesRead ? [`Volumes: **${stats.volumesRead}**`] : []),
-                    ...(stats.episodesWatched ? [
-                        `Episodes: **${HandlerUtil.formatCommas(stats.episodesWatched)}**`,
-                        `Average Eps: **${HandlerUtil.formatCommas(Math.round(stats.episodesWatched / (stats.count || 1)))}**`
-                    ] : []),
-                    ...(stats.minutesWatched ? [`Watched: **${humanizeDuration(stats.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
-                    `Mean Score: **${stats.meanScore || 0}**`,
-                    `Std deviation: **${stats.standardDeviation || 0}**`
-                ], true);
+                embed.addField({
+                    name: `${typeName} Stats`, value: [
+                        `Total ${typeName}: **${stats.count}**`,
+                        ...(stats.chaptersRead ? [`Chapters: **${stats.chaptersRead}**`] : []),
+                        ...(stats.volumesRead ? [`Volumes: **${stats.volumesRead}**`] : []),
+                        ...(stats.episodesWatched ? [
+                            `Episodes: **${HandlerUtil.formatCommas(stats.episodesWatched)}**`,
+                            `Average Eps: **${HandlerUtil.formatCommas(Math.round(stats.episodesWatched / (stats.count || 1)))}**`
+                        ] : []),
+                        ...(stats.minutesWatched ? [`Watched: **${humanizeDuration(stats.minutesWatched * 60 * 1000, { round: true, units: ['d'] })}**`] : []),
+                        `Mean Score: **${stats.meanScore || 0}**`,
+                        `Std deviation: **${stats.standardDeviation || 0}**`
+                    ].join('\n'), inline: true
+                });
                 // stats.formats
                 const formatLines = [];
                 for (const stat of AniListReplyBuilder.transformFormats(type, stats.formats || [])) {
@@ -173,7 +173,7 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                     const enumName = AniListReplyBuilder.formatEnums(stat.format);
                     formatLines.push(`${enumName}: **${stat.count}**`);
                 }
-                if (formatLines.length) embed.addField('Formats', formatLines, true);
+                if (formatLines.length) embed.addField({ name: 'Formats', value: formatLines.join('\n'), inline: true });
                 // stats.status
                 const statusLines = [];
                 for (const stat of AniListReplyBuilder.transformStatuses(stats.statuses || [])) {
@@ -181,7 +181,7 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                     const enumName = AniListReplyBuilder.formatEnums(stat.status);
                     statusLines.push(`${enumName}: **${stat.count}**`);
                 }
-                if (statusLines.length) embed.addField('Status', statusLines, true);
+                if (statusLines.length) embed.addField({ name: 'Status', value: statusLines.join('\n'), inline: true });
                 if (stats.genres) {
                     const lines = [];
                     for (const stat of stats.genres) {
@@ -189,7 +189,7 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                         const url = `https://anilist.co/search/${type}?includedGenres=${stat.genre.replace(/ /g, '%20')}`;
                         lines.push(`${stat.count} [${stat.genre}](${url})`);
                     }
-                    if (lines.length) embed.addField('Genres', lines, true);
+                    if (lines.length) embed.addField({ name: 'Genres', value: lines.join('\n'), inline: true });
                 }
                 if (stats.tags) {
                     const lines = [];
@@ -198,7 +198,7 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                         const url = `https://anilist.co/search/${type}?includedTags=${stat.tag.name.replace(/ /g, '%20')}`;
                         lines.push(`${stat.count} [${stat.tag.name}](${url}) ${stat.tag.isAdult ? '(18+)' : ''}`);
                     }
-                    if (lines.length) embed.addField('Tags', lines, true);
+                    if (lines.length) embed.addField({ name: 'Tags', value: lines.join('\n'), inline: true });
                 }
             }
             return this.addFile(attachment).addEmbed(embed);
@@ -289,8 +289,10 @@ export function AniListReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                 embed.setDescription([`**${infoString}**`, ...lines]);
             } else {
                 const half = Math.ceil(lines.length / 2);
-                embed.addField(infoString, lines.slice(0, half), true);
-                embed.addField('\u200b', lines.slice(-half), true);
+                embed.addFields(
+                    { name: infoString, value: lines.slice(0, half).join('\n'), inline: true },
+                    { name: '\u200b', value: lines.slice(-half).join('\n'), inline: true }
+                );
             }
             return this.addEmbed(embed);
         }

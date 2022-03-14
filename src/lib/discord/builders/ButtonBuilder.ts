@@ -1,17 +1,7 @@
-import { MessageButton, MessageButtonOptions } from 'discord.js';
-import { ActionRowBuilder } from './ActionRowBuilder.js';
+import { ButtonActionRowBuilder } from './ButtonActionRowBuilder.js';
+import * as Builders from '@discordjs/builders';
 
-export class ButtonBuilder<T = string> extends MessageButton {
-
-    constructor(data?: MessageButton | MessageButtonOptions) {
-        super(data);
-    }
-
-    public get customData() {
-        if (!this.customId) return this.customId;
-        if (typeof this.customId === 'string') return this.customId;
-        return this.decode(this.customId);
-    }
+export class ButtonBuilder<T = string> extends Builders.ButtonBuilder {
 
     public override setCustomId(data: string | T): this {
         if (typeof data === 'string') return super.setCustomId(data);
@@ -26,7 +16,7 @@ export class ButtonBuilder<T = string> extends MessageButton {
         return JSON.parse(id);
     }
 
-    public toActionRow(): ActionRowBuilder {
-        return new ActionRowBuilder().addComponents(this);
+    public toActionRow(): ButtonActionRowBuilder {
+        return new ButtonActionRowBuilder().addComponents(this);
     }
-}
+};

@@ -1,4 +1,4 @@
-import { ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
 import { FlipChatInputCommandData } from "./FlipChatInputCommandData.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
 import { FlipReplyBuilder } from "../FlipReplyBuilder.js";
@@ -11,7 +11,7 @@ export class FlipChatInputHandler extends ApplicationCommandHandler<ChatInputApp
         super(FlipChatInputCommandData);
     }
 
-    public async run(command: CommandInteraction): Promise<void> {
+    public async run(command: ChatInputCommandInteraction): Promise<void> {
         const value = command.options.getString('value') || '1';
         let count = parseInt(value) || 0;
         if (count) {

@@ -1,15 +1,13 @@
-import { ChatInputApplicationCommandData, Constants } from 'discord.js';
-
-const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputApplicationCommandData } from 'discord.js';
 
 export const MagickChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'magick',
     description: 'Get wild with images',
-    type: ApplicationCommandTypes.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [{
-        type: ApplicationCommandOptionTypes.STRING,
+        type: ApplicationCommandOptionType.String,
         name: 'image',
         required: true,
         description: 'The user, emoji or url to use'
     }]
-}
+};

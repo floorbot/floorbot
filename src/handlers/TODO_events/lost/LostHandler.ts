@@ -1,14 +1,14 @@
-import { ChatInputHandler } from '../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
-import { CommandInteraction, GuildMember } from 'discord.js';
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { LostCommandData } from './LostCommandData.js';
 
-export class LostHandler extends ChatInputHandler {
+export class LostHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     constructor() {
-        super({ group: 'Events', global: false, nsfw: false, data: LostCommandData });
+        super(LostCommandData);
     }
 
-    public async execute(command: CommandInteraction): Promise<any> {
+    public async run(command: ChatInputCommandInteraction): Promise<any> {
         const member = command.member as GuildMember;
         if (member.roles.cache.has('904334044257452042')) {
             await member.roles.remove('904334044257452042');

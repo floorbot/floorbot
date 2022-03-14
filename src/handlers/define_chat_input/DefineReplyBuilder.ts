@@ -32,7 +32,10 @@ export function DefineReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
                 .setTitle(definition.word);
             if (definition.example.length) {
                 const exampleString = definition.example.replace(/(\[|\])/g, '*');
-                embed.addField('Example', HandlerUtil.shortenMessage(exampleString, { maxLength: 512 }));
+                embed.addField({
+                    name: 'Example',
+                    value: HandlerUtil.shortenMessage(exampleString, { maxLength: 512 })
+                });
             }
             return this.addEmbed(embed);
         }

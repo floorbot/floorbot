@@ -1,30 +1,31 @@
-import { CommandInteraction, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
-import { ImageMagickCLIAction, MagickProgress } from '../../../../lib/tools/image-magick/ImageMagickCLIAction.js';
-import { ChatInputHandler } from '../../../../lib/discord/handlers/abstracts/ChatInputHandler.js';
+import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Interaction, Message, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
+import { ImageMagickCLIAction, MagickProgress } from '../../../lib/tools/image-magick/ImageMagickCLIAction.js';
 import { MagickChatInputCommandData } from './MagickChatInputCommandData.js';
-import { HandlerUtil } from '../../../../lib/discord/HandlerUtil.js';
-import probe, { ProbeResult } from 'probe-image-size';
+import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
+import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { MagickReplyBuilder } from '../MagickReplyBuilder.js';
+import probe, { ProbeResult } from 'probe-image-size';
 import { MagickUtil } from '../MagickUtil.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 
-export class MagickChatInputHandler extends ChatInputHandler {
+export class MagickChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
     private readonly actions: { [index: string]: ImageMagickCLIAction; };
 
     constructor(path: string) {
-        super({ group: 'Fun', global: false, nsfw: false, data: MagickChatInputCommandData });
+        super(MagickChatInputCommandData);
 
         this.actions = MagickUtil.makeActions(path);
     }
 
-    public async execute(command: CommandInteraction<'cached'>): Promise<any> {
+    public async run(command: ChatInputCommandInteraction<'cached'>): Promise<any> {
         await command.deferReply();
         const input = command.options.getString('image', true);
         const resolvedUser = HandlerUtil.resolveUser(command, input, true);
         const resolvedEmoji = HandlerUtil.resolveEmoji(input);
         const metadata = await probe(
             !resolvedUser && !resolvedEmoji ? input : resolvedUser ?
-                resolvedUser.displayAvatarURL({ dynamic: true }) :
+                resolvedUser.displayAvatarURL() :
                 resolvedEmoji!.imageURL
         ).catch(() => null);
         if (!metadata) {
@@ -52,7 +53,7 @@ export class MagickChatInputHandler extends ChatInputHandler {
         collector.on('end', HandlerUtil.deleteComponentsOnEnd(message));
     }
 
-    private async fetchMagickResponse(interaction: Interaction, metadata: ProbeResult, action?: ImageMagickCLIAction, message?: Message): Promise<InteractionReplyOptions> {
+    private async fetchMagickResponse(interaction: Interaction, metadata: ProbeResult, action?: ImageMagickCLIAction, message?: Message): Promise<ResponseOptions> {
 
         // Need to convert SVG files since they dont embed
         if (metadata.type === 'svg') {

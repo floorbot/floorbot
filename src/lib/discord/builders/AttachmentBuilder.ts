@@ -1,13 +1,13 @@
-import { BufferResolvable, MessageAttachment } from 'discord.js';
-import { Stream } from 'stream';
+import { ResponseOptions, ReplyBuilder } from './ReplyBuilder.js';
+import { MessageAttachment } from 'discord.js';
 
 export class AttachmentBuilder extends MessageAttachment {
 
-    constructor(attachment: BufferResolvable | Stream, name?: string, data?: any) {
-        super(attachment, name, data);
-    }
-
     public getEmbedUrl(): string {
         return `attachment://${this.name}`;
+    }
+
+    public toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
+        return new ReplyBuilder(replyOptions).addFile(this);
     }
 }

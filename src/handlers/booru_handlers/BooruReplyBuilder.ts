@@ -1,12 +1,11 @@
+import { SelectMenuActionRowBuilder } from "../../lib/discord/builders/SelectMenuActionRowBuilder.js";
+import { ButtonActionRowBuilder } from "../../lib/discord/builders/ButtonActionRowBuilder.js";
 import { SelectMenuBuilder } from "../../lib/discord/builders/SelectMenuBuilder.js";
-import { ActionRowBuilder } from "../../lib/discord/builders/ActionRowBuilder.js";
 import { ButtonBuilder } from "../../lib/discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
-import { Constants, Util } from "discord.js";
-
-const { MessageButtonStyles } = Constants;
+import { ButtonStyle, Util } from "discord.js";
 
 export interface BooruSuggestionData {
     readonly name: string;
@@ -29,7 +28,8 @@ export const BooruComponentID = {
 };
 
 export class BooruReplyBuilder extends BooruReplyMixin(ReplyBuilder) { };
-export class BooruActionRowBuilder extends BooruActionRowMixin(ActionRowBuilder) { };
+export class BooruButtonActionRowBuilder extends BooruButtonActionRowMixin(ButtonActionRowBuilder) { };
+export class BooruSelectMenuActionRowBuilder extends BooruSelectMenuActionRowMixin(SelectMenuActionRowBuilder) { };
 
 export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder: T) {
     return class BooruReplyBuilder extends Builder {
@@ -54,7 +54,7 @@ export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builde
         }
 
         public addSuggestionActionRow(suggestions: BooruSuggestionData[]): this {
-            const actionRow = new BooruActionRowBuilder()
+            const actionRow = new BooruSelectMenuActionRowBuilder()
                 .addSuggestionsSelectMenu(suggestions);
             return this.addActionRow(actionRow);
         }
@@ -72,7 +72,7 @@ export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builde
         }
 
         public addImageActionRow(postData: BooruPostData, tags?: string): this {
-            const actionRow = new BooruActionRowBuilder()
+            const actionRow = new BooruButtonActionRowBuilder()
                 .addViewOnlineButton(postData.imageURL)
                 .addRepeatButton(tags)
                 .addRecycleButton();
@@ -94,7 +94,7 @@ export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builde
         }
 
         public addTagsActionRow(postData: BooruPostData, tags?: string): this {
-            const actionRow = new BooruActionRowBuilder()
+            const actionRow = new BooruButtonActionRowBuilder()
                 .addViewOnlineButton(postData.imageURL)
                 .addRepeatButton(tags)
                 .addRecycleButton()
@@ -104,27 +104,13 @@ export function BooruReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builde
     };
 }
 
-export function BooruActionRowMixin<T extends MixinConstructor<ActionRowBuilder>>(Builder: T) {
+export function BooruButtonActionRowMixin<T extends MixinConstructor<ButtonActionRowBuilder>>(Builder: T) {
     return class BooruActionRowBuilder extends Builder {
-
-        public addSuggestionsSelectMenu(suggestions: BooruSuggestionData[]): this {
-            const button = new SelectMenuBuilder()
-                .setPlaceholder('See Suggested Tags')
-                .setCustomId(BooruComponentID.SUGGESTIONS)
-                .addOptions(suggestions.map(suggestion => {
-                    return {
-                        label: Util.splitMessage(suggestion.name, { char: '', append: '...', maxLength: 25 })[0]!,
-                        description: `${suggestion.count} posts for ${suggestion.name}`,
-                        value: suggestion.name
-                    };
-                }));
-            return this.addComponents(button);
-        }
 
         public addRecycleButton(): this {
             const button = new ButtonBuilder()
                 .setLabel('♻️')
-                .setStyle(MessageButtonStyles.SUCCESS)
+                .setStyle(ButtonStyle.Success)
                 .setCustomId(BooruComponentID.RECYCLE);
             return this.addComponents(button);
         }
@@ -132,7 +118,7 @@ export function BooruActionRowMixin<T extends MixinConstructor<ActionRowBuilder>
         public addRepeatButton(tags?: string): this {
             const button = new ButtonBuilder()
                 .setLabel(tags ? 'Search Again' : 'Random Again')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(BooruComponentID.REPEAT);
             return this.addComponents(button);
         }
@@ -140,7 +126,7 @@ export function BooruActionRowMixin<T extends MixinConstructor<ActionRowBuilder>
         public addTagsButton(): this {
             const button = new ButtonBuilder()
                 .setLabel('Tags')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(BooruComponentID.TAGS);
             return this.addComponents(button);
         }
@@ -148,8 +134,28 @@ export function BooruActionRowMixin<T extends MixinConstructor<ActionRowBuilder>
         public addImageButton(): this {
             const button = new ButtonBuilder()
                 .setLabel('Image')
-                .setStyle(MessageButtonStyles.PRIMARY)
+                .setStyle(ButtonStyle.Primary)
                 .setCustomId(BooruComponentID.IMAGE);
+            return this.addComponents(button);
+        }
+    };
+}
+
+
+export function BooruSelectMenuActionRowMixin<T extends MixinConstructor<SelectMenuActionRowBuilder>>(Builder: T) {
+    return class BooruActionRowBuilder extends Builder {
+
+        public addSuggestionsSelectMenu(suggestions: BooruSuggestionData[]): this {
+            const button = new SelectMenuBuilder()
+                .setPlaceholder('See Suggested Tags')
+                .setCustomId(BooruComponentID.SUGGESTIONS)
+                .addOptions(...suggestions.map(suggestion => {
+                    return {
+                        label: Util.splitMessage(suggestion.name, { char: '', append: '...', maxLength: 25 })[0]!,
+                        description: `${suggestion.count} posts for ${suggestion.name}`,
+                        value: suggestion.name
+                    };
+                }));
             return this.addComponents(button);
         }
     };

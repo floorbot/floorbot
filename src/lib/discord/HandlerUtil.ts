@@ -1,21 +1,19 @@
-import { Channel, Client, Collection, DMChannel, Constants, Guild, GuildChannel, GuildMember, Interaction, InteractionReplyOptions, Message, MessageComponentInteraction, Permissions, Role, TextChannel, User, Util, SplitOptions } from 'discord.js';
-import { HandlerReplies } from './helpers/HandlerReplies.js';
+import { Channel, Client, Collection, DMChannel, Guild, GuildChannel, GuildMember, Interaction, Message, MessageComponentInteraction, Role, TextChannel, User, Util, SplitOptions, PermissionFlagsBits, Events, ApplicationCommandData } from 'discord.js';
+import { ResponseOptions, ReplyBuilder } from './builders/ReplyBuilder.js';
+import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import probe, { ProbeResult } from 'probe-image-size';
-import { HandlerClient } from './HandlerClient.js';
-import { Handler } from './Handler.js';
 import twemoji from 'twemoji';
-
-const { Events } = Constants;
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export class HandlerUtil {
 
     public static isNSFW(channel: Channel): boolean {
-        if (!channel.isText()) return false;
+        if (channel.isDM()) return false;
         if (channel.isThread()) return !channel.parent || !channel.parent.nsfw;
-        if (channel.type === 'DM') return true;
-        return channel.nsfw;
+        if (channel.isText()) return channel.nsfw;
+        console.warn(`[support](nsfw) Unknown channel type <${channel.type}> for checking NSFW support`);
+        return false;
     }
 
     public static shortenMessage(message: string, options: SplitOptions = {}): string {
@@ -42,22 +40,22 @@ export class HandlerUtil {
     }
 
     public static isAdminOrOwner(member: GuildMember, interaction?: Interaction): boolean {
-        if (member.client instanceof HandlerClient && member.client.ownerIds.includes(member.id)) return true;
-        if (member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return true;
+        if (member.client instanceof HandlerClient && member.client.ownerIDs.includes(member.id)) return true;
+        if (member.permissions.has(PermissionFlagsBits.Administrator)) return true;
         if (interaction) return member.user === interaction.user;
         return false;
     }
 
-    public static handleErrors(handler: Handler<any>): (error: any) => any {
+    public static handleErrors(handler: ApplicationCommandHandler<ApplicationCommandData>): (error: any) => any {
         return (error: any) => {
-            console.log(`[${handler.data.name}] Handler has encountered an unknown error`, error);
+            console.log(`[${handler.commandData.name}] Handler has encountered an unknown error`, error);
         };
     }
 
     public static handleCollectorErrors(listener: (interaction: MessageComponentInteraction<any>) => Promise<any>): (interaction: MessageComponentInteraction) => Promise<void> {
         return (interaction: MessageComponentInteraction) => listener(interaction).catch(async error => {
             console.error(`[client] Collector has run into an error...`, error);
-            const replyOptions = HandlerReplies.createUnexpectedErrorReply(interaction, error);
+            const replyOptions = new ReplyBuilder().addUnexpectedErrorEmbed(error);
             await interaction.followUp(replyOptions);
         }).catch(error => console.error(`[client] Collector failed to report error...`, error));;
     }
@@ -66,15 +64,15 @@ export class HandlerUtil {
         return async (_collected, reason) => {
             try {
                 switch (reason) {
-                    case Events.MESSAGE_DELETE:
-                    case Events.MESSAGE_BULK_DELETE:
-                    case Events.CHANNEL_DELETE:
-                    case Events.GUILD_DELETE: { return; }
+                    case Events.MessageDelete:
+                    case Events.MessageBulkDelete:
+                    case Events.ChannelDelete:
+                    case Events.GuildDelete: { return; }
                     case 'idle':
                     case 'time':
                     default: {
                         message = await message.fetch();
-                        const replyOptions: InteractionReplyOptions = {
+                        const replyOptions: ResponseOptions = {
                             ...(message.content && { content: message.content }),
                             embeds: message.embeds,
                             components: [],
@@ -89,10 +87,13 @@ export class HandlerUtil {
         };
     }
 
+    /**
+     * @deprecated The method should not be used
+     */
     public static toggleMessageComponents(message: Message, disabled: boolean): void {
         for (const actionRow of message.components) {
             for (const component of actionRow.components) {
-                component.setDisabled(disabled);
+                (<any>component).disabled = disabled; // workaround
             }
         }
     }
@@ -146,7 +147,7 @@ export class HandlerUtil {
             client: Client,
         }>context;
         if (string === 'me') return user;
-        if (!guild && channel instanceof DMChannel) {
+        if (!guild && channel instanceof DMChannel && channel.recipient) {
             if (channel.recipient.tag.toLowerCase().includes(string)) return user;
             if (allowBot && client.user && client.user.tag.toLowerCase().includes(string)) return client.user;
             return null;

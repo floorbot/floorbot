@@ -1,10 +1,10 @@
-import { ActionRowBuilder } from '../../lib/discord/builders/ActionRowBuilder.js';
+import { ButtonActionRowBuilder } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { ButtonBuilder } from '../../lib/discord/builders/ButtonBuilder.js';
 import { ReplyBuilder } from '../../lib/discord/builders/ReplyBuilder.js';
 import { MixinConstructor } from '../../lib/ts-mixin-extended.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 import { MarkovStringTotals } from './MarkovStringTable.js';
-import { Constants, GuildChannel, User } from 'discord.js';
+import { ButtonStyle, GuildChannel, User } from 'discord.js';
 import { MarkovChannelRow } from './MarkovChannelTable.js';
 
 export enum MarkovButtonType {
@@ -26,8 +26,6 @@ export enum MarkovButtonType {
     BACKOUT = 'Backout'
 }
 
-const { MessageButtonStyles } = Constants;
-
 export class MarkovReplyBuilder extends MarkovReplyMixin(ReplyBuilder) { };
 
 export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder: T) {
@@ -36,21 +34,27 @@ export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         public addMarkovControlPanel(channel: GuildChannel, channelData: MarkovChannelRow, totals: MarkovStringTotals): this {
             const embed = this.createEmbedBuilder()
                 .setDescription(`**Markov Control Panel for ${channel}**`)
-                .addField(`Settings`, [
-                    `${channelData.posting ? '🟢' : '🔴'} Post Messages: **${channelData.posting ? 'Enabled' : 'Disabled'}**`,
-                    `${channelData.tracking ? '🟢' : '🔴'} Track Messages: **${channelData.tracking ? 'Enabled' : 'Disabled'}**`,
-                    `${channelData.mentions ? '🟢' : '🔴'} Allow Mentions: **${channelData.mentions ? 'Enabled' : 'Disabled'}**`,
-                    `${channelData.links ? '🟢' : '🔴'} Allow Links: **${channelData.links ? 'Enabled' : 'Disabled'}**`,
-                    `${channelData.quoting ? '🟢' : '🔴'} Exact Quoting: **${channelData.quoting ? 'Enabled' : 'Disabled'}**`,
-                    `${channelData.owoify ? '🟢' : '🔴'} OwOify: **${channelData.owoify ? 'OwO' : 'NOwO'}**`
-                ].join('\n'), false)
-                .addField('Statistics', [
-                    `Total Messages: **${HandlerUtil.formatCommas(totals.total)}**`,
-                    `User Messages: **${HandlerUtil.formatCommas(totals.users)}**`,
-                    'Post frequency:',
-                    `- One in \`${channelData.messages}\` messages (\`${HandlerUtil.formatDecimal(100 / channelData.messages, 2)}%\` chance per message)`,
-                    `- Once every \`${channelData.minutes}\` minutes (\`${HandlerUtil.formatDecimal(100 / channelData.minutes, 2)}%\` chance per minute)`
-                ].join('\n'), false);
+                .addField({
+                    name: `Settings`, value: [
+                        `${channelData.posting ? '🟢' : '🔴'} Post Messages: **${channelData.posting ? 'Enabled' : 'Disabled'}**`,
+                        `${channelData.tracking ? '🟢' : '🔴'} Track Messages: **${channelData.tracking ? 'Enabled' : 'Disabled'}**`,
+                        `${channelData.mentions ? '🟢' : '🔴'} Allow Mentions: **${channelData.mentions ? 'Enabled' : 'Disabled'}**`,
+                        `${channelData.links ? '🟢' : '🔴'} Allow Links: **${channelData.links ? 'Enabled' : 'Disabled'}**`,
+                        `${channelData.quoting ? '🟢' : '🔴'} Exact Quoting: **${channelData.quoting ? 'Enabled' : 'Disabled'}**`,
+                        `${channelData.owoify ? '🟢' : '🔴'} OwOify: **${channelData.owoify ? 'OwO' : 'NOwO'}**`
+                    ].join('\n'),
+                    inline: false
+                })
+                .addField({
+                    name: 'Statistics', value: [
+                        `Total Messages: **${HandlerUtil.formatCommas(totals.total)}**`,
+                        `User Messages: **${HandlerUtil.formatCommas(totals.users)}**`,
+                        'Post frequency:',
+                        `- One in \`${channelData.messages}\` messages (\`${HandlerUtil.formatDecimal(100 / channelData.messages, 2)}%\` chance per message)`,
+                        `- Once every \`${channelData.minutes}\` minutes (\`${HandlerUtil.formatDecimal(100 / channelData.minutes, 2)}%\` chance per minute)`
+                    ].join('\n'),
+                    inline: false
+                });
             return this.addEmbed(embed);
         }
 
@@ -94,12 +98,12 @@ export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public addMarkovActionRow(channelData: MarkovChannelRow): this {
-            const primaryActionRow = new ActionRowBuilder()
+            const primaryActionRow = new ButtonActionRowBuilder()
                 .addComponents(
                     this.getMarkovButton(channelData.posting ? MarkovButtonType.POSTING_DISABLE : MarkovButtonType.POSTING_ENABLE),
                     this.getMarkovButton(channelData.tracking ? MarkovButtonType.TRACKING_DISABLE : MarkovButtonType.TRACKING_ENABLE),
                     this.getMarkovButton(MarkovButtonType.WIPE));
-            const secondaryActionRow = new ActionRowBuilder()
+            const secondaryActionRow = new ButtonActionRowBuilder()
                 .addComponents(
                     this.getMarkovButton(channelData.mentions ? MarkovButtonType.MENTIONS_DISABLE : MarkovButtonType.MENTIONS_ENABLE),
                     this.getMarkovButton(channelData.links ? MarkovButtonType.LINKS_DISABLE : MarkovButtonType.LINKS_ENABLE),
@@ -109,7 +113,7 @@ export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
         }
 
         public addMarkovWipeActionRow(): this {
-            const actionRow = new ActionRowBuilder()
+            const actionRow = new ButtonActionRowBuilder()
                 .addComponents(
                     this.getMarkovButton(MarkovButtonType.BACKOUT),
                     this.getMarkovButton(MarkovButtonType.WIPE_CONFIRMED),
@@ -128,7 +132,7 @@ export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
                 case MarkovButtonType.POSTING_DISABLE:
                 case MarkovButtonType.TRACKING_ENABLE:
                 case MarkovButtonType.TRACKING_DISABLE: {
-                    return button.setStyle(MessageButtonStyles.PRIMARY);
+                    return button.setStyle(ButtonStyle.Primary);
                 }
                 case MarkovButtonType.LINKS_ENABLE:
                 case MarkovButtonType.LINKS_DISABLE:
@@ -138,12 +142,12 @@ export function MarkovReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Build
                 case MarkovButtonType.OWOIFY_DISABLE:
                 case MarkovButtonType.QUOTING_ENABLE:
                 case MarkovButtonType.QUOTING_DISABLE: {
-                    return button.setStyle(MessageButtonStyles.SECONDARY);
+                    return button.setStyle(ButtonStyle.Secondary);
                 }
                 case MarkovButtonType.WIPE:
                 case MarkovButtonType.WIPE_CONFIRMED:
                 case MarkovButtonType.PURGE_CONFIRMED: {
-                    return button.setStyle(MessageButtonStyles.DANGER);
+                    return button.setStyle(ButtonStyle.Danger);
                 }
                 default: throw type;
             }

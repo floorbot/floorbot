@@ -1,13 +1,11 @@
-import { ChatInputApplicationCommandData, Constants } from 'discord.js';
-
-const { ApplicationCommandTypes, ApplicationCommandOptionTypes } = Constants;
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputApplicationCommandData } from 'discord.js';
 
 export const PregchanChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'pregchan',
-    type: ApplicationCommandTypes.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     description: 'Search for random pregchan images',
     options: [{
-        type: ApplicationCommandOptionTypes.STRING,
+        type: ApplicationCommandOptionType.String,
         description: 'The thread (partial) to search',
         required: false,
         name: 'thread',

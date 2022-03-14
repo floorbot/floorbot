@@ -1,7 +1,8 @@
-import { AutocompleteInteraction, Interaction, InteractionReplyOptions } from 'discord.js';
+import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { Rule34API, Rule34APIAutocomplete } from '../../../lib/apis/rule34/Rule34API.js';
 import { Rule34ChatInputCommandData } from './Rule34ChatInputCommandData.js';
 import { BooruChatInputHandler } from '../BooruChatInputHandler.js';
+import { AutocompleteInteraction, Interaction } from 'discord.js';
 import { Rule34ReplyBuilder } from './Rule34ReplyBuilder.js';
 import { BooruPostData } from '../BooruReplyBuilder.js';
 import { IAutocomplete } from 'discord.js-handlers';
@@ -41,7 +42,7 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
         };
     }
 
-    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createImageReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') {
             const url404 = await this.api.get404();
             const autocomplete = await this.api.autocomplete(query);
@@ -53,7 +54,7 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
             .addImageActionRow(postData, query);
     }
 
-    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<InteractionReplyOptions> {
+    public async createTagsReply(source: Interaction, query: string, postData: BooruPostData | string | null): Promise<ResponseOptions> {
         if (!postData || typeof postData === 'string') return this.createImageReply(source, query, postData);
         return new Rule34ReplyBuilder(source)
             .addTagsEmbed(postData, query)
