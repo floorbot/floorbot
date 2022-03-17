@@ -1,5 +1,5 @@
 import { GeocodeData } from "../../lib/apis/open-weather/OpenWeatherAPI.js";
-import { MariaDBTable } from "../../helpers/MariaDBTable.js";
+import { MariaDBTable } from "../../lib/MariaDBTable.js";
 import { Guild, GuildMember, User } from "discord.js";
 import { Pool } from "mariadb";
 import path from 'path';

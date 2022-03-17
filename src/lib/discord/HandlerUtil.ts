@@ -57,7 +57,7 @@ export class HandlerUtil {
             console.error(`[client] Collector has run into an error...`, error);
             const replyOptions = new ReplyBuilder().addUnexpectedErrorEmbed(error);
             await interaction.followUp(replyOptions);
-        }).catch(error => console.error(`[client] Collector failed to report error...`, error));;
+        }).catch(error => console.error(`[client] Collector failed to report error...`, error));
     }
 
     public static deleteComponentsOnEnd(message: Message): (collected: Collection<string, MessageComponentInteraction>, reason: string) => Promise<void> {

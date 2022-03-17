@@ -5,7 +5,7 @@ import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
-import { Pageable } from "../../../helpers/Pageable.js";
+import { Pageable } from "../../../lib/Pageable.js";
 import humanizeDuration from "humanize-duration";
 import { ProbeResult } from "probe-image-size";
 import { DateTime } from "luxon";

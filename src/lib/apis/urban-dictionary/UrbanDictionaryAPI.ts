@@ -21,7 +21,8 @@ export class UrbanDictionaryAPI {
         return await this.request('random').then(res => res.list ?? []);
     }
 
-    public async define(term: string): Promise<UrbanDictionaryAPIData[]> {
+    public async define(term?: string | null): Promise<UrbanDictionaryAPIData[]> {
+        if (!term) return this.random();
         const cacheKey = term.toLowerCase();
         const existing = UrbanDictionaryAPI.DEFINE_CACHE.get(cacheKey);
         if (existing) return existing as UrbanDictionaryAPIData[];

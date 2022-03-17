@@ -1,4 +1,4 @@
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../lib/builders/ResourceMixins.js";
 import { ButtonActionRowBuilder } from "../../lib/discord/builders/ButtonActionRowBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
@@ -28,7 +28,7 @@ export function DisputeReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
     return class DisputeReplyBuilder extends Builder {
 
         public addDisputeEmbed(message: Message, results: DisputeResults, votes: voteStrings, targetTimestamp: number): this {
-            const intMember = this.context!.member! as GuildMember;
+            const intMember = (<any>this.context!).member! as GuildMember;
             const newTargetTimestamp = Math.round(targetTimestamp / 1000);
             const { yes_array, no_array } = votes;
             const yes_string = yes_array.join('\n') || '';

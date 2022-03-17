@@ -1,12 +1,11 @@
-import { AutocompleteInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, InteractionCollector, Util } from "discord.js";
+import { AutocompleteInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
+import { DefineChatInputCommandData, DefineChatInputOption } from "./DefineChatInputCommandData.js";
+import { PageableComponentID } from "../../lib/builders/PageableButtonActionRowBuilder.js";
 import { UrbanDictionaryAPI } from "../../lib/apis/urban-dictionary/UrbanDictionaryAPI.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
-import { DefineChatInputCommandData } from "./DefineChatInputCommandData.js";
-import { PageableComponentID } from "../../helpers/mixins/PageableMixins.js";
-import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
+import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
 import { DefineReplyBuilder } from "./DefineReplyBuilder.js";
-import { Pageable } from "../../helpers/Pageable.js";
-import pVoid from "../../lib/promise-void.js";
+import { Pageable } from "../../lib/Pageable.js";
 
 export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> implements IAutocomplete {
 
@@ -29,30 +28,33 @@ export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputA
 
     public async run(command: ChatInputCommandInteraction): Promise<void> {
         await command.deferReply();
-        const query = command.options.getString('query');
-        const definitions = query ?
-            await this.api.define(Util.escapeMarkdown(query)) :
-            await this.api.random();
+        const query = command.options.getString(DefineChatInputOption.Query);
+        const definitions = await this.api.define(query);
+
+        // Check and reply if no definition is found
         if (!Pageable.isNonEmptyArray(definitions)) {
             const replyOptions = new DefineReplyBuilder(command)
                 .addDefinitionNotFoundEmbed(query);
-            return pVoid(command.followUp(replyOptions));
+            return command.followUp(replyOptions).then(undefined);
         }
+
+        // Create a pageable reply for the definitions
         const pageable = new Pageable(definitions);
         const replyOptions = new DefineReplyBuilder(command)
-            .addDefinitionPageActionRow(pageable)
+            .addDefinitionPageableButtonActionRow(pageable)
             .addDefinitionEmbed(pageable);
         const message = await command.followUp(replyOptions);
-        const collector = new InteractionCollector(command.client, { message: message, time: 1000 * 60 * 10 });
-        collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
+
+        // Handle the pageable button interactions
+        const collector = DiscordUtil.createComponentCollector(command.client, message);
+        collector.on('safeCollect', async component => {
             await component.deferUpdate();
             if (component.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
             if (component.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
             const replyOptions = new DefineReplyBuilder(command)
                 .addDefinitionEmbed(pageable)
-                .addDefinitionPageActionRow(pageable);
+                .addDefinitionPageableButtonActionRow(pageable);
             await component.editReply(replyOptions);
-        }));
-        collector.on('end', () => { command.editReply({ components: [] }); });
+        });
     }
 }

@@ -1,4 +1,4 @@
-import { MariaDBTable } from "../../helpers/MariaDBTable.js";
+import { MariaDBTable } from "../../lib/MariaDBTable.js";
 import { Interaction, Message, User } from "discord.js";
 import { Pool } from "mariadb";
 import path from 'path';

@@ -1,12 +1,12 @@
 import { ContextMenuCommandInteraction, Interaction, MessageApplicationCommandData } from 'discord.js';
 import { TraceMoeAPI, TraceMoeResult } from '../../../lib/apis/tracemoe/TraceMoeAPI.js';
-import { PageableComponentID } from '../../../helpers/mixins/PageableMixins.js';
+import { PageableComponentID } from '../../../lib/builders/PageableButtonActionRowBuilder.js';
 import { TraceMoeMessageCommandData } from './TraceMoeMessageCommandData.js';
 import { AniListAPI, Media } from '../../../lib/apis/anilist/AniListAPI.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { TraceMoeReplyBuilder } from './TraceMoeReplyBuilder.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
-import { Pageable } from '../../../helpers/Pageable.js';
+import { Pageable } from '../../../lib/Pageable.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';

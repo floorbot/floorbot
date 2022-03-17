@@ -1,4 +1,4 @@
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/mixins/ResourceMixins.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../lib/builders/ResourceMixins.js';
 import { ImageMagickCLIAction, MagickProgress } from '../../lib/tools/image-magick/ImageMagickCLIAction.js';
 import { AttachmentBuilder } from '../../lib/discord/builders/AttachmentBuilder.js';
 import { SelectMenuBuilder } from '../../lib/discord/builders/SelectMenuBuilder.js';
@@ -70,7 +70,7 @@ export class MagickReplyBuilder extends ReplyBuilder {
             });
         }
 
-        const timeString = humanizeDuration(Date.now() - this.context!.createdTimestamp, { largest: 1 });
+        const timeString = humanizeDuration(Date.now() - (<any>this.context!).createdTimestamp, { largest: 1 });
         const embed = this.createEmbedBuilder()
             .setTitle(action ? `${action.label} Original` : 'Original Image')
             .setURL(metadata.url);

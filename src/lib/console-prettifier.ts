@@ -16,7 +16,7 @@ export default function prettifyConsole(logger: LoggerFunction): LoggerFunction 
         for (const [index, part] of data.entries()) {
             if (typeof part === 'string') {
                 let string = part;
-                string = `[${new Date().toLocaleString()}]${string}`;
+                if (!index) string = `[${new Date().toLocaleString()}]${string}`;
                 string = string.replace(/(\s|^)(?=\d+(?:\s|$))/gm, ' \x1b[33m'); // integers start colour
                 string = string.replace(/(?<=(?:\s|^)(?:\u001b\[\d+m)?\d+)($|\s)/gm, '\x1b[0m '); // integers stop colour
                 string = string.replace(/(?<=[^\u001b]|^)\[/gm, '[\x1b[35m').replace(/\]/gm, '\x1b[0m]'); // [] (accounting for colour square brackets)

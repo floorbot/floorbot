@@ -1,6 +1,8 @@
 import { ButtonActionRowBuilder } from './ButtonActionRowBuilder.js';
 import * as Builders from '@discordjs/builders';
 
+export type ButtonBuilderData = ConstructorParameters<typeof ButtonBuilder>[0];
+
 export class ButtonBuilder<T = string> extends Builders.ButtonBuilder {
 
     public override setCustomId(data: string | T): this {

@@ -1,10 +1,10 @@
-import { CommandInteraction, Interaction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
-import { PageableActionRowBuilder } from "../../../helpers/mixins/PageableMixins.js";
+import { CommandInteraction, Interaction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageComponentInteraction, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../builders/ResourceMixins.js";
+import { PageableButtonActionRowBuilder } from "../../builders/PageableButtonActionRowBuilder.js";
+import { ArrayElementType } from "../array-element-type.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
-import { Pageable } from "../../../helpers/Pageable.js";
-import { ArrayElementType } from "../../util-types.js";
 import { EmbedBuilder } from "./EmbedBuilder.js";
+import { Pageable } from "../../Pageable.js";
 import path from 'path';
 import fs from 'fs';
 
@@ -27,10 +27,11 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
     public components: ResponseOptions['components'];
     public attachments: ResponseOptions['attachments'];
 
-    constructor(data?: BuilderContext | (ResponseOptions & { context?: BuilderContext; })) {
+    constructor(data?: BuilderContext | (ResponseOptions & { context?: BuilderContext; }) | null) {
         if (data) {
             if (data instanceof Interaction) this.context = data;
             else if (data instanceof Message) this.context = data;
+            else if (data && 'user' in data) this.context = data;
             else Object.assign(this, data);
         }
     }
@@ -165,6 +166,21 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
+    public static fromMessage(message: Message, context?: BuilderContext): ReplyBuilder {
+        const builder = new ReplyBuilder(context);
+        // builder.setEphemeral()
+        builder.setFlags(message.flags.bitfield);
+        builder.setTTS(message.tts);
+        if (message.nonce) builder.setNonce(message.nonce);
+        if (message.content) builder.setContent(message.content);
+        if (message.embeds.length) builder.setEmbeds(message.embeds);
+        // builder.setAllowedMentions()
+        if (message.attachments.size) builder.setFiles([...message.attachments.values()]);
+        if (message.components.length) builder.setComponents(message.components);
+        if (message.attachments.size) builder.setAttachments([...message.attachments.values()]);
+        return builder;
+    }
+
     /**
      * This divides the core functions from the flavoured
      */
@@ -183,7 +199,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
     }
 
     public addPageActionRow(link?: string, currentPage?: number | Pageable<any>, disabled?: boolean): this {
-        const actionRow = new PageableActionRowBuilder();
+        const actionRow = new PageableButtonActionRowBuilder();
         if (link) actionRow.addViewOnlineButton(link);
         actionRow.addPreviousPageButton(currentPage, disabled);
         actionRow.addNextPageButton(currentPage, disabled);
@@ -191,6 +207,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
     }
 
     public addUnexpectedErrorEmbed(error: any): this {
+        console.error('[error] Unexpected Error', error);
         const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD_TEARS);
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
@@ -200,6 +217,20 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
                 '',
                 ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
                 ...(error && error.message ? [`Message: \`${error.message}\``] : [])
+            ]);
+        this.addFile(attachment);
+        this.addEmbed(embed);
+        return this;
+    }
+
+    public addUnknownComponentEmbed(component: MessageComponentInteraction): this {
+        console.warn(`[support] Unknown ${component.constructor.name} - <${component.customId}>`);
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD);
+        const embed = this.createEmbedBuilder()
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                `Sorry! I'm not sure how to handle the \`${component.customId}\` component...`,
+                `*The issue has been reported and will be fixed in the future!*`
             ]);
         this.addFile(attachment);
         this.addEmbed(embed);
@@ -256,8 +287,8 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
-                `Sorry! It looks like I can only use this command in guilds!`,
-                '*Make sure you\'re using this in an appropriate guild!*'
+                `Sorry! It looks like I can only use this feature in guilds!`,
+                '*Make sure you try using this in an appropriate guild!*'
             ].join('\n'));
         if (this.context) embed.setAuthor(this.context);
         this.addEmbed(embed);

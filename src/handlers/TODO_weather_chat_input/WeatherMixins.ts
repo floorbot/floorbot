@@ -1,6 +1,6 @@
 import { GeocodeData, LatLonData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from "../../lib/apis/open-weather/OpenWeatherAPI.js";
 import { SelectMenuBuilder } from "../../lib/discord/builders/SelectMenuBuilder.js";
-import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
+import { PageableButtonActionRowBuilder } from "../../lib/builders/PageableButtonActionRowBuilder.js";
 import { ButtonBuilder } from "../../lib/discord/builders/ButtonBuilder.js";
 import { EmbedBuilder } from "../../lib/discord/builders/EmbedBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
@@ -114,11 +114,11 @@ export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
             const sliced = links.slice((viewData.page) * viewData.perPage, viewData.page + 1 * viewData.perPage);
             if (!sliced.length && viewData.page !== 0) return this.addWeatherServerTempsEmbed(links, { ...viewData, page: 0 });
             const embed = viewData.totalPages > 1 ? this.createEmbedBuilder(viewData) : this.createEmbedBuilder();
-            embed.setAuthor({ name: `Temps for ${this.context!.guild!.name}`, iconURL: this.context!.guild!.iconURL()! });
+            embed.setAuthor({ name: `Temps for ${(<any>this.context!).guild!.name}`, iconURL: (<any>this.context!).guild!.iconURL()! });
             embed.setDescription(sliced.map(([weather, member, link]) => {
                 const timeString = WeatherReplyBuilder.formatTimezone(weather.timezone);
                 const localeEmoji = HandlerUtil.localeToEmoji(link.country);
-                const weatherEmoji = WeatherEmojis.getWeatherEmoji(this.context!.client, weather.current.weather[0].icon);
+                const weatherEmoji = WeatherEmojis.getWeatherEmoji((<any>this.context!).client, weather.current.weather[0].icon);
                 const tempString = `${weather.current.temp.toFixed(2)}°C`.padEnd(8); // -99.99°C
                 const tempStringF = `(${HandlerUtil.toFahrenheit(weather.current.temp)}°F)`.padEnd(7); // 999°F
                 const humidityString = `${weather.current.humidity}%`.padEnd(3);
@@ -175,7 +175,7 @@ export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
                 `Lat/Lon: **${weather.lat}, ${weather.lon}**\n`
             );
             weather.daily.slice(0, 6).forEach(day => {
-                const emoji = WeatherEmojis.getWeatherEmoji(this.context!.client, day.weather[0].icon);
+                const emoji = WeatherEmojis.getWeatherEmoji((<any>this.context!).client, day.weather[0].icon);
                 embed.addField({
                     name: `<t:${day.dt}:D>`, value: (
                         `**${HandlerUtil.capitalizeString(day.weather[0].description)}** ${emoji}\n` +
@@ -212,14 +212,14 @@ export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
             const components = weather.list[0]!.components;
             embed.addField({
                 name: 'Quantity', value: (
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getCO(components.co))} ${components.co} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getNO(components.no))} ${components.no} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getNO2(components.no2))} ${components.no2} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getO3(components.o3))} ${components.o3} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getSO2(components.so2))} ${components.so2} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
-                    `${WeatherEmojis.getQualityEmoji(this.context!.client, this.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getCO(components.co))} ${components.co} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getNO(components.no))} ${components.no} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getNO2(components.no2))} ${components.no2} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getO3(components.o3))} ${components.o3} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getSO2(components.so2))} ${components.so2} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getPM2_5(components.pm2_5))} ${components.pm2_5} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getPM10(components.pm10))} ${components.pm10} μg/m³\n` +
+                    `${WeatherEmojis.getQualityEmoji((<any>this.context!).client, this.getNH3(components.nh3))} ${components.nh3} μg/m³\n`
                 ),
                 inline: true
             });
@@ -275,7 +275,7 @@ export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Buil
 
         public addWeatherPageActionRow(pageData: WeatherViewData): this {
             if (pageData.page == 0 && pageData.totalPages == 1) return this;
-            const actionRow = new PageableActionRowBuilder();
+            const actionRow = new PageableButtonActionRowBuilder();
             actionRow.addPreviousPageButton(undefined, pageData.totalPages == 1);
             actionRow.addNextPageButton(undefined, pageData.totalPages == 1);
             return this.addActionRow(actionRow);

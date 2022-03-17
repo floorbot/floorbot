@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
+import { ButtonBuilderData } from './ButtonBuilder.js';
 import { ButtonStyle } from 'discord.js';
 
 export enum ButtonComponentID {
@@ -11,35 +12,39 @@ export enum ButtonComponentID {
 
 export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
 
-    public addViewOnlineButton(url: string): this {
-        const button = new ButtonBuilder()
+    public addComponent(component: ButtonBuilder): this {
+        return this.addComponents(component);
+    }
+
+    public addViewOnlineButton(url: string, data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
             .setURL(url)
             .setStyle(ButtonStyle.Link)
             .setLabel('View Online');
-        return this.addComponents(button);
+        return this.addComponent(button);
     }
 
-    public addDeleteButton(): this {
-        const button = new ButtonBuilder()
+    public addDeleteButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
             .setLabel('✖️')
             .setStyle(ButtonStyle.Danger)
             .setCustomId(ButtonComponentID.DELETE);
-        return this.addComponents(button);
+        return this.addComponent(button);
     }
 
-    public addYesButton(): this {
-        const button = new ButtonBuilder()
+    public addYesButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
             .setLabel('Yes')
             .setStyle(ButtonStyle.Success)
             .setCustomId(ButtonComponentID.YES);
-        return this.addComponents(button);
+        return this.addComponent(button);
     }
 
-    public addNoButton(): this {
-        const button = new ButtonBuilder()
+    public addNoButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
             .setLabel('No')
             .setStyle(ButtonStyle.Danger)
             .setCustomId(ButtonComponentID.NO);
-        return this.addComponents(button);
+        return this.addComponent(button);
     }
 };

@@ -1,7 +1,7 @@
 import { CommandInteraction, Message, User, GuildChannel, TextChannel, MessageComponentInteraction, Collection, Interaction, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
-import { ResponseOptions } from '../../lib/discord/builders/ReplyBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
+import { ResponseOptions } from '../../lib/discord/builders/ReplyBuilder.js';
 import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 import { MarkovChannelTable } from './MarkovChannelTable.js';

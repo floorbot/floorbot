@@ -1,5 +1,5 @@
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction, Message } from "discord.js";
-import { PageableComponentID } from "../../helpers/mixins/PageableMixins.js";
+import { PageableComponentID } from "../../lib/builders/PageableButtonActionRowBuilder.js";
 import { RollChatInputCommandData } from "./RollChatInputCommandData.js";
 import { RollData, RollReplyBuilder } from "./RollReplyBuilder.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";

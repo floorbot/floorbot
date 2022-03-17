@@ -1,5 +1,5 @@
 import { ActivityUnion, AniListError, Character, FuzzyDate, Media, MediaFormat, MediaListStatus, MediaRankType, MediaStatus, ModRole, PageInfo, Staff, Studio, User, UserFormatStatistic, UserStatisticTypes, UserStatusStatistic } from "../../../lib/apis/anilist/AniListAPI.js";
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../helpers/mixins/ResourceMixins.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../lib/builders/ResourceMixins.js";
 import { ButtonActionRowBuilder } from "../../../lib/discord/builders/ButtonActionRowBuilder.js";
 import { ButtonBuilder } from "../../../lib/discord/builders/ButtonBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";

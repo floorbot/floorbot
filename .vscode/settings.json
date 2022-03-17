@@ -13,6 +13,7 @@
     // Spell Check
     "cSpell.words": [
         "anilist",
+        "Arcadeena",
         "automations",
         "BACKOUT",
         "bitfield",
@@ -52,5 +53,7 @@
         "twemoji",
         "tzdata",
         "weeb"
-    ]
+    ],
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single"
 }

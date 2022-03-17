@@ -1,22 +1,21 @@
+import { ResponseOptions, ReplyBuilder, BuilderContext } from './ReplyBuilder.js';
 import { Message, GuildMember, Interaction, APIEmbedField } from 'discord.js';
-import { ResponseOptions, ReplyBuilder } from './ReplyBuilder.js';
 import * as Builders from '@discordjs/builders';
 
 
 export class EmbedBuilder extends Builders.EmbedBuilder {
 
-    public override setAuthor(options: Builders.EmbedAuthorOptions | null | Message | Interaction): this {
-        if (options instanceof Message || options instanceof Interaction) {
+    public override setAuthor(options: Builders.EmbedAuthorOptions | null | BuilderContext): this {
+        const defaultColour = 14840969;
+        if (options instanceof Interaction || options instanceof Message) {
             const { member } = options;
-            const user = options instanceof Message ? options.author : options.user;
             if (member && member instanceof GuildMember) {
-                super.setAuthor({ name: member.displayName, iconURL: user.displayAvatarURL() });
-                this.setColor(member.displayColor || 14840969);
-            } else {
-                super.setAuthor({ name: user.username, iconURL: user.displayAvatarURL() });
-                this.setColor(14840969);
+                super.setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() });
+                return this.setColor(member.displayColor || defaultColour);
             }
-            return this;
+            const user = options instanceof Message ? options.author : options.user;
+            super.setAuthor({ name: user.username, iconURL: user.displayAvatarURL() });
+            return this.setColor(defaultColour);
         }
         return super.setAuthor(options);
     }
@@ -24,6 +23,16 @@ export class EmbedBuilder extends Builders.EmbedBuilder {
     public override setDescription(description: string | null | string[]): this {
         if (Array.isArray(description)) return super.setDescription(description.join('\n'));
         return super.setDescription(description);
+    }
+
+    public override setFooter(options: Builders.EmbedFooterOptions | { text: string[]; } | null): this {
+        if (!options) return super.setFooter(options);
+        return super.setFooter({
+            ...options,
+            text: Array.isArray(options.text) ?
+                options.text.join(' ') :
+                options.text
+        });
     }
 
     public addField(field: APIEmbedField): this {

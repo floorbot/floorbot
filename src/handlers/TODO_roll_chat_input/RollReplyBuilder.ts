@@ -1,5 +1,5 @@
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../helpers/mixins/ResourceMixins.js";
-import { PageableActionRowBuilder } from "../../helpers/mixins/PageableMixins.js";
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../lib/builders/ResourceMixins.js";
+import { PageableButtonActionRowBuilder } from "../../lib/builders/PageableButtonActionRowBuilder.js";
 import { ReplyBuilder } from "../../lib/discord/builders/ReplyBuilder.js";
 import { MixinConstructor } from "../../lib/ts-mixin-extended.js";
 import { HandlerUtil } from "../../lib/discord/HandlerUtil.js";
@@ -51,7 +51,7 @@ export function RollReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder
         }
 
         public addRollPageActionRow(rollData: RollData[]): this {
-            const actionRow = new PageableActionRowBuilder()
+            const actionRow = new PageableButtonActionRowBuilder()
                 .addPreviousPageButton(undefined, rollData.length <= 1)
                 .addNextPageButton(undefined, rollData.length <= 1);
             return this.addActionRow(actionRow);
