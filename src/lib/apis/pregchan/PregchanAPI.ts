@@ -51,7 +51,7 @@ export class PregchanAPI {
 
     }
 
-    public async searchThreads(search: string = String()): Promise<PregchanAPIThread[]> {
+    public async searchThreads(search: string = ''): Promise<PregchanAPIThread[]> {
         const threads = await this.allThreads();
         return threads.reduce((array, thread) => {
             if (!search || thread.id.includes(search) || thread.name.toLowerCase().includes(search)) {
@@ -61,7 +61,7 @@ export class PregchanAPI {
         }, new Array());
     }
 
-    public async randomImage(search: string = String()): Promise<PregchanAPIImage | null> {
+    public async randomImage(search: string = ''): Promise<PregchanAPIImage | null> {
         const threads = await this.searchThreads(search);
         if (!threads.length) return null;
         const thread = PregchanAPI.randomThread(threads);

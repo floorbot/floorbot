@@ -2,7 +2,7 @@ import { Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Interact
 import { FloorbotButtonActionRowBuilder } from "./FloorbotButtonActionRowBuilder.js";
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { APIMessage } from 'discord-api-types/v10';
 import humanizeDuration from "humanize-duration";
 
 export class FloorbotReplyBuilder extends ReplyBuilder {
@@ -37,15 +37,13 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     }
 
     public addGuildEmbed(guild: Guild, bans?: Collection<string, GuildBan>): this {
-        const premiumTier = Object.keys(GuildPremiumTier)[guild.premiumTier] || 'None';
-        const nsfwLevel = Object.keys(GuildNSFWLevel)[guild.nsfwLevel] || 'Default';
         const embed = this.createEmbedBuilder()
             .setTitle(`${guild.name} Stats!`)
             .setDescription([
                 `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**`,
                 `Verified: **${guild.verified}**`,
                 `Partnered: **${guild.partnered}**`,
-                `Premium Tier: **${DiscordUtil.capitalizeString(premiumTier)}**`,
+                `Premium Tier: **${DiscordUtil.capitalizeString(GuildPremiumTier[guild.premiumTier]!)}**`,
                 `Description: **${guild.description || '*none*'}**`,
                 `Channels: **${guild.channels.cache.size}**`,
                 `Members: **${guild.memberCount}**`,
@@ -53,7 +51,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
                 `Emojis: **${guild.emojis.cache.filter(emoji => !emoji.animated).size}**`,
                 `Gif Emojis: **${guild.emojis.cache.filter(emoji => !!emoji.animated).size}**`,
                 `Stickers: **${guild.stickers.cache.size}**`,
-                `NSFW Level: **${DiscordUtil.capitalizeString(nsfwLevel)}**`,
+                `NSFW Level: **${DiscordUtil.capitalizeString(GuildNSFWLevel[guild.nsfwLevel]!)}**`,
                 `Bans: **${bans ? bans.size : '*administrator permission*'}**`
             ]);
         if (guild.icon) embed.setThumbnail(guild.iconURL());

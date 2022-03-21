@@ -40,7 +40,7 @@ export class E621API {
         return fetch(url, options).then(res => res.json());
     }
 
-    public async tags(tags: string = String()): Promise<Array<E621APITag> | E621APIError> {
+    public async tags(tags: string): Promise<Array<E621APITag> | E621APIError> {
         const cacheKey = tags.toLowerCase();
         const existing = E621API.TAGS_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as Array<E621APITag> | E621APIError;
@@ -52,12 +52,14 @@ export class E621API {
             });
     }
 
-    public async random(tags: string = String()): Promise<E621APIPost | E621APIError> {
+    public async random(tags: string | null): Promise<E621APIPost | E621APIError> {
+        tags = tags ?? '';
         const res: any = await this.request('posts/random', [['tags', tags]]);
         return res.post ? res.post : res;
     }
 
-    public async autocomplete(tag = String()): Promise<E621APIAutocomplete[]> {
+    public async autocomplete(tag: string | null): Promise<E621APIAutocomplete[] | E621APIError> {
+        tag = tag ?? '';
         const cacheKey = tag.toLowerCase();
         const existing = E621API.AUTOCOMPLETE_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as E621APIAutocomplete[];
@@ -76,6 +78,6 @@ export class E621API {
 
     /** A type guard checking if a response is an error */
     public static isError(res: any): res is E621APIError {
-        return 'success' in res && res.success === false;
+        return ('success' in res && res.success === false) || 'error' in res;
     }
 }

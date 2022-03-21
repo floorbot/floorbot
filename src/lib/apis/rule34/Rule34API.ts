@@ -23,7 +23,8 @@ export class Rule34API {
         return fetch(url, options);
     }
 
-    public async random(tags: string = String()): Promise<Rule34APIPost | null> {
+    public async random(tags: string | null): Promise<Rule34APIPost | null> {
+        tags = tags ?? '';
         const total = await this.count(tags);
         const pid = Math.min(total, Rule34API.MAX_PAGE) * Math.random() << 0;
         const xml = await this.request('index', [['pid', pid], ['limit', 1], ['tags', tags]]).then(res => res.text());
@@ -38,7 +39,8 @@ export class Rule34API {
         };
     }
 
-    public async count(tags: string = String()): Promise<number> {
+    public async count(tags: string | null): Promise<number> {
+        tags = tags ?? '';
         const cacheKey = tags.toLowerCase();
         const existing = Rule34API.COUNT_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as number;
@@ -49,7 +51,8 @@ export class Rule34API {
         return count;
     }
 
-    public async autocomplete(tag: string = String()): Promise<Rule34APIAutocomplete[]> {
+    public async autocomplete(tag: string | null): Promise<Rule34APIAutocomplete[]> {
+        tag = tag ?? '';
         const cacheKey = tag.toLowerCase();
         const existing = Rule34API.AUTOCOMPLETE_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as Rule34APIAutocomplete[];

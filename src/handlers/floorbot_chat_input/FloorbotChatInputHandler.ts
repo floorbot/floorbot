@@ -4,7 +4,7 @@ import { FloorbotChatInputCommandData } from "./FloorbotChatInputCommandData.js"
 import { FloorbotReplyBuilder } from "./builders/FloorbotReplyBuilder.js";
 import { ApplicationCommandHandler } from "discord.js-handlers";
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { APIMessage } from 'discord-api-types/v10';
 
 export class FloorbotChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
@@ -19,8 +19,7 @@ export class FloorbotChatInputHandler extends ApplicationCommandHandler<ChatInpu
             switch (component.customId) {
                 case FloorbotButtonComponentID.Ping: return this.runPingInteraction(command, component);
                 case FloorbotButtonComponentID.GuildStats: return this.runGuildComponent(command, component);
-                case FloorbotButtonComponentID.ReportBug: // return this.runReportBugComponent(component);
-                default: {
+                case FloorbotButtonComponentID.ReportBug: {
                     const replyOptions = new FloorbotReplyBuilder(command)
                         .addUnknownComponentEmbed(component)
                         .setEphemeral(true);

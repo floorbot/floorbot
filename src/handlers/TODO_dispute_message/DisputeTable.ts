@@ -17,11 +17,11 @@ export interface DisputeRow {
 }
 
 export interface DisputeResults {
-    readonly yes_votes: Number,
-    readonly no_votes: Number,
-    readonly total_votes: Number,
-    readonly successful_pct: Number,
-    readonly successful_pct_rounded: Number,
+    readonly yes_votes: number,
+    readonly no_votes: number,
+    readonly total_votes: number,
+    readonly successful_pct: number,
+    readonly successful_pct_rounded: number,
     readonly dispute_user_id: string,
     readonly message_user_id: string;
 }

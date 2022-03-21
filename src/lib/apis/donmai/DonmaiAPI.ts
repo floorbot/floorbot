@@ -42,7 +42,8 @@ export class DonmaiAPI {
         return fetch(url, options).then(res => res.json());
     }
 
-    public async count(tags: string = String()): Promise<DonmaiAPICount | DonmaiAPIError> {
+    public async count(tags: string | null): Promise<DonmaiAPICount | DonmaiAPIError> {
+        tags = tags ?? '';
         const cacheKey = tags.toLowerCase();
         const existing = DonmaiAPI.COUNT_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as DonmaiAPICount | DonmaiAPIError;
@@ -53,11 +54,13 @@ export class DonmaiAPI {
             });
     }
 
-    public async random(tags: string = String()): Promise<DonmaiAPIPost | DonmaiAPIError> {
+    public async random(tags: string | null): Promise<DonmaiAPIPost | DonmaiAPIError> {
+        tags = tags ?? '';
         return this.request('posts/random', [['tags', tags]]);
     }
 
-    public async autocomplete(tag: string = String(), limit: number = 10): Promise<DonmaiAPIAutocomplete[]> {
+    public async autocomplete(tag: string | null, limit: number = 10): Promise<DonmaiAPIAutocomplete[]> {
+        tag = tag ?? '';
         const cacheKey = `${limit}-${tag.toLowerCase()}`;
         const existing = DonmaiAPI.AUTOCOMPLETE_CACHE.get(cacheKey);
         if (cacheKey && existing) return existing as DonmaiAPIAutocomplete[];
@@ -79,6 +82,6 @@ export class DonmaiAPI {
 
     /** A type guard checking if a response is an error */
     public static isError(res: any): res is DonmaiAPIError {
-        return 'success' in res && res.success === false;
+        return 'success' in res && !res.success;
     }
 }

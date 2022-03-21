@@ -1,8 +1,8 @@
 import { GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../lib/apis/open-weather/OpenWeatherAPI.js';
 import { WeatherComponentID, WeatherReplyBuilder, WeatherSelectMenuID, WeatherTempsOrder } from './WeatherMixins.js';
+import { PageableComponentID } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { WeatherCommandData, WeatherSubCommand } from './WeatherChatInputCommandData.js';
-import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import WeatherLinkRow, { WeatherLinkTable } from './WeatherLinkTable.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
@@ -96,8 +96,8 @@ export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInput
                 const collector = message.createMessageComponentCollector({ idle: 1000 * 60 * 10 });
                 collector.on('collect', async component => {
                     await component.deferUpdate();
-                    if (component.isButton() && component.customId === ButtonComponentID.NEXT_PAGE) { viewData.page++; }
-                    if (component.isButton() && component.customId === ButtonComponentID.PREVIOUS_PAGE) { viewData.page--; }
+                    if (component.isButton() && component.customId === PageableComponentID.NEXT_PAGE) { viewData.page++; }
+                    if (component.isButton() && component.customId === PageableComponentID.PREVIOUS_PAGE) { viewData.page--; }
                     if (component.isSelectMenu() && component.customId === WeatherSelectMenuID.ORDER) { viewData.order = component.values[0] as WeatherTempsOrder; }
                     viewData.page = viewData.page % (Math.floor(links.length / viewData.perPage) + 1);
                     viewData.page = viewData.page >= 0 ? viewData.page : (Math.floor(links.length / viewData.perPage) + 1) + viewData.page;

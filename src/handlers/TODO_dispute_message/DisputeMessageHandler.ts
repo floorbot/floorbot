@@ -56,7 +56,7 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
             try {
                 if (component.isButton()) {
                     switch (component.customId) {
-                        case ButtonComponentID.YES: {
+                        case ButtonComponentID.Yes: {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();
@@ -72,7 +72,7 @@ export class DisputeMessageHandler extends ApplicationCommandHandler<MessageAppl
                             await component.editReply(embed);
                             break;
                         }
-                        case ButtonComponentID.NO: {
+                        case ButtonComponentID.No: {
                             const currVote = await this.database.getDisputeVote(component, message);
                             if (!currVote) {
                                 collector.resetTimer();

@@ -3,8 +3,8 @@ console.error = consolePrettifier(console.error);
 console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
 
-import { HandlerClient } from 'discord.js-handlers';
-import { GatewayIntentBits } from 'discord.js';
+import { HandlerClient, HandlerError } from 'discord.js-handlers';
+import { IntentsBitField } from 'discord.js';
 import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 import RedisMock from 'ioredis-mock';
@@ -18,24 +18,25 @@ import { MessageReaction } from './automations/MessageReaction.js';
 import { NhentaiCodes } from './automations/NhentaiCodes.js';
 
 // Commands
-import { PregchanChatInputHandler } from './handlers/TODO_booru_handlers/pregchan_chat_input/PregchanChatInputHandler.js';
 import { AniListChatInputHandler } from './handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
 import { OwoifyChatInputHandler } from './handlers/TODO_owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
 import { MagickChatInputHandler } from './handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
-import { Rule34ChatInputHandler } from './handlers/TODO_booru_handlers/rule34_chat_input/Rule34ChatInputHandler.js';
-import { DonmaiChatInputHandler } from './handlers/TODO_booru_handlers/donmai_chat_input/DonmaiChatInputHandler.js';
+import { PregchanChatInputHandler } from './handlers/booru/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
 import { TraceMoeMessageHandler } from './handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
+import { Rule34ChatInputHandler } from './handlers/booru/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
+import { DonmaiChatInputHandler } from './handlers/booru/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
 import { MagickMessageHandler } from './handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
-import { E621ChatInputHandler } from './handlers/TODO_booru_handlers/e621_chat_input/E621ChatInputHandler.js';
 import { OwoifyMessageHandler } from './handlers/TODO_owoify_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FlipChatInputHandler } from './handlers/TODO_flip_handlers/flip_chat_input/FlipChatInputHandler.js';
 import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
+import { E621ChatInputHandler } from './handlers/booru/handlers/e621_chat_input/E621ChatInputHandler.js';
 import { FlipMessageHandler } from './handlers/TODO_flip_handlers/flip_message/FlipMessageHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
-import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
 import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
+import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/TODO_roll_chat_input/RollChatInputHandler.js';
+import { SavedChatInputHandler } from './handlers/saved_chat_input/SavedChatInputHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -82,7 +83,8 @@ const donmaiEnvAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KE
 if (Object.values(donmaiEnvAuth).some(val => !val)) console.warn('[env](donmai) invalid or missing donmai credentials!');
 
 const client = new HandlerClient({
-    intents: Object.values(GatewayIntentBits).reduce((acc, p) => typeof p === 'number' ? acc | p : acc, 0), // workaround
+    // intents: Object.values(GatewayIntentBits).reduce((acc, p) => typeof p === 'number' ? acc | p : acc, 0), // workaround
+    intents: IntentsBitField.Flags.Guilds,
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FlipChatInputHandler(),
@@ -100,11 +102,12 @@ const client = new HandlerClient({
         new DisputeMessageHandler(pool),
         new TraceMoeMessageHandler(redis),
         new DefineChatInputHandler(),
-        new Rule34ChatInputHandler(),
-        new PregchanChatInputHandler(),
-        new E621ChatInputHandler({ username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }),
-        new DonmaiChatInputHandler({ subDomain: 'danbooru', nsfw: true, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } }),
-        new DonmaiChatInputHandler({ subDomain: 'safebooru', nsfw: false, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } })
+        new SavedChatInputHandler(pool),
+        new Rule34ChatInputHandler(pool),
+        new PregchanChatInputHandler(pool),
+        new E621ChatInputHandler(pool, { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }),
+        new DonmaiChatInputHandler(pool, { subDomain: 'danbooru', nsfw: true, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } }),
+        new DonmaiChatInputHandler(pool, { subDomain: 'safebooru', nsfw: false, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } })
     ]
 });
 
@@ -119,6 +122,14 @@ client.once('ready', () => {
         client.destroy();
         return done();
     });
+});
+
+client.on('error', (error: Error) => {
+    if (error instanceof HandlerError) {
+        console.error(`[error] ${error.handler.constructor.name} has run into an error "${error.message}"`);
+    } else {
+        console.error('[error] An error as occurred', error.message);
+    }
 });
 
 await client.login(env.DISCORD_TOKEN).then(() => {

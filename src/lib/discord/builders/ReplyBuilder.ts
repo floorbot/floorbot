@@ -3,17 +3,17 @@ import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../bui
 import { PageableButtonActionRowBuilder } from "../../builders/PageableButtonActionRowBuilder.js";
 import { ArrayElementType } from "../array-element-type.js";
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
+import { HandlerContext } from 'discord.js-handlers';
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import { Pageable } from "../../Pageable.js";
 import path from 'path';
 import fs from 'fs';
 
-export type BuilderContext = Interaction | Message;
 export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions & MessageOptions & ReplyMessageOptions;
 
 export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateOptions {
 
-    public readonly context?: BuilderContext;
+    public readonly context?: HandlerContext;
 
     public ephemeral: ResponseOptions['ephemeral']; // reply only
     public fetchReply: ResponseOptions['fetchReply'];
@@ -27,7 +27,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
     public components: ResponseOptions['components'];
     public attachments: ResponseOptions['attachments'];
 
-    constructor(data?: BuilderContext | (ResponseOptions & { context?: BuilderContext; }) | null) {
+    constructor(data?: HandlerContext | (ResponseOptions & { context?: HandlerContext; }) | null) {
         if (data) {
             if (data instanceof Interaction) this.context = data;
             else if (data instanceof Message) this.context = data;
@@ -166,7 +166,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public static fromMessage(message: Message, context?: BuilderContext): ReplyBuilder {
+    public static fromMessage(message: Message, context?: HandlerContext): ReplyBuilder {
         const builder = new ReplyBuilder(context);
         // builder.setEphemeral()
         builder.setFlags(message.flags.bitfield);
@@ -276,6 +276,20 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
                     'Sorry! Only the creator of this interaction can use this component',
                     '*If possible try using the command for yourself!*'
                 ]);
+        this.addEmbed(embed);
+        this.addFile(attachment);
+        this.setEphemeral();
+        return this;
+    }
+
+    public addOwnerEmbed(): this {
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
+        const embed = this.createEmbedBuilder()
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription([
+                'Sorry! Only an owner can use this feature',
+                '*If appropriate ask an admin to help!*'
+            ]);
         this.addEmbed(embed);
         this.addFile(attachment);
         this.setEphemeral();

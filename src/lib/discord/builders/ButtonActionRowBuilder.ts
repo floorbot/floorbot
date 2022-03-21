@@ -3,11 +3,13 @@ import { ButtonBuilderData } from './ButtonBuilder.js';
 import { ButtonStyle } from 'discord.js';
 
 export enum ButtonComponentID {
-    PREVIOUS_PAGE = 'past_page',
-    NEXT_PAGE = 'next_page',
-    DELETE = 'delete',
-    YES = 'yes',
-    NO = 'no'
+    Save = 'save',
+    Heart = 'heart',
+    Cross = 'cross',
+    Delete = 'delete',
+    Remove = 'remove',
+    Yes = 'yes',
+    No = 'no'
 }
 
 export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
@@ -24,11 +26,43 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
         return this.addComponent(button);
     }
 
-    public addDeleteButton(data?: ButtonBuilderData): this {
+    public addSaveButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('save')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.Save);
+        return this.addComponents(button);
+    }
+
+    public addHeartButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('❤️')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.Heart);
+        return this.addComponents(button);
+    }
+
+    public addCrossButton(data?: ButtonBuilderData): this {
         const button = new ButtonBuilder(data)
             .setLabel('✖️')
             .setStyle(ButtonStyle.Danger)
-            .setCustomId(ButtonComponentID.DELETE);
+            .setCustomId(ButtonComponentID.Cross);
+        return this.addComponent(button);
+    }
+
+    public addDeleteButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('Delete')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.Delete);
+        return this.addComponent(button);
+    }
+
+    public addRemoveButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('Remove')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(ButtonComponentID.Remove);
         return this.addComponent(button);
     }
 
@@ -36,7 +70,7 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
         const button = new ButtonBuilder(data)
             .setLabel('Yes')
             .setStyle(ButtonStyle.Success)
-            .setCustomId(ButtonComponentID.YES);
+            .setCustomId(ButtonComponentID.Yes);
         return this.addComponent(button);
     }
 
@@ -44,7 +78,7 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
         const button = new ButtonBuilder(data)
             .setLabel('No')
             .setStyle(ButtonStyle.Danger)
-            .setCustomId(ButtonComponentID.NO);
+            .setCustomId(ButtonComponentID.No);
         return this.addComponent(button);
     }
 };

@@ -1,11 +1,11 @@
-import { ResponseOptions, ReplyBuilder, BuilderContext } from './ReplyBuilder.js';
 import { Message, GuildMember, Interaction, APIEmbedField } from 'discord.js';
+import { ResponseOptions, ReplyBuilder } from './ReplyBuilder.js';
+import { HandlerContext } from 'discord.js-handlers';
 import * as Builders from '@discordjs/builders';
-
 
 export class EmbedBuilder extends Builders.EmbedBuilder {
 
-    public override setAuthor(options: Builders.EmbedAuthorOptions | null | BuilderContext): this {
+    public override setAuthor(options: Builders.EmbedAuthorOptions | null | HandlerContext): this {
         const defaultColour = 14840969;
         if (options instanceof Interaction || options instanceof Message) {
             const { member } = options;
