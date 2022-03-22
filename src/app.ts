@@ -19,24 +19,23 @@ import { NhentaiCodes } from './automations/NhentaiCodes.js';
 
 // Commands
 import { AniListChatInputHandler } from './handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
-import { OwoifyChatInputHandler } from './handlers/TODO_owoify_handlers/owoify_chat_input/OwoifyChatInputHandler.js';
 import { MagickChatInputHandler } from './handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
 import { PregchanChatInputHandler } from './handlers/booru/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
 import { TraceMoeMessageHandler } from './handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
 import { Rule34ChatInputHandler } from './handlers/booru/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
 import { DonmaiChatInputHandler } from './handlers/booru/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
 import { MagickMessageHandler } from './handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
-import { OwoifyMessageHandler } from './handlers/TODO_owoify_handlers/owoify_message/OwoifyMessageHandler.js';
-import { FlipChatInputHandler } from './handlers/TODO_flip_handlers/flip_chat_input/FlipChatInputHandler.js';
-import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { E621ChatInputHandler } from './handlers/booru/handlers/e621_chat_input/E621ChatInputHandler.js';
-import { FlipMessageHandler } from './handlers/TODO_flip_handlers/flip_message/FlipMessageHandler.js';
+import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
 import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
 import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { RollChatInputHandler } from './handlers/TODO_roll_chat_input/RollChatInputHandler.js';
+import { TextChatInputHandler } from './handlers/text/text_chat_input/TextChatInputHandler.js';
+import { OwoifyMessageHandler } from './handlers/text/owoify_message/OwoifyMessageHandler.js';
 import { SavedChatInputHandler } from './handlers/saved_chat_input/SavedChatInputHandler.js';
+import { FlipMessageHandler } from './handlers/text/flip_message/FlipMessageHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -87,12 +86,11 @@ const client = new HandlerClient({
     intents: IntentsBitField.Flags.Guilds,
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
-        new FlipChatInputHandler(),
         new FlipMessageHandler(),
 
+        new TextChatInputHandler(),
         new FloorbotChatInputHandler(),
         new AniListChatInputHandler(redis),
-        new OwoifyChatInputHandler(),
         new OwoifyMessageHandler(),
         new MarkovChatInputHandler(pool),
         new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
@@ -122,6 +120,14 @@ client.once('ready', () => {
         client.destroy();
         return done();
     });
+
+    // client.application!.commands.fetch().then(commands => {
+    //     commands.forEach(command => {
+    //         if (command.name === 'text') command.delete().then(() => {
+    //             client.application!.commands.create(TextChatInputCommandData).then(console.log);
+    //         });
+    //     });
+    // });
 });
 
 client.on('error', (error: Error) => {
