@@ -1,9 +1,9 @@
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from "../../../lib/builders/ResourceMixins.js";
 import { PageableButtonActionRowBuilder } from "../../../lib/builders/PageableButtonActionRowBuilder.js";
-import { UrbanDictionaryAPIData } from '../apis/urban_dictionary/UrbanDictionaryAPI.js';
 import { ReplyBuilder } from "../../../lib/discord/builders/ReplyBuilder.js";
 import { EmbedBuilder } from "../../../lib/discord/builders/EmbedBuilder.js";
 import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
+import { UrbanDictionaryAPIData } from 'urban-dictionary';
 import { Pageable } from "../../../lib/Pageable.js";
 
 export class DefineReplyBuilder extends ReplyBuilder {

@@ -20,6 +20,12 @@ export abstract class MariaDBTable<R, T extends R = R> {
         return this.query(sql, data);
     }
 
+    public async selectCount(column: keyof T, data: NoExtraProperties<Partial<T>>): Promise<{ count: string; }> {
+        const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
+        const sql = `SELECT COUNT(${column}) AS count FROM ${this.table} WHERE ${conditions};`;
+        return (await this.query(sql, data))[0];
+    }
+
     public async insert(data: NoExtraProperties<T>): Promise<void> {
         const values = Object.keys(data).map(key => `:${key}`).join(', ');
         const sql = `REPLACE INTO ${this.table} VALUES (${values});`;
@@ -38,11 +44,8 @@ export abstract class MariaDBTable<R, T extends R = R> {
 // First, define a type that, when passed a union of keys, creates an object which
 // cannot have those properties. I couldn't find a way to use this type directly,
 // but it can be used with the below type.
-export type Impossible<K extends keyof any> = {
-    [P in K]: never;
-};
+export type Impossible<K extends keyof any> = { [P in K]: never; };
 
 // The secret sauce! Provide it the type that contains only the properties you want,
-// and then a type that extends that type, based on what the caller provided
-// using generics.
+// and then a type that extends that type, based on what the caller provided using generics.
 export type NoExtraProperties<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;

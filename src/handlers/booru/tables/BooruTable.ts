@@ -1,5 +1,5 @@
-import { BooruPostData } from './builders/BooruReplyBuilder.js';
-import { MariaDBTable } from '../../lib/MariaDBTable.js';
+import { BooruPostData } from '../builders/BooruReplyBuilder.js';
+import { MariaDBTable } from '../../../lib/MariaDBTable.js';
 import { User } from 'discord.js';
 import { Pool } from 'mariadb';
 import path from 'path';
@@ -19,17 +19,15 @@ export class BooruTable extends MariaDBTable<Pick<BooruRow, 'user_id' | 'image_u
         super(pool, 'booru');
     }
 
-    public async countBooruImageURL(imageURL: string): Promise<number> {
-        const sql = `SELECT COUNT(user_id) AS total FROM ${this.table} WHERE image_url = :image_url`;
-        const rows = await super.query(sql, { image_url: imageURL });
-        return rows[0].total;
+    public async selectCountBooruImageURL(imageURL: string): ReturnType<BooruTable['selectCount']> {
+        return super.selectCount('image_url', { image_url: imageURL });
     }
 
-    public async selectBooru(user: User): Promise<BooruRow[]> {
+    public async selectBooru(user: User): ReturnType<BooruTable['select']> {
         return super.select({ user_id: user.id });
     }
 
-    public async insertBooru(user: User, booru: BooruPostData): Promise<void> {
+    public async insertBooru(user: User, booru: BooruPostData): ReturnType<BooruTable['insert']> {
         return super.insert({
             user_id: user.id,
             image_url: booru.imageURL,
@@ -39,7 +37,7 @@ export class BooruTable extends MariaDBTable<Pick<BooruRow, 'user_id' | 'image_u
         });
     }
 
-    public async deleteBooru(user: User, imageURL?: string): Promise<void> {
+    public async deleteBooru(user: User, imageURL?: string): ReturnType<BooruTable['delete']> {
         return super.delete({
             user_id: user.id,
             ...(imageURL && { image_url: imageURL })

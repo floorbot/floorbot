@@ -1,7 +1,7 @@
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../lib/builders/ResourceMixins.js';
 import { PageableButtonActionRowBuilder } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { ReplyBuilder } from '../../lib/discord/builders/ReplyBuilder.js';
-import { BooruRow } from '../booru/BooruTable.js';
+import { BooruRow } from '../booru/tables/BooruTable.js';
 import { Pageable } from '../../lib/Pageable.js';
 import { GuildMember, User } from 'discord.js';
 

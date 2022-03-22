@@ -5,7 +5,7 @@ import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBui
 import { BooruButtonComponentID } from './builders/BooruButtonActionRowBuilder.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
-import { BooruTable } from './BooruTable.js';
+import { BooruTable } from './tables/BooruTable.js';
 import { Pool } from 'mariadb';
 
 export abstract class BooruChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
@@ -90,7 +90,7 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
                         await component.deferReply({ ephemeral: true });
                         await this.booruTable.insertBooru(component.user, booru);
                         const replyOptions = new BooruReplyBuilder(source)
-                            .addSavedBooruEmbed(booru)
+                            .addBooruSavedEmbed(booru)
                             .setEphemeral(true);
                         component.message;
                         return await component.followUp(replyOptions);

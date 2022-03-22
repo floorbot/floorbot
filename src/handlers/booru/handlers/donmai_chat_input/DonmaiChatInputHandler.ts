@@ -44,19 +44,15 @@ export class DonmaiChatInputHandler extends BooruChatInputHandler implements IAu
         if (DonmaiAPI.isError(post)) {
             if (!post.message) return { ...booru, error: 'The database timed out running your query.' };
             switch (post.message) {
-                case 'You cannot search for more than 2 tags at a time.':
-                    return { ...booru, error: `Sorry! You can only search up to \`2\` tags with a \`basic\` account 😦` };
-                case 'You cannot search for more than 6 tags at a time.':
-                    return { ...booru, error: `Sorry! You can only search up to \`6\` tags with a \`gold\` account 😦` };
-                case 'You cannot search for more than 12 tags at a time.':
-                    return { ...booru, error: `Sorry! You can only search up to \`12\` tags with a \`platinum\` account 😦` };
+                case 'You cannot search for more than 2 tags at a time.': return { ...booru, error: `Sorry! You can only search up to \`2\` tags with a \`basic\` account 😦` };
+                case 'You cannot search for more than 6 tags at a time.': return { ...booru, error: `Sorry! You can only search up to \`6\` tags with a \`gold\` account 😦` };
+                case 'You cannot search for more than 12 tags at a time.': return { ...booru, error: `Sorry! You can only search up to \`12\` tags with a \`platinum\` account 😦` };
+                case 'The database timed out running your query.': return { ...booru, error: post.message };
                 case 'That record was not found.':
                     const url404 = await this.api.get404();
                     const autocomplete = await this.api.autocomplete(query);
                     const suggestions = autocomplete.slice(0, 25).map(tag => { return { name: tag.value, count: tag.post_count }; });
                     return { ...booru, url404: url404, suggestions: suggestions };
-                case 'The database timed out running your query.':
-                    return { ...booru, error: post.message };
                 default: {
                     console.warn(`[support](${this.api.subDomain}) Unknown api response details <${post.message}>`);
                     return { ...booru, error: post.message };

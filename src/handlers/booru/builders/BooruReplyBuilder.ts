@@ -27,6 +27,14 @@ export interface BooruPostData extends BaseBooruData {
 
 export class BooruReplyBuilder extends ReplyBuilder {
 
+    protected getPostDetails(booru: BooruPostData): string {
+        const escapedQuery = booru.query ? Util.escapeMarkdown(booru.query).replace(/\+/g, ' ') : '';
+        const queryString = booru.query ? `**[${escapedQuery}](${booru.postURL})** ` : '';
+        const scoreString = booru.score ? DiscordUtil.formatCommas(booru.score) : 'unknown';
+        const countString = booru.count ? DiscordUtil.formatCommas(booru.count) : 'unknown';
+        return queryString + `\`score: ${scoreString}\` \`count: ${countString}\``;
+    }
+
     protected createBooruEmbedBuilder(booru: BaseBooruData): EmbedBuilder {
         return super.createEmbedBuilder()
             .setFooter({ text: `Powered by ${booru.apiName}`, iconURL: booru.apiIconURL });
@@ -38,7 +46,7 @@ export class BooruReplyBuilder extends ReplyBuilder {
         return this.addEmbed(embed);
     }
 
-    public addSavedBooruEmbed(booru: BooruPostData): this {
+    public addBooruSavedEmbed(booru: BooruPostData): this {
         const embed = this.createBooruEmbedBuilder(booru)
             .setThumbnail(booru.imageURL)
             .setTitle('Booru Saved!')
@@ -65,21 +73,11 @@ export class BooruReplyBuilder extends ReplyBuilder {
         return this.addEmbed(embed);
     }
 
-    public addSuggestionsActionRow(booru: BooruSuggestionData): this {
-        const actionRow = new BooruSelectMenuActionRowBuilder()
-            .addSuggestionsSelectMenu(booru);
-        return this.addActionRow(actionRow);
-    }
-
     public addImageEmbed(booru: BooruPostData): this {
-        const escapedTags = booru.query ? Util.escapeMarkdown(booru.query).replace(/\+/g, ' ') : '';
-        const queryString = booru.query ? `**[${escapedTags}](${booru.postURL})** ` : '';
-        const scoreString = booru.score ? DiscordUtil.formatCommas(booru.score) : 'unknown';
-        const countString = booru.count ? DiscordUtil.formatCommas(booru.count) : 'unknown';
         const embed = this.createBooruEmbedBuilder(booru)
             .setImage(booru.imageURL)
             .setDescription([
-                queryString + `\`score: ${scoreString}\` \`count: ${countString}\``,
+                this.getPostDetails(booru),
                 '',
                 ...(/\.swf$/.test(booru.imageURL) ? [`Sorry! This is a flash file 🙃\n*click the [link](${booru.postURL}) to view in browser*`] : []),
                 ...(/(\.webm$)|(\.mp4$)/.test(booru.imageURL) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${booru.postURL}) to view in browser*`] : [])
@@ -88,23 +86,25 @@ export class BooruReplyBuilder extends ReplyBuilder {
     }
 
     public addTagsEmbed(booru: BooruPostData): this {
-        const escapedTags = booru.query ? Util.escapeMarkdown(booru.query).replace(/\+/g, ' ') : '';
-        const queryString = booru.query ? `**[${escapedTags}](${booru.postURL})** ` : '';
-        const scoreString = booru.score ? DiscordUtil.formatCommas(booru.score) : 'unknown';
-        const countString = booru.count ? DiscordUtil.formatCommas(booru.count) : 'unknown';
         const characterTagsString = booru.tags_characters.map(tag => `\`${tag}\``).join(' ');
         const speciesTagsString = booru.tags_species.map(tag => `\`${tag}\``).join(' ');
         const generalTagsString = booru.tags_general.map(tag => `\`${tag}\``).join(' ');
         const embed = this.createBooruEmbedBuilder(booru)
             .setThumbnail(booru.imageURL)
             .setDescription([
-                queryString + `\`score: ${scoreString}\` \`count: ${countString}\``,
+                this.getPostDetails(booru),
                 '',
                 ...(booru.tags_characters.length ? [`**Characters**: ${DiscordUtil.shortenMessage(characterTagsString, { char: ' ', append: '...', maxLength: 512 })}`] : []),
                 ...(booru.tags_species.length ? [`**Species**: ${DiscordUtil.shortenMessage(speciesTagsString, { char: ' ', append: '...', maxLength: 512 })}`] : []),
                 ...(booru.tags_general.length ? [`**Tags**: ${DiscordUtil.shortenMessage(generalTagsString, { char: ' ', append: '...', maxLength: 1024 })}`] : [])
             ]);
         return this.addEmbed(embed);
+    }
+
+    public addSuggestionsActionRow(booru: BooruSuggestionData): this {
+        const actionRow = new BooruSelectMenuActionRowBuilder()
+            .addSuggestionsSelectMenu(booru);
+        return this.addActionRow(actionRow);
     }
 
     public addImageActionRow(booru: BooruPostData): this {

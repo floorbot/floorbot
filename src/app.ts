@@ -101,7 +101,7 @@ const client = new HandlerClient({
         new MagickMessageHandler(env.IMAGE_MAGICK_PATH),
         new DisputeMessageHandler(pool),
         new TraceMoeMessageHandler(redis),
-        new DefineChatInputHandler(),
+        new DefineChatInputHandler(redis),
         new SavedChatInputHandler(pool),
         new Rule34ChatInputHandler(pool),
         new PregchanChatInputHandler(pool),

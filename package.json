@@ -56,11 +56,12 @@
         "markov-strings": "^3.0.1",
         "node-cache": "^5.1.2",
         "node-schedule": "^2.0.0",
-        "npm": "^8.3.0",
+        "npm": "^8.5.5",
         "owoifyx": "^1.0.3",
         "probe-image-size": "^7.2.2",
         "twemoji": "^13.1.0",
         "tzdata": "^1.0.29",
+        "urban-dictionary": "github:floorbot/floorbot-apis#urban-dictionary",
         "xml2js": "^0.4.23"
     }
 }

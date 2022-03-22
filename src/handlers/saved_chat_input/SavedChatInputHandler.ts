@@ -5,7 +5,7 @@ import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBui
 import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
 import { SavedReplyBuilder } from './SavedReplyBuilder.js';
-import { BooruTable } from '../booru/BooruTable.js';
+import { BooruTable } from '../booru/tables/BooruTable.js';
 import { Pageable } from '../../lib/Pageable.js';
 import { Pool } from 'mariadb';
 
