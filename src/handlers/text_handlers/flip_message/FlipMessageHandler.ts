@@ -1,7 +1,7 @@
 import { ContextMenuCommandInteraction, MessageApplicationCommandData } from 'discord.js';
-import { TextReplyBuilder } from '../text_chat_input/TextReplyBuilder.js';
 import { FlipMessageCommandData } from './FlipMessageCommandData.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { FlipReplyBuilder } from './FlipReplyBuilder.js';
 
 export class FlipMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
 
@@ -11,8 +11,12 @@ export class FlipMessageHandler extends ApplicationCommandHandler<MessageApplica
 
     public async run(contextMenu: ContextMenuCommandInteraction): Promise<void> {
         const text = contextMenu.options.getMessage('message', true).content;
-        if (!text.length) return contextMenu.reply(new TextReplyBuilder(contextMenu).addMissingContentEmbed('flip'));
-        const replyOptions = new TextReplyBuilder(contextMenu)
+        if (!text.length) {
+            const replyOptions = new FlipReplyBuilder(contextMenu)
+                .addMissingContentEmbed('flip');
+            return contextMenu.reply(replyOptions);
+        }
+        const replyOptions = new FlipReplyBuilder(contextMenu)
             .setFlippedContent(text)
             .suppressMentions();
         return await contextMenu.reply(replyOptions);

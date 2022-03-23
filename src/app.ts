@@ -18,24 +18,25 @@ import { MessageReaction } from './automations/MessageReaction.js';
 import { NhentaiCodes } from './automations/NhentaiCodes.js';
 
 // Commands
+import { PregchanChatInputHandler } from './handlers/booru_handlers/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
+import { Rule34ChatInputHandler } from './handlers/booru_handlers/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
+import { DonmaiChatInputHandler } from './handlers/booru_handlers/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
 import { AniListChatInputHandler } from './handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
 import { MagickChatInputHandler } from './handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
-import { PregchanChatInputHandler } from './handlers/booru/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
+import { CoinFlipChatInputHandler } from './handlers/rng_handlers/coin_flip_chat_input/CoinFlipChatInputHandler.js';
 import { TraceMoeMessageHandler } from './handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
-import { Rule34ChatInputHandler } from './handlers/booru/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
-import { DonmaiChatInputHandler } from './handlers/booru/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
+import { E621ChatInputHandler } from './handlers/booru_handlers/handlers/e621_chat_input/E621ChatInputHandler.js';
 import { MagickMessageHandler } from './handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
-import { E621ChatInputHandler } from './handlers/booru/handlers/e621_chat_input/E621ChatInputHandler.js';
 import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
+import { TextChatInputHandler } from './handlers/text_handlers/text_chat_input/TextChatInputHandler.js';
+import { RollChatInputHandler } from './handlers/rng_handlers/roll_chat_input/RollChatInputHandler.js';
+import { OwoifyMessageHandler } from './handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
 import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
 import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
+import { FlipMessageHandler } from './handlers/text_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
-import { RollChatInputHandler } from './handlers/TODO_roll_chat_input/RollChatInputHandler.js';
-import { TextChatInputHandler } from './handlers/text/text_chat_input/TextChatInputHandler.js';
-import { OwoifyMessageHandler } from './handlers/text/owoify_message/OwoifyMessageHandler.js';
 import { SavedChatInputHandler } from './handlers/saved_chat_input/SavedChatInputHandler.js';
-import { FlipMessageHandler } from './handlers/text/flip_message/FlipMessageHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -87,7 +88,7 @@ const client = new HandlerClient({
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FlipMessageHandler(),
-
+        new CoinFlipChatInputHandler(),
         new TextChatInputHandler(),
         new FloorbotChatInputHandler(),
         new AniListChatInputHandler(redis),

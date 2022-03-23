@@ -1,7 +1,7 @@
 import { TextChatInputCommandData, TextChatInputSubcommand } from './TextChatInputCommandData.js';
 import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
+import { TextChatInputReplyBuilder } from './TextChatInputReplyBuilder.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
-import { TextReplyBuilder } from './TextReplyBuilder.js';
 
 export class TextChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
 
@@ -14,22 +14,22 @@ export class TextChatInputHandler extends ApplicationCommandHandler<ChatInputApp
         switch (subcommand) {
             case TextChatInputSubcommand.Owoify: {
                 const text = command.options.getString('text', true);
-                const replyOptions = new TextReplyBuilder(command).setOwoifiedContent(text);
+                const replyOptions = new TextChatInputReplyBuilder(command).setOwoifiedContent(text);
                 return command.reply(replyOptions);
             }
             case TextChatInputSubcommand.Flip: {
                 const text = command.options.getString('text', true);
-                const replyOptions = new TextReplyBuilder(command).setFlippedContent(text);
+                const replyOptions = new TextChatInputReplyBuilder(command).setFlippedContent(text);
                 return command.reply(replyOptions);
             }
             case TextChatInputSubcommand.Leet: {
                 const text = command.options.getString('text', true);
-                const replyOptions = new TextReplyBuilder(command).set1337Content(text);
+                const replyOptions = new TextChatInputReplyBuilder(command).set1337Content(text);
                 return command.reply(replyOptions);
             }
             case TextChatInputSubcommand.Tiny: {
                 const text = command.options.getString('text', true);
-                const replyOptions = new TextReplyBuilder(command).setTinyTextContent(text);
+                const replyOptions = new TextChatInputReplyBuilder(command).setTinyTextContent(text);
                 return command.reply(replyOptions);
             }
         }

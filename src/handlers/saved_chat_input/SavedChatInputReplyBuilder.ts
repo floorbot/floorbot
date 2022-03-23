@@ -1,12 +1,12 @@
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../lib/builders/ResourceMixins.js';
 import { PageableButtonActionRowBuilder } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { ReplyBuilder } from '../../lib/discord/builders/ReplyBuilder.js';
-import { BooruRow } from '../booru/tables/BooruTable.js';
+import { BooruRow } from '../booru_handlers/tables/BooruTable.js';
 import { Pageable } from '../../lib/Pageable.js';
 import { GuildMember, User } from 'discord.js';
 
 
-export class SavedReplyBuilder extends ReplyBuilder {
+export class SavedChatInputReplyBuilder extends ReplyBuilder {
 
     public addNoSavedBoorusEmbed(user: User): this {
         const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD);

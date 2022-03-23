@@ -2,8 +2,8 @@ import { AutocompleteInteraction, ChatInputApplicationCommandData, ChatInputComm
 import { DefineChatInputCommandData, DefineChatInputOption } from "./DefineChatInputCommandData.js";
 import { PageableComponentID } from "../../lib/builders/PageableButtonActionRowBuilder.js";
 import { ApplicationCommandHandler, IAutocomplete } from "discord.js-handlers";
-import { DefineReplyBuilder } from "./builders/DefineReplyBuilder.js";
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
+import { DefineReplyBuilder } from "./DefineReplyBuilder.js";
 import { UrbanDictionaryAPI } from 'urban-dictionary';
 import { Pageable } from "../../lib/Pageable.js";
 import { Redis } from 'ioredis';

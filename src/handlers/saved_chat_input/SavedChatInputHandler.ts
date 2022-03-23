@@ -2,10 +2,10 @@ import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInt
 import { SavedChatInputCommandData, SavedChatInputSubcommand } from './SavedChatInputCommandData.js';
 import { PageableComponentID } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
+import { SavedChatInputReplyBuilder } from './SavedChatInputReplyBuilder.js';
+import { BooruTable } from '../booru_handlers/tables/BooruTable.js';
 import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
-import { SavedReplyBuilder } from './SavedReplyBuilder.js';
-import { BooruTable } from '../booru/tables/BooruTable.js';
 import { Pageable } from '../../lib/Pageable.js';
 import { Pool } from 'mariadb';
 
@@ -26,12 +26,12 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
                 const user = command.options.getUser('user', false) || command.user;
                 let boorus = await this.booruTable.selectBooru(user);
                 if (!Pageable.isNonEmptyArray(boorus)) {
-                    const replyOptions = new SavedReplyBuilder(command)
+                    const replyOptions = new SavedChatInputReplyBuilder(command)
                         .addNoSavedBoorusEmbed(user);
                     await command.followUp(replyOptions);
                 } else {
                     let pageable = new Pageable(boorus);
-                    const replyOptions = new SavedReplyBuilder(command)
+                    const replyOptions = new SavedChatInputReplyBuilder(command)
                         .addSavedBoorusEmbed(user, pageable)
                         .addSavedBoorusActionRow(pageable);
                     const message = await command.followUp(replyOptions);
@@ -43,7 +43,7 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
                         if (button.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
                         if (button.customId === ButtonComponentID.Remove) {
                             if (button.user.id !== user.id || !DiscordUtil.isOwner(user)) {
-                                const replyOptions = new SavedReplyBuilder(button)
+                                const replyOptions = new SavedChatInputReplyBuilder(button)
                                     .addOwnerEmbed()
                                     .setEphemeral(true);
                                 return button.reply(replyOptions);
@@ -56,12 +56,12 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
                         if (!button.deferred) await button.deferUpdate(); // Deleting a booru will already defer
                         boorus = await this.booruTable.selectBooru(user);
                         if (!Pageable.isNonEmptyArray(boorus)) {
-                            const replyOptions = new SavedReplyBuilder(command)
+                            const replyOptions = new SavedChatInputReplyBuilder(command)
                                 .addNoSavedBoorusEmbed(user);
                             return button.editReply(replyOptions);
                         }
                         pageable = new Pageable(boorus, { page: pageable.currentPage });
-                        const replyOptions = new SavedReplyBuilder(command)
+                        const replyOptions = new SavedChatInputReplyBuilder(command)
                             .addSavedBoorusEmbed(user, pageable)
                             .addSavedBoorusActionRow(pageable);
                         return button.editReply(replyOptions);
