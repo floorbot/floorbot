@@ -15,10 +15,10 @@ export class FloorbotChatInputHandler extends ApplicationCommandHandler<ChatInpu
     public async run(command: ChatInputCommandInteraction): Promise<void> {
         const message = await this.runPingInteraction(command);
         const collector = DiscordUtil.createComponentCollector(command.client, message);
-        collector.on('safeCollect', async (component: MessageComponentInteraction) => {
+        collector.on('collect', async (component: MessageComponentInteraction) => {
             switch (component.customId) {
-                case FloorbotButtonComponentID.Ping: return this.runPingInteraction(command, component);
-                case FloorbotButtonComponentID.GuildStats: return this.runGuildComponent(command, component);
+                case FloorbotButtonComponentID.Ping: return await this.runPingInteraction(command, component) && undefined;
+                case FloorbotButtonComponentID.GuildStats: return await this.runGuildComponent(command, component) && undefined;
                 case FloorbotButtonComponentID.ReportBug: {
                     const replyOptions = new FloorbotReplyBuilder(command)
                         .addUnknownComponentEmbed(component)

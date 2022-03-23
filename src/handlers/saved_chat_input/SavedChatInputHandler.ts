@@ -36,7 +36,7 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
                         .addSavedBoorusActionRow(pageable);
                     const message = await command.followUp(replyOptions);
                     const collector = DiscordUtil.createComponentCollector(command.client, message);
-                    collector.on('safeCollect', async (button: ButtonInteraction) => {
+                    collector.on('collect', async (button: ButtonInteraction) => {
 
                         // Handle the buttons
                         if (button.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
@@ -58,13 +58,13 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
                         if (!Pageable.isNonEmptyArray(boorus)) {
                             const replyOptions = new SavedChatInputReplyBuilder(command)
                                 .addNoSavedBoorusEmbed(user);
-                            return button.editReply(replyOptions);
+                            return await button.editReply(replyOptions) && undefined;
                         }
                         pageable = new Pageable(boorus, { page: pageable.currentPage });
                         const replyOptions = new SavedChatInputReplyBuilder(command)
                             .addSavedBoorusEmbed(user, pageable)
                             .addSavedBoorusActionRow(pageable);
-                        return button.editReply(replyOptions);
+                        return await button.editReply(replyOptions) && undefined;
                     });
                 }
             }

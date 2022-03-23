@@ -67,7 +67,7 @@ export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApp
 
             const message = await command.followUp(replyOptions);
             const collector = DiscordUtil.createComponentCollector(command.client, message);
-            collector.on('safeCollect', HandlerUtil.handleCollectorErrors(async component => {
+            collector.on('collect', HandlerUtil.handleCollectorErrors(async component => {
                 if (component.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
                 if (component.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
                 const replyOptions = new RollReplyBuilder(command)

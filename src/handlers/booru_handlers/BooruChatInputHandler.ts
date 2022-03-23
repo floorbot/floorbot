@@ -32,7 +32,7 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
         const replyOptions = this.createReplyOptions(command, booru);
         const message = await command.followUp(replyOptions);
         const collector = DiscordUtil.createComponentCollector(command.client, message);
-        collector.on('safeCollect', this.createCollector(command, booru));
+        collector.on('collect', this.createCollector(command, booru));
     }
 
     private createCollector(source: Interaction, booru: BooruPostData | BooruSuggestionData | BooruErrorData): (interaction: MessageComponentInteraction) => Awaitable<any> {
@@ -72,7 +72,7 @@ export abstract class BooruChatInputHandler extends ApplicationCommandHandler<Ch
                         const replyOptions = this.createReplyOptions(component, booru);
                         const message = await component.followUp(replyOptions);
                         const collector = DiscordUtil.createComponentCollector(component.client, message);
-                        return collector.on('safeCollect', this.createCollector(component, booru));
+                        return collector.on('collect', this.createCollector(component, booru));
                     }
                     case BooruButtonComponentID.Tags: {
                         const replyOptions = new BooruReplyBuilder(source)

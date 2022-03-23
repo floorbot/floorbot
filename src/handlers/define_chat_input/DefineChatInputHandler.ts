@@ -48,7 +48,7 @@ export class DefineChatInputHandler extends ApplicationCommandHandler<ChatInputA
 
         // Handle the pageable button interactions
         const collector = DiscordUtil.createComponentCollector(command.client, message);
-        collector.on('safeCollect', async component => {
+        collector.on('collect', async component => {
             await component.deferUpdate();
             if (component.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
             if (component.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
