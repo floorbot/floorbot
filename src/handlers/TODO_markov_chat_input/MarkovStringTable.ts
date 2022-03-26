@@ -19,7 +19,7 @@ export interface MarkovStringTotals {
     users: number;
 }
 
-export class MarkovStringTable extends MariaDBTable<Pick<MarkovStringRow, 'channel_id' | 'message_id'>, MarkovStringRow> {
+export class MarkovStringTable extends MariaDBTable<MarkovStringRow, Pick<MarkovStringRow, 'channel_id' | 'message_id'>> {
 
     constructor(pool: Pool) {
         super(pool, 'markov_string');

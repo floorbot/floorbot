@@ -1,16 +1,16 @@
-import { GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../lib/apis/open-weather/OpenWeatherAPI.js';
+import { GuildMember, Message, MessageComponentInteraction, Guild, GuildChannel, ChatInputCommandInteraction } from 'discord.js';
 import { WeatherComponentID, WeatherReplyBuilder, WeatherSelectMenuID, WeatherTempsOrder } from './WeatherMixins.js';
 import { PageableComponentID } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { WeatherCommandData, WeatherSubCommand } from './WeatherChatInputCommandData.js';
-import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import WeatherLinkRow, { WeatherLinkTable } from './WeatherLinkTable.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
 import { Pool } from 'mariadb';
 
 export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
 
-export class WeatherChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class WeatherChatInputHandler extends ChatInputCommandHandler {
 
     private readonly database: WeatherLinkTable;
     private readonly openweather: OpenWeatherAPI;

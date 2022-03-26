@@ -13,21 +13,17 @@ export interface BooruRow {
     readonly api_icon_url: string;
 }
 
-export class BooruTable extends MariaDBTable<Pick<BooruRow, 'user_id' | 'image_url'>, BooruRow>  {
+export class BooruTable extends MariaDBTable<BooruRow, Pick<BooruRow, 'user_id' | 'image_url'>>  {
 
     constructor(pool: Pool) {
         super(pool, 'booru');
     }
 
-    public async selectCountBooruImageURL(imageURL: string): ReturnType<BooruTable['selectCount']> {
-        return super.selectCount('image_url', { image_url: imageURL });
-    }
-
-    public async selectBooru(user: User): ReturnType<BooruTable['select']> {
+    public async selectBoorus(user: User): Promise<BooruRow[]> {
         return super.select({ user_id: user.id });
     }
 
-    public async insertBooru(user: User, booru: BooruPostData): ReturnType<BooruTable['insert']> {
+    public async insertBooru(user: User, booru: BooruPostData): Promise<void> {
         return super.insert({
             user_id: user.id,
             image_url: booru.imageURL,
@@ -37,7 +33,7 @@ export class BooruTable extends MariaDBTable<Pick<BooruRow, 'user_id' | 'image_u
         });
     }
 
-    public async deleteBooru(user: User, imageURL?: string): ReturnType<BooruTable['delete']> {
+    public async deleteBooru(user: User, imageURL?: string): Promise<void> {
         return super.delete({
             user_id: user.id,
             ...(imageURL && { image_url: imageURL })

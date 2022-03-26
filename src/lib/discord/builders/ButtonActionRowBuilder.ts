@@ -8,6 +8,8 @@ export enum ButtonComponentID {
     Cross = 'cross',
     Delete = 'delete',
     Remove = 'remove',
+    Agree = 'agree',
+    Disagree = 'disagree',
     Yes = 'yes',
     No = 'no'
 }
@@ -23,6 +25,14 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
             .setURL(url)
             .setStyle(ButtonStyle.Link)
             .setLabel('View Online');
+        return this.addComponent(button);
+    }
+
+    public addViewMessageButton(url: string, data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setURL(url)
+            .setStyle(ButtonStyle.Link)
+            .setLabel('View Message');
         return this.addComponent(button);
     }
 
@@ -63,6 +73,22 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
             .setLabel('Remove')
             .setStyle(ButtonStyle.Danger)
             .setCustomId(ButtonComponentID.Remove);
+        return this.addComponent(button);
+    }
+
+    public addAgreeButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('Agree')
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId(ButtonComponentID.Agree);
+        return this.addComponent(button);
+    }
+
+    public addDisagreeButton(data?: ButtonBuilderData): this {
+        const button = new ButtonBuilder(data)
+            .setLabel('Disagree')
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId(ButtonComponentID.Disagree);
         return this.addComponent(button);
     }
 

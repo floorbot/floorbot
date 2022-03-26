@@ -1,9 +1,9 @@
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
 import { CoinFlipChatInputCommandData } from "./CoinFlipChatInputCommandData.js";
 import { CoinFlipReplyBuilder } from './CoinFlipReplyBuilder.js';
-import { ApplicationCommandHandler } from "discord.js-handlers";
+import { ChatInputCommandHandler } from "discord.js-handlers";
+import { ChatInputCommandInteraction } from "discord.js";
 
-export class CoinFlipChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class CoinFlipChatInputHandler extends ChatInputCommandHandler {
 
     private static readonly MAX_COINS = 100000;
 

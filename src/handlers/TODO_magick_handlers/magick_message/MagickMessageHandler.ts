@@ -1,14 +1,14 @@
-import { Interaction, Message, MessageApplicationCommandData, MessageComponentInteraction, MessageContextMenuCommandInteraction, SelectMenuInteraction } from 'discord.js';
+import { Interaction, Message, MessageComponentInteraction, MessageContextMenuCommandInteraction, SelectMenuInteraction } from 'discord.js';
 import { ImageMagickCLIAction, MagickProgress } from '../../../lib/tools/image-magick/ImageMagickCLIAction.js';
 import { ResponseOptions } from '../../../lib/discord/builders/ReplyBuilder.js';
 import { MagickMessageCommandData } from './MagickMessageCommandData.js';
+import { MessageContextMenuCommandHandler } from 'discord.js-handlers';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { MagickReplyBuilder } from '../MagickReplyBuilder.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import { MagickUtil } from '../MagickUtil.js';
 
-export class MagickMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
+export class MagickMessageHandler extends MessageContextMenuCommandHandler {
 
     private readonly actions: { [index: string]: ImageMagickCLIAction; };
 

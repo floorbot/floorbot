@@ -1,9 +1,9 @@
 import { PageableComponentID } from "../../../lib/builders/PageableButtonActionRowBuilder.js";
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from "discord.js";
 import { RollChatInputCommandData } from "./RollChatInputCommandData.js";
 import { HandlerUtil } from "../../../lib/discord/HandlerUtil.js";
 import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
-import { ApplicationCommandHandler } from "discord.js-handlers";
+import { ChatInputCommandHandler } from "discord.js-handlers";
+import { ChatInputCommandInteraction } from "discord.js";
 import { RollReplyBuilder } from "./RollReplyBuilder.js";
 import { Pageable } from '../../../lib/Pageable.js';
 
@@ -18,7 +18,7 @@ export interface DiceRolled extends DiceRollable {
     readonly total: number;
 }
 
-export class RollChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class RollChatInputHandler extends ChatInputCommandHandler {
 
     private static readonly MAX_ROLLS = 100000;
 

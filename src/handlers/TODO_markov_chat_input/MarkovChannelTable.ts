@@ -17,7 +17,7 @@ export interface MarkovChannelRow {
     readonly quoting: boolean;
 }
 
-export class MarkovChannelTable extends MariaDBTable<Pick<MarkovChannelRow, 'guild_id' | 'channel_id'>, MarkovChannelRow> {
+export class MarkovChannelTable extends MariaDBTable<MarkovChannelRow, Pick<MarkovChannelRow, 'guild_id' | 'channel_id'>> {
 
     private static readonly DEFAULT_MESSAGES = 50;
     private static readonly DEFAULT_MINUTES = 100;

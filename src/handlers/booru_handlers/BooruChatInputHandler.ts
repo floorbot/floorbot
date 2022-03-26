@@ -3,12 +3,12 @@ import { BooruSelectMenuComponentID, BooruSuggestionData } from './builders/Boor
 import { BooruErrorData, BooruPostData, BooruReplyBuilder } from './builders/BooruReplyBuilder.js';
 import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { BooruButtonComponentID } from './builders/BooruButtonActionRowBuilder.js';
-import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
 import { BooruTable } from './tables/BooruTable.js';
 import { Pool } from 'mariadb';
 
-export abstract class BooruChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export abstract class BooruChatInputHandler extends ChatInputCommandHandler {
 
     protected readonly booruTable: BooruTable;
 

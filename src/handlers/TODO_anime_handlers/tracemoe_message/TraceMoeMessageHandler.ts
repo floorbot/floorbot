@@ -1,17 +1,17 @@
-import { ContextMenuCommandInteraction, Interaction, MessageApplicationCommandData } from 'discord.js';
-import { TraceMoeAPI, TraceMoeResult } from '../../../lib/apis/tracemoe/TraceMoeAPI.js';
 import { PageableComponentID } from '../../../lib/builders/PageableButtonActionRowBuilder.js';
+import { TraceMoeAPI, TraceMoeResult } from '../../../lib/apis/tracemoe/TraceMoeAPI.js';
+import { Interaction, MessageContextMenuCommandInteraction } from 'discord.js';
 import { TraceMoeMessageCommandData } from './TraceMoeMessageCommandData.js';
 import { AniListAPI, Media } from '../../../lib/apis/anilist/AniListAPI.js';
+import { MessageContextMenuCommandHandler } from 'discord.js-handlers';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
 import { TraceMoeReplyBuilder } from './TraceMoeReplyBuilder.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { Pageable } from '../../../lib/Pageable.js';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
 
-export class TraceMoeMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
+export class TraceMoeMessageHandler extends MessageContextMenuCommandHandler {
 
     private readonly tracemoe: TraceMoeAPI;
     private readonly anilist: AniListAPI;
@@ -22,7 +22,7 @@ export class TraceMoeMessageHandler extends ApplicationCommandHandler<MessageApp
         this.anilist = new AniListAPI({ redis });
     }
 
-    public async run(contextMenu: ContextMenuCommandInteraction<'cached'>): Promise<any> {
+    public async run(contextMenu: MessageContextMenuCommandInteraction<'cached'>): Promise<any> {
         await contextMenu.deferReply();
 
         // Get the image url if there is one

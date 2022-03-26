@@ -1,15 +1,15 @@
-import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
 import { SavedChatInputCommandData, SavedChatInputSubcommand } from './SavedChatInputCommandData.js';
 import { PageableComponentID } from '../../lib/builders/PageableButtonActionRowBuilder.js';
 import { ButtonComponentID } from '../../lib/discord/builders/ButtonActionRowBuilder.js';
 import { SavedChatInputReplyBuilder } from './SavedChatInputReplyBuilder.js';
+import { ButtonInteraction, ChatInputCommandInteraction } from 'discord.js';
 import { BooruTable } from '../booru_handlers/tables/BooruTable.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
+import { ChatInputCommandHandler } from 'discord.js-handlers';
 import { Pageable } from '../../lib/Pageable.js';
 import { Pool } from 'mariadb';
 
-export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class SavedChatInputHandler extends ChatInputCommandHandler {
 
     protected readonly booruTable: BooruTable;
 
@@ -24,7 +24,7 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
             case SavedChatInputSubcommand.Boorus: {
                 await command.deferReply();
                 const user = command.options.getUser('user', false) || command.user;
-                let boorus = await this.booruTable.selectBooru(user);
+                let boorus = await this.booruTable.selectBoorus(user);
                 if (!Pageable.isNonEmptyArray(boorus)) {
                     const replyOptions = new SavedChatInputReplyBuilder(command)
                         .addNoSavedBoorusEmbed(user);
@@ -54,7 +54,7 @@ export class SavedChatInputHandler extends ApplicationCommandHandler<ChatInputAp
 
                         // Update the reply
                         if (!button.deferred) await button.deferUpdate(); // Deleting a booru will already defer
-                        boorus = await this.booruTable.selectBooru(user);
+                        boorus = await this.booruTable.selectBoorus(user);
                         if (!Pageable.isNonEmptyArray(boorus)) {
                             const replyOptions = new SavedChatInputReplyBuilder(command)
                                 .addNoSavedBoorusEmbed(user);

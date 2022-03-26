@@ -43,7 +43,7 @@
         "async-exit-hook": "^2.0.1",
         "bottleneck": "^2.19.5",
         "cache-map": "github:floorbot/cache-map",
-        "discord.js": "^14.0.0-dev.1647259751.2297c2b",
+        "discord.js": "^14.0.0-dev.1648166883.cedd053",
         "discord.js-handlers": "github:floorbot/discord.js-handlers#dev",
         "dotenv": "^10.0.0",
         "envalid": "^7.2.2",

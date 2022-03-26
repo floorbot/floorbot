@@ -15,7 +15,7 @@ export default interface WeatherLinkRow {
     readonly lon: number;
 }
 
-export class WeatherLinkTable extends MariaDBTable<Pick<WeatherLinkRow, 'user_id' | 'guild_id'>, WeatherLinkRow> {
+export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherLinkRow, 'user_id' | 'guild_id'>> {
 
     constructor(pool: Pool) {
         super(pool, 'weather_link');

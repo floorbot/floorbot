@@ -1,9 +1,9 @@
-import { MessageApplicationCommandData, MessageContextMenuCommandInteraction } from "discord.js";
 import { OwoifyMessageCommandData } from "./OwoifyMessageCommandData.js";
-import { ApplicationCommandHandler } from "discord.js-handlers";
+import { MessageContextMenuCommandHandler } from "discord.js-handlers";
+import { MessageContextMenuCommandInteraction } from "discord.js";
 import { OwoifyReplyBuilder } from './OwoifyReplyBuilder.js';
 
-export class OwoifyMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
+export class OwoifyMessageHandler extends MessageContextMenuCommandHandler {
 
     constructor() {
         super(OwoifyMessageCommandData);

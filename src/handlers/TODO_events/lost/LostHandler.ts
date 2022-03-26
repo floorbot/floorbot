@@ -1,8 +1,8 @@
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction, GuildMember } from 'discord.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ChatInputCommandHandler } from 'discord.js-handlers';
 import { LostCommandData } from './LostCommandData.js';
 
-export class LostHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class LostHandler extends ChatInputCommandHandler {
 
     constructor() {
         super(LostCommandData);

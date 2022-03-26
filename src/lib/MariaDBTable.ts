@@ -1,6 +1,6 @@
 import { Pool } from 'mariadb';
 
-export abstract class MariaDBTable<R, T extends R = R> {
+export abstract class MariaDBTable<R extends P & F, P, F = {}> {
 
     protected readonly table: string;
     protected readonly pool: Pool;
@@ -10,29 +10,29 @@ export abstract class MariaDBTable<R, T extends R = R> {
         this.pool = pool;
     }
 
-    public async query(sql: string, data?: NoExtraProperties<Partial<T>>): Promise<any> {
+    public async query(sql: string, data?: NoExtraProperties<Partial<R>>): Promise<any> {
         return this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
-    public async select(data: NoExtraProperties<Partial<T>>, limit?: number | null): Promise<T[]> {
+    public async select(data: NoExtraProperties<Partial<R>>, limit?: number | null): Promise<R[]> {
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
         const sql = `SELECT * FROM ${this.table} WHERE ${conditions}${limit ? ` LIMIT ${limit}` : ''};`;
         return this.query(sql, data);
     }
 
-    public async selectCount(column: keyof T, data: NoExtraProperties<Partial<T>>): Promise<{ count: string; }> {
+    public async selectCount(column: keyof R, data: NoExtraProperties<Partial<R>>): Promise<{ count: string; }> {
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
         const sql = `SELECT COUNT(${column}) AS count FROM ${this.table} WHERE ${conditions};`;
         return (await this.query(sql, data))[0];
     }
 
-    public async insert(data: NoExtraProperties<T>): Promise<void> {
+    public async insert(data: NoExtraProperties<R>): Promise<void> {
         const values = Object.keys(data).map(key => `:${key}`).join(', ');
         const sql = `REPLACE INTO ${this.table} VALUES (${values});`;
         return this.query(sql, data);
     }
 
-    public async delete(data: NoExtraProperties<Partial<T>>): Promise<void> {
+    public async delete(data: NoExtraProperties<Partial<R>>): Promise<void> {
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
         const sql = `DELETE FROM ${this.table} WHERE ${conditions};`;
         return this.query(sql, data);

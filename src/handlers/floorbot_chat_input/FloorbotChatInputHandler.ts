@@ -1,12 +1,12 @@
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction, ComponentType, Message, MessageComponentInteraction } from "discord.js";
+import { ChatInputCommandInteraction, ComponentType, Message, MessageComponentInteraction } from "discord.js";
 import { FloorbotButtonComponentID } from './builders/FloorbotButtonActionRowBuilder.js';
 import { FloorbotChatInputCommandData } from "./FloorbotChatInputCommandData.js";
 import { FloorbotReplyBuilder } from "./builders/FloorbotReplyBuilder.js";
-import { ApplicationCommandHandler } from "discord.js-handlers";
 import { DiscordUtil } from '../../lib/discord/DiscordUtil.js';
+import { ChatInputCommandHandler } from "discord.js-handlers";
 import { APIMessage } from 'discord-api-types/v10';
 
-export class FloorbotChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
     constructor() {
         super(FloorbotChatInputCommandData);

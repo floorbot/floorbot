@@ -1,9 +1,9 @@
 import { TextChatInputCommandData, TextChatInputSubcommand } from './TextChatInputCommandData.js';
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
 import { TextChatInputReplyBuilder } from './TextChatInputReplyBuilder.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { ChatInputCommandHandler } from 'discord.js-handlers';
+import { ChatInputCommandInteraction } from 'discord.js';
 
-export class TextChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class TextChatInputHandler extends ChatInputCommandHandler {
 
     constructor() {
         super(TextChatInputCommandData);

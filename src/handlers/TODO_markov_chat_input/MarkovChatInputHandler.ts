@@ -1,6 +1,6 @@
-import { CommandInteraction, Message, User, GuildChannel, TextChannel, MessageComponentInteraction, Collection, Interaction, ChatInputApplicationCommandData, ChatInputCommandInteraction } from 'discord.js';
-import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { CommandInteraction, Message, User, GuildChannel, TextChannel, MessageComponentInteraction, Collection, Interaction, ChatInputCommandInteraction } from 'discord.js';
 import { MarkovButtonType, MarkovReplyBuilder } from './MarkovReplyBuilder.js';
+import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { ResponseOptions } from '../../lib/discord/builders/ReplyBuilder.js';
 import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
 import { HandlerUtil } from '../../lib/discord/HandlerUtil.js';
@@ -10,7 +10,7 @@ import Markov from 'markov-strings';
 import { owoify } from 'owoifyx';
 import { Pool } from 'mariadb';
 
-export class MarkovChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class MarkovChatInputHandler extends ChatInputCommandHandler {
 
     private static CORPUSES: Collection<string, Markov> = new Collection();
     private readonly channelTable: MarkovChannelTable;

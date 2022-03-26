@@ -1,9 +1,9 @@
-import { ContextMenuCommandInteraction, MessageApplicationCommandData } from 'discord.js';
+import { MessageContextMenuCommandHandler } from 'discord.js-handlers';
 import { FlipMessageCommandData } from './FlipMessageCommandData.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { ContextMenuCommandInteraction } from 'discord.js';
 import { FlipReplyBuilder } from './FlipReplyBuilder.js';
 
-export class FlipMessageHandler extends ApplicationCommandHandler<MessageApplicationCommandData> {
+export class FlipMessageHandler extends MessageContextMenuCommandHandler {
 
     constructor() {
         super(FlipMessageCommandData);

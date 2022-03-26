@@ -1,6 +1,6 @@
-import { Channel, Client, Collection, DMChannel, Guild, GuildChannel, GuildMember, Interaction, Message, MessageComponentInteraction, Role, TextChannel, User, Util, SplitOptions, PermissionFlagsBits, Events, ApplicationCommandData } from 'discord.js';
-import { ResponseOptions, ReplyBuilder } from './builders/ReplyBuilder.js';
+import { Channel, Client, Collection, DMChannel, Guild, GuildChannel, GuildMember, Interaction, Message, MessageComponentInteraction, Role, TextChannel, User, Util, SplitOptions, PermissionFlagsBits, Events, ApplicationCommandData, CommandInteraction } from 'discord.js';
 import { ApplicationCommandHandler, HandlerClient } from 'discord.js-handlers';
+import { ResponseOptions, ReplyBuilder } from './builders/ReplyBuilder.js';
 import probe, { ProbeResult } from 'probe-image-size';
 import twemoji from 'twemoji';
 
@@ -46,7 +46,7 @@ export class HandlerUtil {
         return false;
     }
 
-    public static handleErrors(handler: ApplicationCommandHandler<ApplicationCommandData>): (error: any) => any {
+    public static handleErrors(handler: ApplicationCommandHandler<CommandInteraction, ApplicationCommandData>): (error: any) => any {
         return (error: any) => {
             console.log(`[${handler.commandData.name}] Handler has encountered an unknown error`, error);
         };
@@ -119,6 +119,7 @@ export class HandlerUtil {
         if (png) return { string: string, imageURL: `https://cdn.discordapp.com/emojis/${png[1]}.png` };
         const gif = /<a:[^:]+:(\d+)>/g.exec(string);
         if (gif) return { string: string, imageURL: `https://cdn.discordapp.com/emojis/${gif[1]}.gif` };
+        // @ts-ignore
         const svg = twemoji.parse(string, { folder: 'svg', ext: '.svg' }).match(/(http(s?):)([^\s])*\.svg/);
         if (svg) return { string: string, imageURL: svg[0]! };
         return null;

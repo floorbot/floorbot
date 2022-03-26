@@ -1,15 +1,15 @@
 import { AniListAPI, AniListAPIRequest, AniListResponse, QueryVars } from '../../../lib/apis/anilist/AniListAPI.js';
-import { ChatInputApplicationCommandData, ChatInputCommandInteraction, CommandInteraction } from 'discord.js';
 import { AniListReplyBuilder, AniListComponentID, AniListUserStatTypes } from './AniListReplyBuilder.js';
 import { AniListChatInputCommandData, AniListSubCommand } from './AniListChatInputCommandData.js';
 import { PageableComponentID } from '../../../lib/builders/PageableButtonActionRowBuilder.js';
+import { ChatInputCommandInteraction, CommandInteraction } from 'discord.js';
 import { HandlerUtil } from '../../../lib/discord/HandlerUtil.js';
-import { ApplicationCommandHandler } from 'discord.js-handlers';
+import { ChatInputCommandHandler } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
 import path from 'path';
 import fs from 'fs';
 
-export class AniListChatInputHandler extends ApplicationCommandHandler<ChatInputApplicationCommandData> {
+export class AniListChatInputHandler extends ChatInputCommandHandler {
 
     private readonly api: AniListAPI;
     private readonly requests: {

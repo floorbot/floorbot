@@ -33,10 +33,10 @@ import { RollChatInputHandler } from './handlers/rng_handlers/roll_chat_input/Ro
 import { OwoifyMessageHandler } from './handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
 import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
-import { DisputeMessageHandler } from './handlers/TODO_dispute_message/DisputeMessageHandler.js';
 import { FlipMessageHandler } from './handlers/text_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { SavedChatInputHandler } from './handlers/saved_chat_input/SavedChatInputHandler.js';
+import { DisputeMessageHandler } from './handlers/dispute_message/DisputeMessageHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
