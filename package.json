@@ -43,7 +43,7 @@
         "async-exit-hook": "^2.0.1",
         "bottleneck": "^2.19.5",
         "cache-map": "github:floorbot/cache-map",
-        "discord.js": "^14.0.0-dev.1648166883.cedd053",
+        "discord.js": "^14.0.0-dev.1648339713-520f471",
         "discord.js-handlers": "github:floorbot/discord.js-handlers#dev",
         "dotenv": "^10.0.0",
         "envalid": "^7.2.2",
@@ -61,7 +61,6 @@
         "probe-image-size": "^7.2.2",
         "twemoji": "^13.1.0",
         "tzdata": "^1.0.29",
-        "urban-dictionary": "github:floorbot/floorbot-apis#urban-dictionary",
         "xml2js": "^0.4.23"
     }
 }

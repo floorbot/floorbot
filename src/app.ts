@@ -13,30 +13,30 @@ import MariaDB from 'mariadb';
 import Redis from 'ioredis';
 
 // Internal tasks
-import { PresenceController } from './automations/PresenceController.js';
-import { MessageReaction } from './automations/MessageReaction.js';
-import { NhentaiCodes } from './automations/NhentaiCodes.js';
+import { PresenceController } from './floorbot/automations/PresenceController.js';
+import { MessageReaction } from './floorbot/automations/MessageReaction.js';
+import { NhentaiCodes } from './floorbot/automations/NhentaiCodes.js';
 
 // Commands
-import { PregchanChatInputHandler } from './handlers/booru_handlers/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
-import { Rule34ChatInputHandler } from './handlers/booru_handlers/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
-import { DonmaiChatInputHandler } from './handlers/booru_handlers/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
-import { AniListChatInputHandler } from './handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
-import { MagickChatInputHandler } from './handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
-import { CoinFlipChatInputHandler } from './handlers/rng_handlers/coin_flip_chat_input/CoinFlipChatInputHandler.js';
-import { TraceMoeMessageHandler } from './handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
-import { E621ChatInputHandler } from './handlers/booru_handlers/handlers/e621_chat_input/E621ChatInputHandler.js';
-import { MagickMessageHandler } from './handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
-import { WeatherChatInputHandler } from './handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
-import { TextChatInputHandler } from './handlers/text_handlers/text_chat_input/TextChatInputHandler.js';
-import { RollChatInputHandler } from './handlers/rng_handlers/roll_chat_input/RollChatInputHandler.js';
-import { OwoifyMessageHandler } from './handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
-import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
-import { MarkovChatInputHandler } from './handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
-import { FlipMessageHandler } from './handlers/text_handlers/flip_message/FlipMessageHandler.js';
-import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
-import { SavedChatInputHandler } from './handlers/saved_chat_input/SavedChatInputHandler.js';
-import { DisputeMessageHandler } from './handlers/dispute_message/DisputeMessageHandler.js';
+import { PregchanChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
+import { Rule34ChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
+import { DonmaiChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
+import { AniListChatInputHandler } from './floorbot/handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
+import { MagickChatInputHandler } from './floorbot/handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
+import { CoinFlipChatInputHandler } from './floorbot/handlers/rng_handlers/coin_flip_chat_input/CoinFlipChatInputHandler.js';
+import { TraceMoeMessageHandler } from './floorbot/handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
+import { E621ChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/e621_chat_input/E621ChatInputHandler.js';
+import { MagickMessageHandler } from './floorbot/handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
+import { WeatherChatInputHandler } from './floorbot/handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
+import { TextChatInputHandler } from './floorbot/handlers/text_handlers/text_chat_input/TextChatInputHandler.js';
+import { RollChatInputHandler } from './floorbot/handlers/rng_handlers/roll_chat_input/RollChatInputHandler.js';
+import { OwoifyMessageHandler } from './floorbot/handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
+import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
+import { MarkovChatInputHandler } from './floorbot/handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
+import { FlipMessageHandler } from './floorbot/handlers/text_handlers/flip_message/FlipMessageHandler.js';
+import { DefineChatInputHandler } from './floorbot/handlers/define_chat_input/DefineChatInputHandler.js';
+import { SavedChatInputHandler } from './floorbot/handlers/saved_chat_input/SavedChatInputHandler.js';
+import { DisputeMessageHandler } from './floorbot/handlers/dispute_message/DisputeMessageHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
