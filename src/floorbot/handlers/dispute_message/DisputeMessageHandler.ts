@@ -3,9 +3,9 @@ import { ComponentCollectorEndHandler } from '../../../lib/discord/ComponentColl
 import { HandlerClient, MessageContextMenuCommandHandler } from 'discord.js-handlers';
 import { ButtonInteraction, MessageContextMenuCommandInteraction } from 'discord.js';
 import { DisputeMessageCommandData } from './DisputeMessageCommandData.js';
+import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
 import { DisputeVoteTable } from './tables/DisputeVoteTable.js';
 import { DisputeReplyBuilder } from './DisputeReplyBuilder.js';
-import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
 import { DisputeTable } from './tables/DisputeTable.js';
 import { Pool } from 'mariadb';
 
