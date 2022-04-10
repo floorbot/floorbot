@@ -44,9 +44,9 @@ export class ButtonActionRowBuilder extends ActionRowBuilder<ButtonBuilder> {
         return this.addComponents(button);
     }
 
-    public addHeartButton(data?: ButtonBuilderData): this {
+    public addHeartButton(hearts?: number | null, data?: ButtonBuilderData): this {
         const button = new ButtonBuilder(data)
-            .setLabel('❤️')
+            .setLabel(`❤️ ${hearts ? hearts : ''}`)
             .setStyle(ButtonStyle.Danger)
             .setCustomId(ButtonComponentID.Heart);
         return this.addComponents(button);

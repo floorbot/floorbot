@@ -33,6 +33,7 @@ import { RollChatInputHandler } from './floorbot/handlers/rng_handlers/roll_chat
 import { OwoifyMessageHandler } from './floorbot/handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
 import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
 import { MarkovChatInputHandler } from './floorbot/handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
+import { MagickUserHandler } from './floorbot/handlers/TODO_magick_handlers/magick_user/MagickUserHandler.js';
 import { FlipMessageHandler } from './floorbot/handlers/text_handlers/flip_message/FlipMessageHandler.js';
 import { DefineChatInputHandler } from './floorbot/handlers/define_chat_input/DefineChatInputHandler.js';
 import { SavedChatInputHandler } from './floorbot/handlers/saved_chat_input/SavedChatInputHandler.js';
@@ -97,6 +98,7 @@ const client = new HandlerClient({
         new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
         new RollChatInputHandler(),
         new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
+        new MagickUserHandler(env.IMAGE_MAGICK_PATH),
         new MagickMessageHandler(env.IMAGE_MAGICK_PATH),
         new DisputeMessageHandler(pool),
         new TraceMoeMessageHandler(redis),
@@ -124,8 +126,8 @@ client.once('ready', () => {
 
     // client.application!.commands.fetch().then(commands => {
     //     commands.forEach(command => {
-    //         if (command.name === 'text') command.delete().then(() => {
-    //             client.application!.commands.create(TextChatInputCommandData).then(console.log);
+    //         if (command.name === 'magick' && command.type === 1) command.delete().then(() => {
+    //             client.application!.commands.create(MagickChatInputCommandData).then(console.log);
     //         });
     //     });
     // });

@@ -27,7 +27,8 @@ export class SavedChatInputHandler extends ChatInputCommandHandler {
                 let boorus = await this.booruTable.selectBoorus(user);
                 if (!Pageable.isNonEmptyArray(boorus)) {
                     const replyOptions = new SavedChatInputReplyBuilder(command)
-                        .addNoSavedBoorusEmbed(user);
+                        .addNoSavedBoorusEmbed(user)
+                        .clearComponents();
                     await command.followUp(replyOptions);
                 } else {
                     let pageable = new Pageable(boorus);
@@ -57,7 +58,8 @@ export class SavedChatInputHandler extends ChatInputCommandHandler {
                         boorus = await this.booruTable.selectBoorus(user);
                         if (!Pageable.isNonEmptyArray(boorus)) {
                             const replyOptions = new SavedChatInputReplyBuilder(command)
-                                .addNoSavedBoorusEmbed(user);
+                                .addNoSavedBoorusEmbed(user)
+                                .clearComponents();
                             return await button.editReply(replyOptions) && undefined;
                         }
                         pageable = new Pageable(boorus, { page: pageable.currentPage });

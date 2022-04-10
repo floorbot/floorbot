@@ -28,7 +28,9 @@ export class SavedChatInputReplyBuilder extends ReplyBuilder {
             .setTitle(`${displayName}'s Saved Boorus`)
             .setImage(booru.image_url)
             .setDescription([
-                `Post: **[${booru.api_name}](${booru.post_url})**`,
+                `**Post**: **[${booru.api_name}](${booru.post_url})**`,
+                `**Saved**: <t:${Math.round(booru.epoch / 1000)}:D>`,
+                ...(booru.notes.length ? [`**Notes**: ${booru.notes}`] : []),
                 '',
                 ...(/\.swf$/.test(booru.image_url) ? [`Sorry! This is a flash file 🙃\n*click the [link](${booru.post_url}) to view in browser*`] : []),
                 ...(/(\.webm$)|(\.mp4$)/.test(booru.image_url) ? [`Sorry! This is a \`webm\` or \`mp4\` file which is not supported in embeds... 😕\n*click the [link](${booru.post_url}) to view in browser*`] : [])

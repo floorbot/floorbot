@@ -28,7 +28,7 @@ export class MarkovChannelTable extends MariaDBTable<MarkovChannelRow, Pick<Mark
 
     public async selectChannel(channel: GuildChannel): Promise<MarkovChannelRow> {
         const query = { guild_id: channel.guild.id, channel_id: channel.id };
-        const rows = await this.select(query, 1);
+        const rows = await this.select(query, { limit: 1 });
         return rows[0] || {
             ...query,
             minutes: MarkovChannelTable.DEFAULT_MINUTES,

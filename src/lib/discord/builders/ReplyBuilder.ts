@@ -176,7 +176,8 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         if (message.embeds.length) builder.setEmbeds(message.embeds);
         // builder.setAllowedMentions()
         if (message.attachments.size) builder.setFiles([...message.attachments.values()]);
-        if (message.components.length) builder.setComponents(message.components);
+        console.log('THIS SHOULD NOT BE CASTED TO ANY PLEASE FIX IN REPLYBUILDER');
+        if (message.components.length) builder.setComponents(<any>message.components);
         if (message.attachments.size) builder.setAttachments([...message.attachments.values()]);
         return builder;
     }

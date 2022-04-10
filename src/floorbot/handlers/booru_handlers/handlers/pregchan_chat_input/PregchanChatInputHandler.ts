@@ -36,8 +36,10 @@ export class PregchanChatInputHandler extends BooruChatInputHandler implements I
         };
         const post = await this.api.randomImage(query || '');
         if (!post) { return { ...booru, url404: null, suggestions: [] }; }
+        const totalHearts = post.imageURL ? await this.booruTable.selectCount('image_url', { image_url: post.imageURL }) : null;
         return {
             ...booru,
+            totalHearts: totalHearts ? Number(totalHearts.count) : 0,
             score: null,
             count: null,
             imageURL: post.imageURL,

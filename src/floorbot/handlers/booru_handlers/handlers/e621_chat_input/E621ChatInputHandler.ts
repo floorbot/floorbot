@@ -41,8 +41,10 @@ export class E621ChatInputHandler extends BooruChatInputHandler implements IAuto
             const suggestions = E621API.isError(autocomplete) ? [] : autocomplete.slice(0, 25).map(tag => { return { name: tag.name, count: tag.post_count }; });
             return { ...booru, url404: url404, suggestions: suggestions };
         }
+        const totalHearts = post.file.url ? await this.booruTable.selectCount('image_url', { image_url: post.file.url }) : null;
         return {
             ...booru,
+            totalHearts: totalHearts ? Number(totalHearts.count) : 0,
             score: post.score.total,
             count: null,
             imageURL: post.file.url,

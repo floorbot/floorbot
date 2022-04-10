@@ -144,7 +144,7 @@ export class MarkovChatInputHandler extends ChatInputCommandHandler {
                             await component.editReply({
                                 ...(message.content && { content: message.content }),
                                 embeds: [...message.embeds, ...embed.embeds ?? []],
-                                components: [...message.components, ...embed.components ?? []]
+                                components: <any>[...message.components, ...embed.components ?? []]
                             });
                             return;
                         }
@@ -165,7 +165,7 @@ export class MarkovChatInputHandler extends ChatInputCommandHandler {
                             await updatedMessage.edit({
                                 ...(updatedMessage.content && { content: updatedMessage.content }),
                                 embeds: updatedMessage.embeds.slice(0, -1),
-                                components: updatedMessage.components.slice(0, -1),
+                                components: <any>updatedMessage.components.slice(0, -1),
                             });
                             break;
                         }

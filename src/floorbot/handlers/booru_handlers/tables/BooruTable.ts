@@ -1,6 +1,6 @@
 import { BooruPostData } from '../builders/BooruReplyBuilder.js';
 import { MariaDBTable } from '../../../../lib/MariaDBTable.js';
-import { User } from 'discord.js';
+import { MessageComponentInteraction, User } from 'discord.js';
 import { Pool } from 'mariadb';
 import path from 'path';
 import fs from 'fs';
@@ -11,6 +11,8 @@ export interface BooruRow {
     readonly post_url: string;
     readonly api_name: string;
     readonly api_icon_url: string;
+    readonly epoch: number;
+    readonly notes: string;
 }
 
 export class BooruTable extends MariaDBTable<BooruRow, Pick<BooruRow, 'user_id' | 'image_url'>>  {
@@ -20,16 +22,18 @@ export class BooruTable extends MariaDBTable<BooruRow, Pick<BooruRow, 'user_id' 
     }
 
     public async selectBoorus(user: User): Promise<BooruRow[]> {
-        return super.select({ user_id: user.id });
+        return super.select({ user_id: user.id }, { order: { epoch: 'DESC' } });
     }
 
-    public async insertBooru(user: User, booru: BooruPostData): Promise<void> {
+    public async insertBooru(component: MessageComponentInteraction, booru: BooruPostData, notes: string): Promise<void> {
         return super.insert({
-            user_id: user.id,
+            user_id: component.user.id,
             image_url: booru.imageURL,
             post_url: booru.postURL,
             api_name: booru.apiName,
-            api_icon_url: booru.apiIconURL
+            api_icon_url: booru.apiIconURL,
+            epoch: component.createdTimestamp,
+            notes: notes
         });
     }
 

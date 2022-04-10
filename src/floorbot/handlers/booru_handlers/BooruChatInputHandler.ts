@@ -2,6 +2,7 @@ import { Awaitable, ChatInputApplicationCommandData, ChatInputCommandInteraction
 import { BooruSelectMenuComponentID, BooruSuggestionData } from './builders/BooruSelectMenuActionRowBuilder.js';
 import { BooruErrorData, BooruPostData, BooruReplyBuilder } from './builders/BooruReplyBuilder.js';
 import { ButtonComponentID } from '../../../lib/discord/builders/ButtonActionRowBuilder.js';
+import { BooruHeartModalComponentID, BooruHeartModalData } from './BooruHeartModalData.js';
 import { BooruButtonComponentID } from './builders/BooruButtonActionRowBuilder.js';
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { DiscordUtil } from '../../../lib/discord/DiscordUtil.js';
@@ -87,31 +88,17 @@ export abstract class BooruChatInputHandler extends ChatInputCommandHandler {
                         return await component.update(replyOptions);
                     }
                     case ButtonComponentID.Heart: {
-                        // await component.showModal({
-                        //     "title": "My Cool Modal",
-                        //     "custom_id": "cool_modal",
-                        //     "components": [{
-                        //         "type": 1,
-                        //         "components": [{
-                        //             "type": 4,
-                        //             "custom_id": "name",
-                        //             "label": "Name",
-                        //             "style": 1,
-                        //             "min_length": 1,
-                        //             "max_length": 4000,
-                        //             "placeholder": "John",
-                        //             "required": true
-                        //         }]
-                        //     }]
-                        // });
-                        await component.deferReply({ ephemeral: true });
-                        await this.booruTable.insertBooru(component.user, booru);
-                        const replyOptions = new BooruReplyBuilder(source)
-                            .addBooruSavedEmbed(booru)
-                            .setEphemeral(true);
-                        return await component.followUp(replyOptions);
+                        await component.showModal(BooruHeartModalData);
                     }
                 }
+            }
+            if (component.isModalSubmit() && BooruChatInputHandler.isBooruPostData(booru)) {
+                await component.deferUpdate();
+                const notes = component.fields.getTextInputValue(BooruHeartModalComponentID.Notes);
+                await this.booruTable.insertBooru(component, booru, notes);
+                booru = { ...booru, totalHearts: booru.totalHearts + 1 };
+                const replyOptions = this.createReplyOptions(source, booru);
+                return await component.editReply(replyOptions);
             }
         };
     }

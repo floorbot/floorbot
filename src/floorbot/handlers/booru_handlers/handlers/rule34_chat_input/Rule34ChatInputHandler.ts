@@ -44,8 +44,10 @@ export class Rule34ChatInputHandler extends BooruChatInputHandler implements IAu
             const suggestions = autocomplete.slice(0, 25).map((tag: Rule34APIAutocomplete) => { return { name: tag.value, count: tag.total }; });
             return { ...booru, url404: url404, suggestions: suggestions };
         }
+        const totalHearts = post.file_url ? await this.booruTable.selectCount('image_url', { image_url: post.file_url }) : null;
         return {
             ...booru,
+            totalHearts: totalHearts ? Number(totalHearts.count) : 0,
             score: parseInt(post.score),
             count: post.count.total,
             imageURL: post.file_url,

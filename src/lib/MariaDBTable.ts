@@ -14,13 +14,15 @@ export abstract class MariaDBTable<R extends P & F, P, F = {}> {
         return this.pool.query({ namedPlaceholders: true, sql: sql }, data);
     }
 
-    public async select(data: NoExtraProperties<Partial<R>>, limit?: number | null): Promise<R[]> {
+    public async select(data: NoExtraProperties<Partial<R>>, constraints?: { limit?: number | null; order?: { [key in keyof R]?: 'DESC' | 'ASC' }; }): Promise<R[]> {
+        const { limit, order } = constraints ?? {};
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
-        const sql = `SELECT * FROM ${this.table} WHERE ${conditions}${limit ? ` LIMIT ${limit}` : ''};`;
+        const orderString = order ? Object.entries(order).map(([key, value]) => `${key} ${value}`).join(', ') : '';
+        const sql = `SELECT * FROM ${this.table} WHERE ${conditions}${orderString.length ? ` ORDER BY ${orderString}` : ''}${limit ? ` LIMIT ${limit}` : ''};`;
         return this.query(sql, data);
     }
 
-    public async selectCount(column: keyof R, data: NoExtraProperties<Partial<R>>): Promise<{ count: string; }> {
+    public async selectCount(column: keyof R, data: NoExtraProperties<Partial<R>>): Promise<{ count: bigint; }> {
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
         const sql = `SELECT COUNT(${column}) AS count FROM ${this.table} WHERE ${conditions};`;
         return (await this.query(sql, data))[0];

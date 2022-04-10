@@ -59,15 +59,17 @@ export class DonmaiChatInputHandler extends BooruChatInputHandler implements IAu
                 }
             }
         }
+        const totalHearts = post.large_file_url ? await this.booruTable.selectCount('image_url', { image_url: post.large_file_url }) : null;
         return {
             ...booru,
+            totalHearts: totalHearts ? Number(totalHearts.count) : 0,
             score: post.score,
             count: DonmaiAPI.isError(count) ? null : count.counts.posts,
             imageURL: post.large_file_url,
             postURL: `https://${this.api.subDomain}.donmai.us/posts/${post.id}`,
-            tags_characters: post.tag_string_character.split(' '),
+            tags_characters: post.tag_string_character.split(' ').filter(tag => tag.length),
             tags_species: [],
-            tags_general: post.tag_string_general.split(' ')
+            tags_general: post.tag_string_general.split(' ').filter(tag => tag.length)
         };
     }
 }

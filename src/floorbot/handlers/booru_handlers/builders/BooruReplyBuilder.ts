@@ -1,7 +1,7 @@
 import { BooruSelectMenuActionRowBuilder, BooruSuggestionData } from './BooruSelectMenuActionRowBuilder.js';
-import { BooruButtonActionRowBuilder } from './BooruButtonActionRowBuilder.js';
 import { ReplyBuilder } from "../../../../lib/discord/builders/ReplyBuilder.js";
 import { EmbedBuilder } from "../../../../lib/discord/builders/EmbedBuilder.js";
+import { BooruButtonActionRowBuilder } from './BooruButtonActionRowBuilder.js';
 import { DiscordUtil } from '../../../../lib/discord/DiscordUtil.js';
 import { Util } from "discord.js";
 
@@ -16,6 +16,7 @@ export interface BooruErrorData extends BaseBooruData {
 }
 
 export interface BooruPostData extends BaseBooruData {
+    readonly totalHearts: number;
     readonly score: number | null;
     readonly count: number | null;
     readonly imageURL: string;
@@ -43,18 +44,6 @@ export class BooruReplyBuilder extends ReplyBuilder {
     public addBooruErrorEmbed(booru: BooruErrorData): this {
         const embed = this.createEmbedBuilder()
             .setDescription(booru.error);
-        return this.addEmbed(embed);
-    }
-
-    public addBooruSavedEmbed(booru: BooruPostData): this {
-        const embed = this.createBooruEmbedBuilder(booru)
-            .setThumbnail(booru.imageURL)
-            .setTitle('Booru Saved!')
-            .setURL(booru.postURL)
-            .setDescription([
-                'Successfully saved this booru to your favourites!',
-                '*You can see your saved boorus with `/saved boorus`*'
-            ]);
         return this.addEmbed(embed);
     }
 
@@ -114,7 +103,7 @@ export class BooruReplyBuilder extends ReplyBuilder {
             .addTagsButton({ disabled: !allTags.length })
             .addRepeatButton(booru.query)
             .addRecycleButton()
-            .addHeartButton();
+            .addHeartButton(booru.totalHearts);
         return this.addActionRow(actionRow);
     }
 
@@ -124,7 +113,7 @@ export class BooruReplyBuilder extends ReplyBuilder {
             .addImageButton()
             .addRepeatButton(booru.query)
             .addRecycleButton()
-            .addHeartButton();
+            .addHeartButton(booru.totalHearts);
         return this.addActionRow(actionRow);
     }
 }
