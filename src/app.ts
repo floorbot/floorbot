@@ -4,7 +4,7 @@ console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
 
 import { HandlerClient, HandlerError } from 'discord.js-handlers';
-import { IntentsBitField } from 'discord.js';
+import { GatewayIntentBits } from 'discord.js';
 import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 import RedisMock from 'ioredis-mock';
@@ -84,8 +84,8 @@ const donmaiEnvAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KE
 if (Object.values(donmaiEnvAuth).some(val => !val)) console.warn('[env](donmai) invalid or missing donmai credentials!');
 
 const client = new HandlerClient({
-    // intents: Object.values(GatewayIntentBits).reduce((acc, p) => typeof p === 'number' ? acc | p : acc, 0), // workaround
-    intents: IntentsBitField.Flags.Guilds,
+    intents: Object.values(GatewayIntentBits).reduce((acc, p) => typeof p === 'number' ? acc | p : acc, 0), // workaround
+    // intents: IntentsBitField.Flags.Guilds,
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FlipMessageHandler(),
