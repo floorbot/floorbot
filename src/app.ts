@@ -1,42 +1,43 @@
-import consolePrettifier from './lib/ConsolePrettifier.js';
+import consolePrettifier from './lib/console-prettifier.js';
 console.error = consolePrettifier(console.error);
+console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
 
-import { HandlerClient } from './discord/HandlerClient.js';
+import { HandlerClient, HandlerError } from 'discord.js-handlers';
+import { IntentsBitField } from 'discord.js';
 import envalid, { num, str } from 'envalid';
-import BetterSqlit3 from 'better-sqlite3';
+import exitHook from 'async-exit-hook';
 import RedisMock from 'ioredis-mock';
-import { Intents } from 'discord.js';
 import { PoolConfig } from 'mariadb';
 import MariaDB from 'mariadb';
 import Redis from 'ioredis';
 
 // Internal tasks
-import { PresenceController } from './automations/PresenceController.js';
-import { MessageReaction } from './automations/MessageReaction.js';
-import { NhentaiCodes } from './automations/NhentaiCodes.js';
-import { BotUpdater } from './automations/BotUpdater.js';
+import { PresenceController } from './floorbot/automations/PresenceController.js';
+import { MessageReaction } from './floorbot/automations/MessageReaction.js';
+import { NhentaiCodes } from './floorbot/automations/NhentaiCodes.js';
 
 // Commands
-import { OwoifyChatInputHandler } from './commands/fun/owoify/owoify_chat_input/OwoifyChatInputHandler.js';
-import { MagickChatInputHandler } from './commands/fun/magick/magick_chat_input/MagickChatInputHandler.js';
-import { OwoifyMessageHandler } from './commands/fun/owoify/owoify_message/OwoifyMessageHandler.js';
-import { MagickMessageHandler } from './commands/fun/magick/magick_message/MagickMessageHandler.js';
-import { FlipChatInputHandler } from './commands/fun/flip/flip_chat_input/FlipChatInputHandler.js';
-import { FlipMessageHandler } from './commands/fun/flip/flip_message/FlipMessageHandler.js';
-import { FloorbotHandler } from './commands/global/floorbot/FloorbotHandler.js';
-import { TraceMoeHandler } from './commands/weeb/tracemoe/TraceMoeHandler.js';
-import { AniListHandler } from './commands/weeb/anilist/AniListHandler.js';
-import { DisputeHandler } from './commands/fun/dispute/DisputeHandler.js';
-import { WeatherHandler } from './commands/fun/weather/WeatherHandler.js';
-import { Rule34Handler } from './commands/booru/rule34/Rule34Handler.js';
-import { DonmaiHandler } from './commands/booru/donmai/DonmaiHandler.js';
-import { DefineHandler } from './commands/fun/define/DefineHandler.js';
-import { MarkovHandler } from './commands/fun/markov/MarkovHandler.js';
-import { DDDHandler } from './commands/events/event_ddd/DDDHandler.js';
-import { LostHandler } from './commands/events/lost/LostHandler.js';
-import { E621Handler } from './commands/booru/e621/E621Handler.js';
-import { RollHandler } from './commands/fun/roll/RollHandler.js';
+import { PregchanChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/pregchan_chat_input/PregchanChatInputHandler.js';
+import { Rule34ChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/rule34_chat_input/Rule34ChatInputHandler.js';
+import { DonmaiChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/donmai_chat_input/DonmaiChatInputHandler.js';
+import { AniListChatInputHandler } from './floorbot/handlers/TODO_anime_handlers/anilist_chat_input/AniListChatInputHandler.js';
+import { MagickChatInputHandler } from './floorbot/handlers/TODO_magick_handlers/magick_chat_input/MagickChatInputHandler.js';
+import { CoinFlipChatInputHandler } from './floorbot/handlers/rng_handlers/coin_flip_chat_input/CoinFlipChatInputHandler.js';
+import { TraceMoeMessageHandler } from './floorbot/handlers/TODO_anime_handlers/tracemoe_message/TraceMoeMessageHandler.js';
+import { E621ChatInputHandler } from './floorbot/handlers/booru_handlers/handlers/e621_chat_input/E621ChatInputHandler.js';
+import { MagickMessageHandler } from './floorbot/handlers/TODO_magick_handlers/magick_message/MagickMessageHandler.js';
+import { WeatherChatInputHandler } from './floorbot/handlers/TODO_weather_chat_input/WeatherChatInputHandler.js';
+import { TextChatInputHandler } from './floorbot/handlers/text_handlers/text_chat_input/TextChatInputHandler.js';
+import { RollChatInputHandler } from './floorbot/handlers/rng_handlers/roll_chat_input/RollChatInputHandler.js';
+import { OwoifyMessageHandler } from './floorbot/handlers/text_handlers/owoify_message/OwoifyMessageHandler.js';
+import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
+import { MarkovChatInputHandler } from './floorbot/handlers/TODO_markov_chat_input/MarkovChatInputHandler.js';
+import { MagickUserHandler } from './floorbot/handlers/TODO_magick_handlers/magick_user/MagickUserHandler.js';
+import { FlipMessageHandler } from './floorbot/handlers/text_handlers/flip_message/FlipMessageHandler.js';
+import { DefineChatInputHandler } from './floorbot/handlers/define_chat_input/DefineChatInputHandler.js';
+import { SavedChatInputHandler } from './floorbot/handlers/saved_chat_input/SavedChatInputHandler.js';
+import { DisputeMessageHandler } from './floorbot/handlers/dispute_message/DisputeMessageHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -72,61 +73,74 @@ const poolConfig: PoolConfig = {
     supportBigInt: true
 };
 
+let pool = MariaDB.createPool(poolConfig);
 if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
-const database = Object.values(poolConfig).some(val => !val) ? new BetterSqlit3(':memory:') : MariaDB.createPool(poolConfig);
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
-const client = new HandlerClient({
-    intents: Object.values(Intents.FLAGS).reduce((acc, p) => acc | p, 0), // All Intents
-    // intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
-    ownerIds: (env.DISCORD_OWNERS || '').split(' '),
-    handlers: [
-        new FloorbotHandler(),
-        new AniListHandler(redis),
-        new LostHandler(),
-        new FlipChatInputHandler(),
-        new OwoifyChatInputHandler(),
-        new FlipMessageHandler(),
-        new OwoifyMessageHandler(),
-        new DDDHandler(database),
-        new MarkovHandler(database),
-        new WeatherHandler(database, env.OPEN_WEATHER_API_KEY),
-        new RollHandler(),
-        new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
-        new MagickMessageHandler(),
-        new DisputeHandler(database),
-        new TraceMoeHandler(redis),
+// A *temporary* check for env vars
+const e621EnvAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
+if (Object.values(e621EnvAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
+const donmaiEnvAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
+if (Object.values(donmaiEnvAuth).some(val => !val)) console.warn('[env](donmai) invalid or missing donmai credentials!');
 
-        new DefineHandler(),
-        new Rule34Handler()
-    ],
-    handlerBuilders: [
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](danbooru) invalid or missing donmai credentials!');
-            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            const options = { subDomain: 'danbooru', auth: auth, nsfw: true };
-            return new DonmaiHandler(options);
-        },
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](safebooru) invalid or missing donmai credentials!');
-            const auth = Object.values(envAuth).some(val => !val) ? undefined : envAuth;
-            const options = { subDomain: 'safebooru', auth: auth, nsfw: false };
-            return new DonmaiHandler(options);
-        },
-        (_client: HandlerClient) => {
-            const envAuth = { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT };
-            if (Object.values(envAuth).some(val => !val)) console.warn('[env](e621) invalid or missing e621 credentials!');
-            return new E621Handler(envAuth);
-        }
+const client = new HandlerClient({
+    // intents: Object.values(GatewayIntentBits).reduce((acc, p) => typeof p === 'number' ? acc | p : acc, 0), // workaround
+    intents: IntentsBitField.Flags.Guilds,
+    ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
+    handlers: [
+        new FlipMessageHandler(),
+        new CoinFlipChatInputHandler(),
+        new TextChatInputHandler(),
+        new FloorbotChatInputHandler(),
+        new AniListChatInputHandler(redis),
+        new OwoifyMessageHandler(),
+        new MarkovChatInputHandler(pool),
+        new WeatherChatInputHandler(pool, env.OPEN_WEATHER_API_KEY),
+        new RollChatInputHandler(),
+        new MagickChatInputHandler(env.IMAGE_MAGICK_PATH),
+        new MagickUserHandler(env.IMAGE_MAGICK_PATH),
+        new MagickMessageHandler(env.IMAGE_MAGICK_PATH),
+        new DisputeMessageHandler(pool),
+        new TraceMoeMessageHandler(redis),
+        new DefineChatInputHandler(redis),
+        new SavedChatInputHandler(pool),
+        new Rule34ChatInputHandler(pool),
+        new PregchanChatInputHandler(pool),
+        new E621ChatInputHandler(pool, { username: env.E621_USERNAME, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT }),
+        new DonmaiChatInputHandler(pool, { subDomain: 'danbooru', nsfw: true, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } }),
+        new DonmaiChatInputHandler(pool, { subDomain: 'safebooru', nsfw: false, auth: { username: env.DONMAI_USERNAME, apiKey: env.DONMAI_API_KEY } })
     ]
 });
 
 client.once('ready', () => {
+    console.log(`[login] Logged in as <${client.user!.tag}>`);
     PresenceController.setup(client);
     MessageReaction.setup(client);
-    BotUpdater.update(client);
     NhentaiCodes.setup(client);
+
+    exitHook((done) => {
+        console.log(`[exit-hook] Logged out of <${client.user!.tag}>`);
+        client.destroy();
+        return done();
+    });
+
+    // client.application!.commands.fetch().then(commands => {
+    //     commands.forEach(command => {
+    //         if (command.name === 'magick' && command.type === 1) command.delete().then(() => {
+    //             client.application!.commands.create(MagickChatInputCommandData).then(console.log);
+    //         });
+    //     });
+    // });
 });
-client.login(env.DISCORD_TOKEN);
+
+client.on('error', (error: Error) => {
+    if (error instanceof HandlerError) {
+        console.error(`[error] ${error.handler.constructor.name} has run into an error "${error.message}"`);
+    } else {
+        console.error('[error] An error as occurred', error.message);
+    }
+});
+
+await client.login(env.DISCORD_TOKEN).then(() => {
+    console.log(`[login] All handlers and events setup for <${client.user!.tag}>`);
+});
