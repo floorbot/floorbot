@@ -1,0 +1,27 @@
+{
+    // Editor
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.bracketPairColorization.enabled": true,
+    // Files
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    // TypeScript
+    "typescript.format.semicolons": "insert",
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    // Spell Check
+    "cSpell.words": [
+        "Arcadeena",
+        "bitfield",
+        "capitalise",
+        "capitalised",
+        "colour",
+        "discordjs",
+        "envalid",
+        "floorbot",
+        "Pageable"
+    ],
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single"
+}
