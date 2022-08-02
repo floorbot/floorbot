@@ -6,24 +6,34 @@ console.log = consolePrettifier(console.log);
 
 import { HandlerClient, HandlerError } from 'discord.js-handlers';
 // import { GatewayIntentBits } from 'discord.js';
-import envalid, { str } from 'envalid';
+import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 
 // Import All Handlers
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
+import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { IntentsBitField } from 'discord.js';
+import RedisMock from 'ioredis-mock';
+import Redis from 'ioredis';
+
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
     DISCORD_OWNERS: str({ default: '', desc: 'Discord IDs separated by space' }),
     DISCORD_FEEDBACK: str({ default: '', desc: 'Discord feedback channel ID' }),
+
+    REDIS_PORT: num({ default: 0, desc: 'Redis Port' }),
+    REDIS_HOST: str({ default: '', desc: 'Redis Host' }),
 });
+
+const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
     intents: [IntentsBitField.Flags.Guilds],
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
-        new FloorbotChatInputHandler(env.DISCORD_FEEDBACK)
+        new FloorbotChatInputHandler(env.DISCORD_FEEDBACK),
+        new DefineChatInputHandler(redis)
     ]
 });
 

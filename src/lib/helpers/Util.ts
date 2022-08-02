@@ -61,28 +61,16 @@ export class Util {
             .join(' '); // Join the string back together
     }
 
-    public static shortenMessage(message: string, options: SplitOptions = {}): string {
-        const short = Util.splitMessage(message, { maxLength: 512, char: '', append: '...', ...options })[0];
-        return short || '';
-    }
-
-    public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' }: SplitOptions = {}) {
-        console.log('THE SPLIT MESSAGE FUNCTION NEEDS TO BE REWRITTEN');
+    /**
+     * Splits a string into multiple chunks at a designated character that do not exceed a specific length.
+     * @param text Content to split
+     * @param options Options controlling the behavior of the split
+     * @returns The message split into an array
+     */
+    public static splitMessage(text: string, { maxLength = 2000, char = '\n', prepend = '', append = '' } = {}) {
         if (text.length <= maxLength) return [text];
-        let splitText: (string | null)[] = [text];
-        if (Array.isArray(char)) {
-            while (char.length > 0 && splitText.some(elem => elem && elem.length > maxLength)) {
-                const currentChar = char.shift();
-                if (currentChar instanceof RegExp) {
-                    splitText = splitText.flatMap(chunk => chunk && chunk.match(currentChar));
-                } else {
-                    splitText = splitText.flatMap(chunk => chunk && chunk.split(currentChar!));
-                }
-            }
-        } else {
-            splitText = text.split(char);
-        }
-        if (splitText.some(elem => elem && elem.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN');
+        const splitText = text.split(char);
+        if (splitText.some(chunk => chunk.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN');
         const messages = [];
         let msg = '';
         for (const chunk of splitText) {
@@ -90,10 +78,13 @@ export class Util {
                 messages.push(msg + append);
                 msg = prepend;
             }
-            msg += (msg && msg !== prepend ? char : '') + chunk!;
+            msg += (msg && msg !== prepend ? char : '') + chunk;
         }
         return messages.concat(msg).filter(m => m);
     }
-}
 
-export type SplitOptions = { maxLength?: number, char?: string | string[] | RegExp | RegExp[], prepend?: string, append?: string; };
+    public static shortenMessage(message: string, { maxLength = 2000, char = '\n', prepend = '', append = '' } = {}): string {
+        const short = Util.splitMessage(message, { maxLength, char, prepend, append })[0];
+        return short || '';
+    }
+}
