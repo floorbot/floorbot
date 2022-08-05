@@ -1,0 +1,44 @@
+query($userId: Int) {
+    Page(perPage: 10, page: 1) {
+        pageInfo {
+            total
+            perPage
+            currentPage
+            lastPage
+            hasNextPage
+        }
+        activities(userId: $userId, type: MEDIA_LIST, sort: ID_DESC) {
+            ... on ListActivity {
+                id
+                type
+                replyCount
+                status
+                progress
+                likeCount
+                siteUrl
+                createdAt
+                media {
+                    id
+                    siteUrl
+                    title {
+                        romaji
+                        english
+                        native
+                        userPreferred
+                    }
+                }
+                user {
+                    id
+                    statistics {
+                        anime {
+                            count
+                        }
+                        manga {
+                            count
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

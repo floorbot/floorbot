@@ -15,6 +15,7 @@ import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatI
 import { IntentsBitField } from 'discord.js';
 import RedisMock from 'ioredis-mock';
 import Redis from 'ioredis';
+import { PresenceController } from './automations/PresenceController.js';
 
 
 const env = envalid.cleanEnv(process.env, {
@@ -40,6 +41,7 @@ const client = new HandlerClient({
 // One time login and exit hook handlers
 client.once('ready', () => {
     console.log(`[login] Logged in as <${client.user!.tag}>`);
+    PresenceController.setup(client);
 
     exitHook((done) => {
         console.log(`[exit-hook] Logged out of <${client.user!.tag}>`);

@@ -1,9 +1,9 @@
-import { UrbanDictionaryAPIDefinition } from '../../apis/urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
+import { UrbanDictionaryAPIDefinition } from './urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../lib/helpers/ResourceMixins.js';
-import { PageableButtonActionRowBuilder } from '../../lib/helpers/PageableButtonActionRowBuilder.js';
+import { PageableButtonActionRowBuilder } from '../../helpers/pageable/PageableButtonActionRowBuilder.js';
 import { EmbedBuilder } from '../../lib/builders/EmbedBuilder.js';
 import { ReplyBuilder } from '../../lib/builders/ReplyBuilder.js';
-import { Pageable } from '../../lib/helpers/Pageable.js';
+import { Pageable } from '../../helpers/pageable/Pageable.js';
 import { Util } from '../../lib/helpers/Util.js';
 
 export class DefineReplyBuilder extends ReplyBuilder {

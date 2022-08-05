@@ -1,0 +1,63 @@
+query($page: Int, $id: Int, $search: String) {
+    Page(page: $page, perPage: 1) {
+        pageInfo {
+            total
+            perPage
+            currentPage
+            lastPage
+            hasNextPage
+        }
+        staff(id: $id, search: $search) {
+            id
+            name {
+                full
+                native
+                first
+                middle
+                last
+            }
+            languageV2
+            image {
+                large
+                medium
+            }
+            description
+            primaryOccupations
+            gender
+            dateOfBirth {
+                year
+                month
+                day
+            }
+            dateOfDeath {
+                year
+                month
+                day
+            }
+            age
+            yearsActive
+            homeTown
+            bloodType
+            siteUrl
+            favourites
+            staffMedia(perPage: 1) {
+                pageInfo {
+                total
+                perPage
+                currentPage
+                lastPage
+                hasNextPage
+                }
+            }
+            characters(perPage: 1) {
+                pageInfo {
+                    total
+                    perPage
+                    currentPage
+                    lastPage
+                    hasNextPage
+                }
+            }
+        }
+    }
+}

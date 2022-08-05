@@ -1,5 +1,5 @@
 import { Client, CollectedInteraction, Events, InteractionCollector, InteractionCollectorOptions, Message } from 'discord.js';
-import { ReplyBuilder } from '../builders/ReplyBuilder.js';
+import { ReplyBuilder } from '../lib/builders/ReplyBuilder.js';
 
 /** The ComponentCollector constructor options type */
 export interface ComponentCollectorOptions<T extends CollectedInteraction> extends InteractionCollectorOptions<T> {

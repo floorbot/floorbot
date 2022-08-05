@@ -1,10 +1,10 @@
 import { BaseInteraction, CommandInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageComponentInteraction, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../helpers/ResourceMixins.js';
-import { PageableButtonActionRowBuilder } from '../helpers/PageableButtonActionRowBuilder.js';
+import { PageableButtonActionRowBuilder } from '../../helpers/pageable/PageableButtonActionRowBuilder.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/ResourceMixins.js';
 import { ArrayElementType } from '../types/array-element-type.js';
+import { Pageable } from '../../helpers/pageable/Pageable.js';
 import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { HandlerContext } from 'discord.js-handlers';
-import { Pageable } from '../helpers/Pageable.js';
 import { EmbedBuilder } from "./EmbedBuilder.js";
 import path from 'path';
 import fs from 'fs';

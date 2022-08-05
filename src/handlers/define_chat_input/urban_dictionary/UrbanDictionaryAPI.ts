@@ -1,7 +1,7 @@
 import { UrbanDictionaryAPIAutocomplete } from './interfaces/UrbanDictionaryAPIAutocomplete.js';
 import { UrbanDictionaryAPIDefinition } from './interfaces/UrbanDictionaryAPIDefinition.js';
 import { UrbanDictionaryAPIResult } from './interfaces/UrbanDictionaryAPIResult.js';
-import { API, APIOptions, RequestOptions } from '../../lib/api/API.js';
+import { API, APIOptions, RequestOptions } from '../../../lib/api/API.js';
 
 export interface UrbanDictionaryRequestOptions extends RequestOptions {
     readonly endpoint: 'random' | 'define' | 'autocomplete-extra';

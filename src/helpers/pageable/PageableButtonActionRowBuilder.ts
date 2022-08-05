@@ -1,5 +1,5 @@
-import { ButtonActionRowBuilder } from '../builders/ButtonActionRowBuilder.js';
-import { ButtonBuilder } from '../builders/ButtonBuilder.js';
+import { ButtonActionRowBuilder } from '../../lib/builders/ButtonActionRowBuilder.js';
+import { ButtonBuilder } from '../../lib/builders/ButtonBuilder.js';
 import { ButtonStyle } from "discord.js";
 import { Pageable } from './Pageable.js';
 

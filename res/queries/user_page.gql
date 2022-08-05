@@ -1,0 +1,152 @@
+query($page: Int, $id: Int, $search: String) {
+    Page(page: $page, perPage: 1) {
+        pageInfo {
+            total
+            perPage
+            currentPage
+            lastPage
+            hasNextPage
+        }
+        users(id: $id, search: $search) {
+            id
+            name
+            avatar {
+                large
+                medium
+            }
+            bannerImage
+            options {
+                titleLanguage
+                displayAdultContent
+                airingNotifications
+                profileColor
+                timezone
+                activityMergeTime
+                staffNameLanguage
+            }
+            mediaListOptions {
+                scoreFormat
+                rowOrder
+                useLegacyLists
+                sharedTheme
+                sharedThemeEnabled
+            }
+            favourites {
+                anime {
+                    pageInfo {
+                        total
+                        perPage
+                        currentPage
+                        lastPage
+                        hasNextPage
+                    }
+                }
+                manga {
+                    pageInfo {
+                        total
+                        perPage
+                        currentPage
+                        lastPage
+                        hasNextPage
+                    }
+                }
+                characters {
+                    pageInfo {
+                        total
+                        perPage
+                        currentPage
+                        lastPage
+                        hasNextPage
+                    }
+                }
+                staff {
+                    pageInfo {
+                        total
+                        perPage
+                        currentPage
+                        lastPage
+                        hasNextPage
+                    }
+                }
+                studios {
+                    pageInfo {
+                        total
+                        perPage
+                        currentPage
+                        lastPage
+                        hasNextPage
+                    }
+                }
+            }
+            statistics {
+                anime {
+                    count
+                    meanScore
+                    standardDeviation
+                    minutesWatched
+                    chaptersRead
+                    volumesRead
+                    formats(limit: 6, sort: COUNT_DESC) {
+                        count
+                        format
+                    }
+                    statuses(sort: COUNT_DESC) {
+                        count
+                        status
+                    }
+                    genres(limit: 6, sort: COUNT_DESC) {
+                        count
+                        genre
+                    }
+                    tags(limit: 6, sort: COUNT_DESC) {
+                        count
+                        tag {
+                            id
+                            name
+                            isAdult
+                        }
+                    }
+                }
+                manga  {
+                    count
+                    meanScore
+                    standardDeviation
+                    minutesWatched
+                    chaptersRead
+                    volumesRead
+                    formats(limit: 6, sort: COUNT_DESC) {
+                        count
+                        format
+                    }
+                    statuses(sort: COUNT_DESC) {
+                        count
+                        status
+                    }
+                    genres(limit: 6, sort: COUNT_DESC) {
+                        count
+                        genre
+                    }
+                    tags(limit: 6, sort: COUNT_DESC) {
+                        count
+                        tag {
+                            id
+                            name
+                            isAdult
+                        }
+                    }
+                }
+            }
+            siteUrl
+            donatorTier
+            donatorBadge
+            moderatorRoles
+            createdAt
+            updatedAt
+            previousNames {
+                name
+                createdAt
+                updatedAt
+            }
+        }
+    }
+}

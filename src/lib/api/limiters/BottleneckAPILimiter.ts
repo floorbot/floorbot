@@ -12,8 +12,10 @@ export class APIBottleneckLimiter<T extends RequestOptions> extends APILimiter<T
 
     public async limit(request: T, fetchable: () => Promise<Response>): Promise<Response> {
         const limiter = this.limits[request.endpoint];
-        // if (limiter) return limiter.schedule(jobOptions, fetchable);
-        if (limiter) return fetchable();
+        console.log('yeah ew need to add joboptions to request limiter');
+        console.log('we also need to check for default limits if not found...');
+        // if (limiter) return limiter.schedule(jobOptions fetchable); //expiration...
+        if (limiter) return limiter.schedule(fetchable);
         return fetchable();
     }
 }
