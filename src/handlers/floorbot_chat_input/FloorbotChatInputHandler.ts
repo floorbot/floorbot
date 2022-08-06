@@ -1,18 +1,17 @@
 import { APIMessage, ChatInputCommandInteraction, CollectedInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
-import { FloorbotTextInputComponentID } from './builders/FloorbotTextInputActionRowBuilder.js';
-import { FloorbotButtonComponentID } from './builders/FloorbotButtonActionRowBuilder.js';
-import { FloorbotChatInputCommandData } from "./FloorbotChatInputCommandData.js";
-import { FloorbotModalBuilder } from './builders/FloorbotModalBuilder.js';
 import { FloorbotReplyBuilder } from "./builders/FloorbotReplyBuilder.js";
+import { FloorbotComponentID } from './builders/FloorbotComponent.js';
+import { FloorbotCommand } from './builders/FloorbotCommand.js';
 import { ChatInputCommandHandler } from "discord.js-handlers";
-import { Util } from '../../lib/helpers/Util.js';
+import { FloorbotModal } from './builders/FloorbotModal.js';
+import { Util } from '../../helpers/Util.js';
 
 export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
     private readonly feedbackChannelID: string;
 
     constructor(feedbackChannelID: string) {
-        super(FloorbotChatInputCommandData);
+        super(FloorbotCommand.slashCommand());
         this.feedbackChannelID = feedbackChannelID;
     }
 
@@ -23,9 +22,9 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
             if (component.isModalSubmit()) this.runFeedbackModalSubmit(component);
             else {
                 switch (component.customId) {
-                    case FloorbotButtonComponentID.Ping: { this.runPingComponent(command, component); break; }
-                    case FloorbotButtonComponentID.GuildStats: { this.runGuildComponent(command, component); break; }
-                    case FloorbotButtonComponentID.Feedback: { this.runFeedbackComponent(component); break; }
+                    case FloorbotComponentID.Ping: { this.runPingComponent(command, component); break; }
+                    case FloorbotComponentID.GuildStats: { this.runGuildComponent(command, component); break; }
+                    case FloorbotComponentID.Feedback: { this.runFeedbackComponent(component); break; }
                 }
             }
         });
@@ -69,17 +68,14 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
     }
 
     public async runFeedbackComponent(component: MessageComponentInteraction): Promise<void> {
-        const modal = new FloorbotModalBuilder()
-            .setTitle('Submit Feedback')
-            .setCustomId('feedback')
-            .addFeedbackTextInputActionRows();
+        const modal = FloorbotModal.feedbackModal();
         return component.showModal(modal);
     }
 
     public async runFeedbackModalSubmit(modal: ModalSubmitInteraction) {
         await modal.deferReply({ ephemeral: true });
-        const feedbackTitle = modal.fields.getTextInputValue(FloorbotTextInputComponentID.FeedbackTitle);
-        const feedbackMessage = modal.fields.getTextInputValue(FloorbotTextInputComponentID.FeedbackMessage);
+        const feedbackTitle = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackTitle);
+        const feedbackMessage = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackMessage);
         const channel = await modal.client.channels.fetch(this.feedbackChannelID);
         if (channel && channel.isTextBased()) {
             const replyOptions = new FloorbotReplyBuilder(modal)

@@ -10,8 +10,8 @@ export class Pageable<T> {
 
     // These are the actual pages taking perPage into account
     get pagedArray(): NonEmptyArray<NonEmptyArray<T>> {
-        const array = [...this.array];
         const pagedArray = [];
+        const array = [...this.array];
         while (array.length) pagedArray.push(array.splice(0, this.perPage));
         return pagedArray as NonEmptyArray<NonEmptyArray<T>>;
     }

@@ -1,3 +1,5 @@
+import './lib/discord.js/builders/ModalBuilder.js';
+
 // Pipe console usage to prettifier
 import consolePrettifier from './lib/console-prettifier.js';
 console.error = consolePrettifier(console.error);

@@ -1,10 +1,11 @@
 import { UrbanDictionaryAPIDefinition } from './urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../lib/helpers/ResourceMixins.js';
-import { PageableButtonActionRowBuilder } from '../../helpers/pageable/PageableButtonActionRowBuilder.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/ResourceMixins.js';
+import { PageableComponent } from '../../helpers/pageable/PageableComponent.js';
+import { DefaultComponent } from '../../helpers/DefaultComponent.js';
 import { EmbedBuilder } from '../../lib/builders/EmbedBuilder.js';
 import { ReplyBuilder } from '../../lib/builders/ReplyBuilder.js';
 import { Pageable } from '../../helpers/pageable/Pageable.js';
-import { Util } from '../../lib/helpers/Util.js';
+import { Util } from '../../helpers/Util.js';
 
 export class DefineReplyBuilder extends ReplyBuilder {
 
@@ -37,11 +38,11 @@ export class DefineReplyBuilder extends ReplyBuilder {
     }
 
     public addDefinitionPageableButtonActionRow(pageable: Pageable<UrbanDictionaryAPIDefinition>): this {
-        const actionRow = new PageableButtonActionRowBuilder();
-        actionRow.addViewOnlineButton(pageable.getPageFirst().permalink);
-        actionRow.addPreviousPageButton(null, pageable.totalPages < 2);
-        actionRow.addNextPageButton(null, pageable.totalPages < 2);
-        return this.addActionRow(actionRow);
+        return this.addActionRow(
+            DefaultComponent.viewOnlineButton({ url: pageable.getPageFirst().permalink }),
+            PageableComponent.previousPageButton({ disabled: pageable.totalPages < 2 }),
+            PageableComponent.nextPageButton({ disabled: pageable.totalPages < 2 })
+        );
     }
 
     public addDefinitionNotFoundEmbed(query?: string | null): this {

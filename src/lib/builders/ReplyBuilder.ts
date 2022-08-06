@@ -1,13 +1,8 @@
-import { BaseInteraction, CommandInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageComponentInteraction, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
-import { PageableButtonActionRowBuilder } from '../../helpers/pageable/PageableButtonActionRowBuilder.js';
+import { ActionRowBuilder, BaseInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/ResourceMixins.js';
 import { ArrayElementType } from '../types/array-element-type.js';
-import { Pageable } from '../../helpers/pageable/Pageable.js';
-import { AttachmentBuilder } from "./AttachmentBuilder.js";
 import { HandlerContext } from 'discord.js-handlers';
 import { EmbedBuilder } from "./EmbedBuilder.js";
-import path from 'path';
-import fs from 'fs';
 
 export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions & MessageOptions & ReplyMessageOptions;
 
@@ -148,12 +143,22 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this.setFlags(flagsBitField.bitfield);
     }
 
-    public addActionRow(component: ArrayElementType<NonNullable<ResponseOptions['components']>>): this {
-        return this.addComponent(component);
+    // public addActionRow(component: ArrayElementType<NonNullable<ResponseOptions['components']>>): this {
+    //     return this.addComponent(component);
+    // }
+
+    // public addActionRows(...components: NonNullable<ResponseOptions['components']>): this {
+    //     return this.addComponents(...components);
+    // }
+
+    public addActionRow(...components: MessageActionRowComponentBuilder[]): this {
+        const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(components);
+        return this.addComponents(actionRow);
     }
 
-    public addActionRows(...components: NonNullable<ResponseOptions['components']>): this {
-        return this.addComponents(...components);
+    public addActionRows(...actionRows: ActionRowBuilder<MessageActionRowComponentBuilder>[]): this {
+        console.log('addactionrow needs fixing');
+        return this.addComponents(<any>actionRows);
     }
 
     public clearComponents(): this {
@@ -180,15 +185,15 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return builder;
     }
 
-    /**
-     * This divides the core functions from the flavoured
-     */
+    // /**
+    //  * This divides the core functions from the flavoured
+    //  */
 
-    /** This is a special attachment to make embeds as wide as possible */
-    protected getEmbedWidenerAttachment(): AttachmentBuilder {
-        const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
-        return new AttachmentBuilder(buffer, { name: 'embed_widener.png' });
-    }
+    // /** This is a special attachment to make embeds as wide as possible */
+    // protected getEmbedWidenerAttachment(): AttachmentBuilder {
+    //     const buffer = fs.readFileSync(`${path.resolve()}/res/embed_widener.png`);
+    //     return new AttachmentBuilder(buffer, { name: 'embed_widener.png' });
+    // }
 
     /** This is a unique helper function for consistent embeds */
     protected createEmbedBuilder(): EmbedBuilder {
@@ -197,103 +202,103 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return embed;
     }
 
-    public addPageActionRow(link?: string, currentPage?: number | Pageable<any>, disabled?: boolean): this {
-        const actionRow = new PageableButtonActionRowBuilder();
-        if (link) actionRow.addViewOnlineButton(link);
-        actionRow.addPreviousPageButton(currentPage, disabled);
-        actionRow.addNextPageButton(currentPage, disabled);
-        return this.addActionRow(actionRow);
-    }
+    // public addPageActionRow(link?: string, currentPage?: number | Pageable<any>, disabled?: boolean): this {
+    //     const actionRow = new PageableButtonActionRowBuilder();
+    //     if (link) actionRow.addViewOnlineButton(link);
+    //     actionRow.addPreviousPageButton(currentPage, disabled);
+    //     actionRow.addNextPageButton(currentPage, disabled);
+    //     return this.addActionRow(actionRow);
+    // }
 
-    public addUnexpectedErrorEmbed(error: any): this {
-        console.error('[error] Unexpected Error', error);
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD_TEARS);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! I seem to have run into an unexpected error processing your request...`,
-                `*The error has been reported and will be fixed in the future!*`,
-                '',
-                ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
-                ...(error && error.message ? [`Message: \`${error.message}\``] : [])
-            ]);
-        this.addFile(attachment);
-        this.addEmbed(embed);
-        return this;
-    }
+    // public addUnexpectedErrorEmbed(error: any): this {
+    //     console.error('[error] Unexpected Error', error);
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD_TEARS);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             `Sorry! I seem to have run into an unexpected error processing your request...`,
+    //             `*The error has been reported and will be fixed in the future!*`,
+    //             '',
+    //             ...(typeof error === 'string' ? [`Message: \`${error}\``] : []),
+    //             ...(error && error.message ? [`Message: \`${error.message}\``] : [])
+    //         ]);
+    //     this.addFile(attachment);
+    //     this.addEmbed(embed);
+    //     return this;
+    // }
 
-    public addUnknownComponentEmbed(component: MessageComponentInteraction): this {
-        console.warn(`[support] Unknown ${component.constructor.name} - <${component.customId}>`);
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SAD);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! I'm not sure how to handle the \`${component.customId}\` component...`,
-                `*The issue has been reported and will be fixed in the future!*`
-            ]);
-        this.addFile(attachment);
-        this.addEmbed(embed);
-        return this;
-    }
+    // public addUnknownComponentEmbed(component: MessageComponentInteraction): this {
+    //     console.warn(`[support] Unknown ${component.constructor.name} - <${component.customId}>`);
+    //     const attachment = ResourceAttachmentBuilder['createAvatarAttachment'](AvatarAttachmentExpression.SAD);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             `Sorry! I'm not sure how to handle the \`${component.customId}\` component...`,
+    //             `*The issue has been reported and will be fixed in the future!*`
+    //         ]);
+    //     this.addFile(attachment);
+    //     this.addEmbed(embed);
+    //     return this;
+    // }
 
-    public addNotFoundEmbed(query?: string | null, message?: string | null): this {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! I could not find any results for \`${query || 'your query'}\``,
-                `*${message ?? 'Please check your spelling or try again later!'}*`
-            ].join('\n'));
-        this.addFile(attachment);
-        this.addEmbed(embed);
-        return this;
-    }
+    // public addNotFoundEmbed(query?: string | null, message?: string | null): this {
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             `Sorry! I could not find any results for \`${query || 'your query'}\``,
+    //             `*${message ?? 'Please check your spelling or try again later!'}*`
+    //         ].join('\n'));
+    //     this.addFile(attachment);
+    //     this.addEmbed(embed);
+    //     return this;
+    // }
 
-    public addMissingContentEmbed(action: string): this {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SMILE_CLOSED);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! It looks like that message has no content to ${action}`,
-                `*Please make the correct changes before trying again!*`
-            ].join('\n'));
-        this.addEmbed(embed);
-        this.addFile(attachment);
-        this.setEphemeral();
-        return this;
-    }
+    // public addMissingContentEmbed(action: string): this {
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.SMILE_CLOSED);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             `Sorry! It looks like that message has no content to ${action}`,
+    //             `*Please make the correct changes before trying again!*`
+    //         ].join('\n'));
+    //     this.addEmbed(embed);
+    //     this.addFile(attachment);
+    //     this.setEphemeral();
+    //     return this;
+    // }
 
-    public addAdminOrOwnerEmbed(): this {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription(
-                this.context instanceof CommandInteraction ? [
-                    'Sorry! Only an admin can use this command',
-                    '*If appropriate ask an admin to help!*'
-                ] : [
-                    'Sorry! Only the creator of this interaction can use this component',
-                    '*If possible try using the command for yourself!*'
-                ]);
-        this.addEmbed(embed);
-        this.addFile(attachment);
-        this.setEphemeral();
-        return this;
-    }
+    // public addAdminOrOwnerEmbed(): this {
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription(
+    //             this.context instanceof CommandInteraction ? [
+    //                 'Sorry! Only an admin can use this command',
+    //                 '*If appropriate ask an admin to help!*'
+    //             ] : [
+    //                 'Sorry! Only the creator of this interaction can use this component',
+    //                 '*If possible try using the command for yourself!*'
+    //             ]);
+    //     this.addEmbed(embed);
+    //     this.addFile(attachment);
+    //     this.setEphemeral();
+    //     return this;
+    // }
 
-    public addOwnerEmbed(): this {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                'Sorry! Only an owner can use this feature',
-                '*If appropriate ask an admin to help!*'
-            ]);
-        this.addEmbed(embed);
-        this.addFile(attachment);
-        this.setEphemeral();
-        return this;
-    }
+    // public addOwnerEmbed(): this {
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             'Sorry! Only an owner can use this feature',
+    //             '*If appropriate ask an admin to help!*'
+    //         ]);
+    //     this.addEmbed(embed);
+    //     this.addFile(attachment);
+    //     this.setEphemeral();
+    //     return this;
+    // }
 
     public addGuildOnlyEmbed(): this {
         const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
@@ -310,18 +315,18 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public addNSFWChannelOnlyEmbed(): this {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.CHEEKY);
-        const embed = this.createEmbedBuilder()
-            .setThumbnail(attachment.getEmbedUrl())
-            .setDescription([
-                `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
-                '*Try a different channel or make this one NSFW if it is appropriate!*'
-            ].join('\n'));
-        if (this.context) embed.setAuthor(this.context);
-        this.addEmbed(embed);
-        this.addFile(attachment);
-        this.setEphemeral();
-        return this;
-    }
+    // public addNSFWChannelOnlyEmbed(): this {
+    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.CHEEKY);
+    //     const embed = this.createEmbedBuilder()
+    //         .setThumbnail(attachment.getEmbedUrl())
+    //         .setDescription([
+    //             `Sorry! It looks like I can only use this command in \`NSFW\` channels!`,
+    //             '*Try a different channel or make this one NSFW if it is appropriate!*'
+    //         ].join('\n'));
+    //     if (this.context) embed.setAuthor(this.context);
+    //     this.addEmbed(embed);
+    //     this.addFile(attachment);
+    //     this.setEphemeral();
+    //     return this;
+    // }
 }

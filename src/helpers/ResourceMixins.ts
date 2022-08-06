@@ -1,6 +1,6 @@
 
-import { AttachmentBuilder } from '../lib/builders/AttachmentBuilder.js';
 import { MixinConstructor } from '../lib/types/ts-mixin-extended.js';
+import { AttachmentBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 

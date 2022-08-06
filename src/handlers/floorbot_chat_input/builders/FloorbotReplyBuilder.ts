@@ -1,18 +1,18 @@
 import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from "discord.js";
-import { FloorbotButtonActionRowBuilder } from "./FloorbotButtonActionRowBuilder.js";
 import { ReplyBuilder } from '../../../lib/builders/ReplyBuilder.js';
-import { Util } from '../../../lib/helpers/Util.js';
+import { FloorbotComponent } from './FloorbotComponent.js';
 import humanizeDuration from 'humanize-duration';
+import { Util } from '../../../helpers/Util.js';
 
 export class FloorbotReplyBuilder extends ReplyBuilder {
 
     public addFloorbotButtonActionRow(inviteURL: string, interaction: BaseInteraction): this {
-        const actionRow = new FloorbotButtonActionRowBuilder()
-            .addInviteButton(inviteURL)
-            .addPingButton()
-            .addGuildStatsButton({ disabled: !interaction.guild })
-            .addFeedbackButton();
-        return this.addActionRow(actionRow);
+        return this.addActionRow(
+            FloorbotComponent.inviteButton({ inviteURL: inviteURL }),
+            FloorbotComponent.pingButton(),
+            FloorbotComponent.guildStatsButton({ disabled: !interaction.inGuild() }),
+            FloorbotComponent.feedbackButton()
+        );
     }
 
     public addPingEmbed(inviteURL: string, interaction: BaseInteraction, message?: APIMessage | Message): this {
