@@ -1,11 +1,11 @@
 import { ActionRowBuilder, ComponentType, MessageActionRowComponentBuilder, ModalActionRowComponentBuilder } from 'discord.js';
-import { ReplyBuilder, ResponseOptions } from '../../builders/ReplyBuilder.js';
+import { ReplyBuilder, ResponseOptions } from '../../discord.js/builders/ReplyBuilder.js';
 
 class BetterActionRowBuilder extends ActionRowBuilder {
 
     public override toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
         if (!this.isMessageActionRowBuilder()) throw 'ActionRowBuilder cannot be used to create ReplyBuilder';
-        return new ReplyBuilder(replyOptions).addActionRows(this);
+        return new ReplyBuilder(replyOptions).addComponents(this);
     }
 
     public override isModalActionRowBuilder(): this is ActionRowBuilder<ModalActionRowComponentBuilder> {

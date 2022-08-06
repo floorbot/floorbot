@@ -1,4 +1,4 @@
-import { ReplyBuilder, ResponseOptions } from '../../builders/ReplyBuilder.js';
+import { ReplyBuilder, ResponseOptions } from './ReplyBuilder.js';
 import { AttachmentBuilder } from 'discord.js';
 
 declare module 'discord.js' {
@@ -13,5 +13,5 @@ AttachmentBuilder.prototype.getEmbedUrl = function (): string {
 };
 
 AttachmentBuilder.prototype.toReplyOptions = function (replyOptions: ResponseOptions = {}): ReplyBuilder {
-    return new ReplyBuilder(replyOptions).addFile(this);
+    return new ReplyBuilder(replyOptions).addFiles(this);
 };

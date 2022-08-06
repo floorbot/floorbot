@@ -1,5 +1,6 @@
 import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from "discord.js";
-import { ReplyBuilder } from '../../../lib/builders/ReplyBuilder.js';
+import { ReplyBuilder } from '../../../lib/discord.js/builders/ReplyBuilder.js';
+import { EmbedBuilderType } from '../../../lib/types/builder-data-types.js';
 import { FloorbotComponent } from './FloorbotComponent.js';
 import humanizeDuration from 'humanize-duration';
 import { Util } from '../../../helpers/Util.js';
@@ -15,24 +16,22 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
         );
     }
 
-    public addPingEmbed(inviteURL: string, interaction: BaseInteraction, message?: APIMessage | Message): this {
+    public addPingEmbed({ inviteURL, interaction, message }: { inviteURL: string, interaction: BaseInteraction, message?: APIMessage | Message; }, data?: EmbedBuilderType): this {
+        const ping = message ? (message instanceof Message ? message.editedTimestamp ?? message.createdTimestamp : Date.parse(message.edited_timestamp ?? message.timestamp)) - interaction.createdTimestamp : 0;
         const { client } = interaction;
-        const embed = this.createEmbedBuilder()
+        const embed = this.createEmbedBuilder(data)
             .setTitle(client.user ? client.user.tag : 'About')
             .setURL(inviteURL)
             .setDescription([
                 message ?
-                    `Ping: **${humanizeDuration((message instanceof Message ?
-                        message.editedTimestamp ?? message.createdTimestamp :
-                        Date.parse(message.edited_timestamp ?? message.timestamp)
-                    ) - interaction.createdTimestamp, { units: ['s', 'ms'], round: true })}**` :
+                    `Ping: **${humanizeDuration(ping, { units: ['s', 'ms'], round: true })}**` :
                     `Ping: **Pinging...**`,
                 ...(client.ws.ping ? [`Heartbeat: **${humanizeDuration(Math.round(client.ws.ping), { units: ['s', 'ms'], round: true })}**`] : []),
                 `Uptime: **${humanizeDuration(client.uptime || 0, { largest: 2, round: true })}**`,
                 `Invite: **[click me!](${inviteURL})**`
             ]);
         if (client.user) embed.setThumbnail(client.user.displayAvatarURL());
-        return this.addEmbed(embed);
+        return this.addEmbeds(embed);
     }
 
     public addGuildEmbed(guild: Guild, bans?: Collection<string, GuildBan>): this {
@@ -59,10 +58,10 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
             { name: `${guild.name} Stats!`, value: lines.slice(0, half).join('\n'), inline: true },
             { name: '\u200b', value: lines.slice(-half).join('\n'), inline: true }
         );
-        if (guild.description) embed.addField({ name: 'Description', value: guild.description, inline: false });
+        if (guild.description) embed.addFields({ name: 'Description', value: guild.description, inline: false });
         if (guild.icon) embed.setThumbnail(guild.iconURL());
         if (guild.splash) embed.setImage(guild.splashURL());
-        return this.addEmbed(embed);
+        return this.addEmbeds(embed);
     }
 
     public addFeedbackEmbed(modal: ModalSubmitInteraction, feedbackTitle: string, feedbackDescription: string): this {
@@ -79,12 +78,12 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
                 { name: 'Title', value: feedbackTitle, inline: false },
                 { name: 'Description', value: feedbackDescription, inline: false }
             ]);
-        return this.addEmbed(embed);
+        return this.addEmbeds(embed);
     }
 
     public addFeedbackReceivedEmbed(): this {
         const embed = this.createEmbedBuilder()
             .setDescription('Thank you for taking time and submitting feedback!');
-        return this.addEmbed(embed);
+        return this.addEmbeds(embed);
     }
 }

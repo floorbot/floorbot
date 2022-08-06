@@ -1,12 +1,12 @@
 import { APIMessage, ChatInputCommandInteraction, CollectedInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
-import { FloorbotReplyBuilder } from "./builders/FloorbotReplyBuilder.js";
-import { FloorbotComponentID } from './builders/FloorbotComponent.js';
-import { FloorbotCommand } from './builders/FloorbotCommand.js';
-import { ChatInputCommandHandler } from "discord.js-handlers";
-import { FloorbotModal } from './builders/FloorbotModal.js';
+import { FloorbotReplyBuilder } from "./factories/FloorbotReplyBuilder.js";
+import { FloorbotComponentID } from './factories/FloorbotComponent.js';
+import { FloorbotCommand } from './factories/FloorbotCommand.js';
+import { FloorbotModal } from './factories/FloorbotModal.js';
+import { SlashCommandHandler } from "discord.js-handlers";
 import { Util } from '../../helpers/Util.js';
 
-export class FloorbotChatInputHandler extends ChatInputCommandHandler {
+export class FloorbotChatInputHandler extends SlashCommandHandler {
 
     private readonly feedbackChannelID: string;
 
@@ -36,7 +36,7 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
         // Send a reply to interaction
         let replyOptions = new FloorbotReplyBuilder(command)
-            .addPingEmbed(inviteURL, component || command)
+            .addPingEmbed({ inviteURL, interaction: component || command })
             .addFloorbotButtonActionRow(inviteURL, command);
         let message = component ?
             await component.update({ ...replyOptions, fetchReply: true }) :
@@ -44,7 +44,7 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
         // Send a reply with time between the interaction received and message sent
         replyOptions = new FloorbotReplyBuilder(command)
-            .addPingEmbed(inviteURL, component || command, message)
+            .addPingEmbed({ inviteURL, interaction: component || command, message: message })
             .addFloorbotButtonActionRow(inviteURL, command);
         return component ?
             component.editReply(replyOptions) :

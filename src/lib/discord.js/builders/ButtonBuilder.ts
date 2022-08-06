@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+import { ActionRowBuilder, ActionRowData, ButtonBuilder, MessageActionRowComponent } from 'discord.js';
 
 class BetterButtonBuilder<T = string> extends ButtonBuilder {
 
@@ -23,8 +23,8 @@ class BetterButtonBuilder<T = string> extends ButtonBuilder {
         return JSON.parse(id);
     }
 
-    public override toActionRow<T>(): ActionRowBuilder<BetterButtonBuilder<T>> {
-        return new ActionRowBuilder<BetterButtonBuilder<any>>().addComponents(this);
+    public override toActionRow<T>(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterButtonBuilder<T>> {
+        return new ActionRowBuilder<BetterButtonBuilder<any>>(data).addComponents(this);
     }
 };
 
@@ -34,7 +34,7 @@ declare module 'discord.js' {
         getCustomId(): T | string | undefined;
         encode(data: T): string;
         decode(id: string): T;
-        toActionRow(): ActionRowBuilder<BetterButtonBuilder<T>>;
+        toActionRow(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterButtonBuilder<T>>;
     }
 };
 

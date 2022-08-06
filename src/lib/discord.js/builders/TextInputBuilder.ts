@@ -1,4 +1,4 @@
-import { ActionRowBuilder, TextInputBuilder } from 'discord.js';
+import { ActionRowBuilder, ActionRowData, ModalActionRowComponent, TextInputBuilder } from 'discord.js';
 
 class BetterTextInputBuilder<T = string> extends TextInputBuilder {
 
@@ -23,8 +23,8 @@ class BetterTextInputBuilder<T = string> extends TextInputBuilder {
         return JSON.parse(id);
     }
 
-    public override toActionRow<T>(): ActionRowBuilder<BetterTextInputBuilder<T>> {
-        return new ActionRowBuilder<BetterTextInputBuilder<any>>().addComponents(this);
+    public override toActionRow<T>(data?: ActionRowData<ModalActionRowComponent>): ActionRowBuilder<BetterTextInputBuilder<T>> {
+        return new ActionRowBuilder<BetterTextInputBuilder<any>>(data).addComponents(this);
     }
 };
 
@@ -34,7 +34,7 @@ declare module 'discord.js' {
         getCustomId(): T | string | undefined;
         encode(data: T): string;
         decode(id: string): T;
-        toActionRow(): ActionRowBuilder<BetterTextInputBuilder<T>>;
+        toActionRow(data?: ActionRowData<ModalActionRowComponent>): ActionRowBuilder<BetterTextInputBuilder<T>>;
     }
 };
 

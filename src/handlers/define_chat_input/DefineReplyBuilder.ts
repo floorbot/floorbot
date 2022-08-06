@@ -1,11 +1,11 @@
 import { UrbanDictionaryAPIDefinition } from './urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/ResourceMixins.js';
 import { PageableComponent } from '../../helpers/pageable/PageableComponent.js';
+import { ReplyBuilder } from '../../lib/discord.js/builders/ReplyBuilder.js';
 import { DefaultComponent } from '../../helpers/DefaultComponent.js';
-import { EmbedBuilder } from '../../lib/builders/EmbedBuilder.js';
-import { ReplyBuilder } from '../../lib/builders/ReplyBuilder.js';
 import { Pageable } from '../../helpers/pageable/Pageable.js';
 import { Util } from '../../helpers/Util.js';
+import { EmbedBuilder } from 'discord.js';
 
 export class DefineReplyBuilder extends ReplyBuilder {
 
@@ -29,12 +29,12 @@ export class DefineReplyBuilder extends ReplyBuilder {
             .setTitle(definition.word);
         if (definition.example.length) {
             const exampleString = definition.example.replace(/(\[|\])/g, '*');
-            embed.addField({
+            embed.addFields({
                 name: 'Example',
                 value: Util.shortenMessage(exampleString, { maxLength: 512 })
             });
         }
-        return this.addEmbed(embed);
+        return this.addEmbeds(embed);
     }
 
     public addDefinitionPageableButtonActionRow(pageable: Pageable<UrbanDictionaryAPIDefinition>): this {
@@ -56,8 +56,8 @@ export class DefineReplyBuilder extends ReplyBuilder {
                 `Sorry! I could not random any definitions`,
                 `*Please try again later in a few minutes!*`
             ]);
-        this.addFile(attachment);
-        this.addEmbed(embed);
+        this.addFiles(attachment);
+        this.addEmbeds(embed);
         return this;
     }
 }

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, SelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ActionRowData, MessageActionRowComponent, SelectMenuBuilder } from 'discord.js';
 
 class BetterSelectMenuBuilder<T = string> extends SelectMenuBuilder {
 
@@ -23,8 +23,8 @@ class BetterSelectMenuBuilder<T = string> extends SelectMenuBuilder {
         return JSON.parse(id);
     }
 
-    public override toActionRow<T>(): ActionRowBuilder<BetterSelectMenuBuilder<T>> {
-        return new ActionRowBuilder<BetterSelectMenuBuilder<any>>().addComponents(this);
+    public override toActionRow<T>(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterSelectMenuBuilder<T>> {
+        return new ActionRowBuilder<BetterSelectMenuBuilder<any>>(data).addComponents(this);
     }
 };
 
@@ -34,7 +34,7 @@ declare module 'discord.js' {
         getCustomId(): T | string | undefined;
         encode(data: T): string;
         decode(id: string): T;
-        toActionRow(): ActionRowBuilder<BetterSelectMenuBuilder<T>>;
+        toActionRow(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterSelectMenuBuilder<T>>;
     }
 };
 
