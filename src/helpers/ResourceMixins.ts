@@ -1,6 +1,6 @@
 
+import { AttachmentBuilder } from '../lib/discord.js/builders/AttachmentBuilder.js';
 import { MixinConstructor } from '../lib/types/ts-mixin-extended.js';
-import { AttachmentBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -23,7 +23,7 @@ export function ResourceAttachmentMixin<T extends MixinConstructor<AttachmentBui
         public static createAvatarAttachment(expression: AvatarAttachmentExpression): ResourceAttachmentBuilder {
             console.log('ResourceMixins are a WIP');
             const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/2-${expression}.png`);
-            return new ResourceAttachmentBuilder(buffer, 'avatar.png');
+            return new ResourceAttachmentBuilder(buffer, { name: 'avatar.png' });
         }
     };
 }

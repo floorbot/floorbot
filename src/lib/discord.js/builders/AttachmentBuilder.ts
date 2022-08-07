@@ -1,17 +1,13 @@
 import { ReplyBuilder, ResponseOptions } from './ReplyBuilder.js';
-import { AttachmentBuilder } from 'discord.js';
+import * as Discord from 'discord.js';
 
-declare module 'discord.js' {
-    export interface AttachmentBuilder {
-        getEmbedUrl(): string;
-        toReplyOptions(replyOptions?: ReplyOptions): ReplyBuilder;
-    }
-};
+export class AttachmentBuilder extends Discord.AttachmentBuilder {
 
-AttachmentBuilder.prototype.getEmbedUrl = function (): string {
-    return `attachment://${this.name}`;
-};
+    public getEmbedUrl(): string {
+        return `attachment://${this.name}`;
+    };
 
-AttachmentBuilder.prototype.toReplyOptions = function (replyOptions: ResponseOptions = {}): ReplyBuilder {
-    return new ReplyBuilder(replyOptions).addFiles(this);
-};
+    public toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
+        return new ReplyBuilder(replyOptions).addFiles(this);
+    };
+}

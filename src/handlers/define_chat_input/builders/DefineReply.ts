@@ -58,6 +58,7 @@ export class DefineReply extends ReplyBuilder {
             ]);
         this.addFiles(attachment);
         this.addEmbeds(embed);
+        console.log(attachment.getEmbedUrl());
         return this;
     }
 }
