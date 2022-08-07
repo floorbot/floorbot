@@ -1,6 +1,8 @@
 import { ActionRowBuilder, ComponentType, MessageActionRowComponentBuilder, ModalActionRowComponentBuilder } from 'discord.js';
 import { ReplyBuilder, ResponseOptions } from '../../discord.js/builders/ReplyBuilder.js';
 
+export type ActionRowBuilderData = ConstructorParameters<typeof ActionRowBuilder>[0];
+
 class BetterActionRowBuilder extends ActionRowBuilder {
 
     public override toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
@@ -28,3 +30,6 @@ declare module 'discord.js' {
 ActionRowBuilder.prototype.toReplyOptions = BetterActionRowBuilder.prototype.toReplyOptions;
 ActionRowBuilder.prototype.isModalActionRowBuilder = BetterActionRowBuilder.prototype.isModalActionRowBuilder;
 ActionRowBuilder.prototype.isMessageActionRowBuilder = BetterActionRowBuilder.prototype.isMessageActionRowBuilder;
+
+export class MessageActionRowBuilder extends ActionRowBuilder<MessageActionRowComponentBuilder> { }
+export class ModalActionRowBuilder extends ActionRowBuilder<ModalActionRowComponentBuilder> { }

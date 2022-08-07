@@ -1,5 +1,7 @@
 import { ActionRowBuilder, ActionRowData, MessageActionRowComponent, SelectMenuBuilder } from 'discord.js';
 
+export type SelectMenuBuilderData = ConstructorParameters<typeof SelectMenuBuilder>[0];
+
 class BetterSelectMenuBuilder<T = string> extends SelectMenuBuilder {
 
     public override setCustomId(data: string | T): this {

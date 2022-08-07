@@ -1,11 +1,13 @@
-import { ActionRowBuilder, BaseInteraction, EmbedBuilder, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
-import { EmbedBuilderType } from '../../types/builder-data-types.js';
-import { HandlerContext } from 'discord.js-handlers';
+import { ActionRowBuilder, BaseInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/ResourceMixins.js';
+import { EmbedBuilder, EmbedBuilderData } from './EmbedBuilder.js';
+import { HandlerContext } from 'discord.js-handlers';
 
 export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions & MessageOptions & ReplyMessageOptions;
 
 export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateOptions {
+
+    public static AUTO_AUTHOR = false;
 
     public readonly context?: HandlerContext;
 
@@ -159,9 +161,9 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
      */
 
     /** This is a unique helper function for consistent embeds */
-    protected createEmbedBuilder(data?: EmbedBuilderType): EmbedBuilder {
+    protected createEmbedBuilder(data?: EmbedBuilderData): EmbedBuilder {
         const embed = new EmbedBuilder(data);
-        if (this.context) embed.setAuthor(this.context);
+        if (ReplyBuilder.AUTO_AUTHOR && this.context) embed.setAuthor(this.context);
         return embed;
     }
 

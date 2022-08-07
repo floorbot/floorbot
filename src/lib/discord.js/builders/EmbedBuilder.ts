@@ -1,20 +1,30 @@
-import { BaseInteraction, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, GuildMember, Message } from 'discord.js';
-import { HandlerContext } from 'discord.js-handlers';
+import { BaseInteraction, EmbedAuthorOptions, EmbedFooterOptions, GuildMember, Message } from 'discord.js';
 import { ReplyBuilder, ResponseOptions } from './ReplyBuilder.js';
+import { HandlerContext } from 'discord.js-handlers';
+import * as Discord from 'discord.js';
 
-export class BetterEmbedBuilder extends EmbedBuilder {
+export type EmbedBuilderData = ConstructorParameters<typeof Discord.EmbedBuilder>[0] & { context?: HandlerContext; };
+
+export class EmbedBuilder extends Discord.EmbedBuilder {
+
+    public static DEFAULT_COLOUR = 14840969;
+
+    constructor(data?: EmbedBuilderData) {
+        super(data);
+        this.setColor(EmbedBuilder.DEFAULT_COLOUR);
+        if (data && data.context) this.setAuthor(data.context);
+    }
 
     public override setAuthor(options: EmbedAuthorOptions | null | HandlerContext): this {
-        const defaultColour = 14840969;
         if (options instanceof BaseInteraction || options instanceof Message) {
             const { member } = options;
             if (member && member instanceof GuildMember) {
                 super.setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() });
-                return this.setColor(member.displayColor || defaultColour);
+                return this.setColor(member.displayColor || EmbedBuilder.DEFAULT_COLOUR);
             }
             const user = options instanceof Message ? options.author : options.user;
             super.setAuthor({ name: user.username, iconURL: user.displayAvatarURL() });
-            return this.setColor(defaultColour);
+            return this.setColor(EmbedBuilder.DEFAULT_COLOUR);
         }
         return super.setAuthor(options);
     }
@@ -34,21 +44,7 @@ export class BetterEmbedBuilder extends EmbedBuilder {
         });
     }
 
-    public override toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
+    public toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
         return new ReplyBuilder(replyOptions).addEmbeds(this);
     }
 };
-
-declare module 'discord.js' {
-    export interface EmbedBuilder {
-        setAuthor(options: EmbedAuthorOptions | null | HandlerContext): this;
-        setDescription(description: string | null | string[]): this;
-        setFooter(options: EmbedFooterOptions | { text: string[]; } | null): this;
-        toReplyOptions(replyOptions: ResponseOptions): ReplyBuilder;
-    }
-};
-
-EmbedBuilder.prototype.setAuthor = BetterEmbedBuilder.prototype.setAuthor;
-EmbedBuilder.prototype.setDescription = BetterEmbedBuilder.prototype.setDescription;
-EmbedBuilder.prototype.setFooter = BetterEmbedBuilder.prototype.setFooter;
-EmbedBuilder.prototype.toReplyOptions = BetterEmbedBuilder.prototype.toReplyOptions;

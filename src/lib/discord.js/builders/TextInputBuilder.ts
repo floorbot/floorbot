@@ -1,5 +1,7 @@
 import { ActionRowBuilder, ActionRowData, ModalActionRowComponent, TextInputBuilder } from 'discord.js';
 
+export type TextInputBuilderData = ConstructorParameters<typeof TextInputBuilder>[0];
+
 class BetterTextInputBuilder<T = string> extends TextInputBuilder {
 
     public override setCustomId(data: string | T): this {

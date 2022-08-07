@@ -67,7 +67,8 @@ export class Util {
      * @param options Options controlling the behavior of the split
      * @returns The message split into an array
      */
-    public static splitMessage(text: string, { maxLength = 2000, char = '\n', prepend = '', append = '' } = {}) {
+    public static splitMessage(text: string, { maxLength = 2000, char = '', prepend = '', append = '' } = {}) {
+        console.log('UTIL SPLIT MESSAGE NEEDS TO BE REWRITTEN');
         if (text.length <= maxLength) return [text];
         const splitText = text.split(char);
         if (splitText.some(chunk => chunk.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN');
@@ -83,8 +84,9 @@ export class Util {
         return messages.concat(msg).filter(m => m);
     }
 
-    public static shortenMessage(message: string, { maxLength = 2000, char = '\n', prepend = '', append = '' } = {}): string {
-        const short = Util.splitMessage(message, { maxLength, char, prepend, append })[0];
-        return short || '';
+    public static shortenText(text: string, { maxLength = 2000, append = '...' } = {}): string {
+        if (text.length <= maxLength) return text;
+        const substring = text.substring(0, maxLength - append.length);
+        return substring.trimEnd() + append;
     }
 }

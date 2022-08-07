@@ -1,4 +1,5 @@
 import './lib/discord.js/builders/ModalBuilder.js';
+import './lib/discord.js/builders/EmbedBuilder.js';
 
 // Pipe console usage to prettifier
 import consolePrettifier from './lib/console-prettifier.js';

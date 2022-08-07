@@ -1,13 +1,13 @@
-import { UrbanDictionaryAPIDefinition } from './urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../helpers/ResourceMixins.js';
-import { PageableComponent } from '../../helpers/pageable/PageableComponent.js';
-import { ReplyBuilder } from '../../lib/discord.js/builders/ReplyBuilder.js';
-import { DefaultComponent } from '../../helpers/DefaultComponent.js';
-import { Pageable } from '../../helpers/pageable/Pageable.js';
-import { Util } from '../../helpers/Util.js';
-import { EmbedBuilder } from 'discord.js';
+import { UrbanDictionaryAPIDefinition } from '../urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
+import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/ResourceMixins.js';
+import { PageableComponent } from '../../../helpers/pageable/PageableComponent.js';
+import { ReplyBuilder } from '../../../lib/discord.js/builders/ReplyBuilder.js';
+import { EmbedBuilder } from '../../../lib/discord.js/builders/EmbedBuilder.js';
+import { DefaultComponent } from '../../../helpers/DefaultComponent.js';
+import { Pageable } from '../../../helpers/pageable/Pageable.js';
+import { Util } from '../../../helpers/Util.js';
 
-export class DefineReplyBuilder extends ReplyBuilder {
+export class DefineReply extends ReplyBuilder {
 
     protected createDefineEmbedBuilder(pageable?: Pageable<UrbanDictionaryAPIDefinition>): EmbedBuilder {
         const embed = super.createEmbedBuilder().setFooter({
@@ -24,14 +24,14 @@ export class DefineReplyBuilder extends ReplyBuilder {
         const definition = pageable.getPageFirst();
         const definitionString = definition.definition.replace(/(\[|\])/g, '*');
         const embed = this.createDefineEmbedBuilder(pageable)
-            .setDescription(Util.shortenMessage(definitionString, { maxLength: 1024 }))
+            .setDescription(Util.shortenText(definitionString, { maxLength: 1024 }))
             .setURL(definition.permalink)
             .setTitle(definition.word);
         if (definition.example.length) {
             const exampleString = definition.example.replace(/(\[|\])/g, '*');
             embed.addFields({
                 name: 'Example',
-                value: Util.shortenMessage(exampleString, { maxLength: 512 })
+                value: Util.shortenText(exampleString, { maxLength: 512 })
             });
         }
         return this.addEmbeds(embed);

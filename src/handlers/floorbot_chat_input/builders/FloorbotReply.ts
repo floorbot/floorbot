@@ -1,25 +1,25 @@
-import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from "discord.js";
+import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from 'discord.js';
+import { FloorbotComponentID, FloorbotMessageActionRow } from './FloorbotActionRow.js';
 import { ReplyBuilder } from '../../../lib/discord.js/builders/ReplyBuilder.js';
-import { EmbedBuilderType } from '../../../lib/types/builder-data-types.js';
-import { FloorbotComponent } from './FloorbotComponent.js';
+import { HandlerContext } from 'discord.js-handlers';
 import humanizeDuration from 'humanize-duration';
 import { Util } from '../../../helpers/Util.js';
 
-export class FloorbotReplyBuilder extends ReplyBuilder {
+export class FloorbotReply extends ReplyBuilder {
 
-    public addFloorbotButtonActionRow(inviteURL: string, interaction: BaseInteraction): this {
-        return this.addActionRow(
-            FloorbotComponent.inviteButton({ inviteURL: inviteURL }),
-            FloorbotComponent.pingButton(),
-            FloorbotComponent.guildStatsButton({ disabled: !interaction.inGuild() }),
-            FloorbotComponent.feedbackButton()
-        );
+    public addFloorbotActionRow(context: HandlerContext, inviteURL: string): this {
+        const actionRow = new FloorbotMessageActionRow()
+            .addInviteButton(inviteURL)
+            .addPingButton()
+            .addGuildStatsButton(context)
+            .addFeedbackButton();
+        return this.addComponents(actionRow);
     }
 
-    public addPingEmbed({ inviteURL, interaction, message }: { inviteURL: string, interaction: BaseInteraction, message?: APIMessage | Message; }, data?: EmbedBuilderType): this {
+    public addPingEmbed({ inviteURL, interaction, message }: { inviteURL: string, interaction: BaseInteraction, message?: APIMessage | Message; }): this {
         const ping = message ? (message instanceof Message ? message.editedTimestamp ?? message.createdTimestamp : Date.parse(message.edited_timestamp ?? message.timestamp)) - interaction.createdTimestamp : 0;
         const { client } = interaction;
-        const embed = this.createEmbedBuilder(data)
+        const embed = this.createEmbedBuilder()
             .setTitle(client.user ? client.user.tag : 'About')
             .setURL(inviteURL)
             .setDescription([
@@ -34,7 +34,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
         return this.addEmbeds(embed);
     }
 
-    public addGuildEmbed(guild: Guild, bans?: Collection<string, GuildBan>): this {
+    public addGuildEmbed({ guild, bans }: { guild: Guild, bans?: Collection<string, GuildBan>; }): this {
         const member = guild.members.me;
         const lines = [
             `Created: **<t:${Math.floor(guild.createdTimestamp / 1000)}:f>**`,
@@ -58,13 +58,15 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
             { name: `${guild.name} Stats!`, value: lines.slice(0, half).join('\n'), inline: true },
             { name: '\u200b', value: lines.slice(-half).join('\n'), inline: true }
         );
-        if (guild.description) embed.addFields({ name: 'Description', value: guild.description, inline: false });
+        if (guild.description) embed.addFields({ name: 'Description', value: Util.shortenText(guild.description, { maxLength: 1024 }), inline: false });
         if (guild.icon) embed.setThumbnail(guild.iconURL());
         if (guild.splash) embed.setImage(guild.splashURL());
         return this.addEmbeds(embed);
     }
 
-    public addFeedbackEmbed(modal: ModalSubmitInteraction, feedbackTitle: string, feedbackDescription: string): this {
+    public addFeedbackEmbed({ modal }: { modal: ModalSubmitInteraction; }): this {
+        const feedbackTitle = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackTitle);
+        const feedbackMessage = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackMessage);
         const embed = this.createEmbedBuilder()
             .setThumbnail(modal.user.displayAvatarURL())
             .setTitle('Feedback')
@@ -76,7 +78,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
             ])
             .addFields([
                 { name: 'Title', value: feedbackTitle, inline: false },
-                { name: 'Description', value: feedbackDescription, inline: false }
+                { name: 'Description', value: feedbackMessage, inline: false }
             ]);
         return this.addEmbeds(embed);
     }

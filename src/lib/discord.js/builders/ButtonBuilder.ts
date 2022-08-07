@@ -1,5 +1,7 @@
 import { ActionRowBuilder, ActionRowData, ButtonBuilder, MessageActionRowComponent } from 'discord.js';
 
+export type ButtonBuilderData = ConstructorParameters<typeof ButtonBuilder>[0];
+
 class BetterButtonBuilder<T = string> extends ButtonBuilder {
 
     public override setCustomId(data: string | T): this {
@@ -39,6 +41,7 @@ declare module 'discord.js' {
 };
 
 ButtonBuilder.prototype.setCustomId = BetterButtonBuilder.prototype.setCustomId;
+ButtonBuilder.prototype.getCustomId = BetterButtonBuilder.prototype.getCustomId;
 ButtonBuilder.prototype.encode = BetterButtonBuilder.prototype.encode;
 ButtonBuilder.prototype.decode = BetterButtonBuilder.prototype.decode;
 ButtonBuilder.prototype.toActionRow = BetterButtonBuilder.prototype.toActionRow;

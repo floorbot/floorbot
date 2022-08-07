@@ -1,12 +1,12 @@
 import { APIMessage, ChatInputCommandInteraction, CollectedInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
-import { FloorbotReplyBuilder } from "./factories/FloorbotReplyBuilder.js";
-import { FloorbotComponentID } from './factories/FloorbotComponent.js';
-import { FloorbotCommand } from './factories/FloorbotCommand.js';
-import { FloorbotModal } from './factories/FloorbotModal.js';
-import { SlashCommandHandler } from "discord.js-handlers";
+import { FloorbotComponentID } from './builders/FloorbotActionRow.js';
+import { FloorbotCommand } from './builders/FloorbotCommand.js';
+import { ChatInputCommandHandler } from "discord.js-handlers";
+import { FloorbotReply } from './builders/FloorbotReply.js';
+import { FloorbotModal } from './builders/FloorbotModal.js';
 import { Util } from '../../helpers/Util.js';
 
-export class FloorbotChatInputHandler extends SlashCommandHandler {
+export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
     private readonly feedbackChannelID: string;
 
@@ -35,17 +35,17 @@ export class FloorbotChatInputHandler extends SlashCommandHandler {
         const inviteURL = client.generateInvite();
 
         // Send a reply to interaction
-        let replyOptions = new FloorbotReplyBuilder(command)
+        let replyOptions = new FloorbotReply(command)
             .addPingEmbed({ inviteURL, interaction: component || command })
-            .addFloorbotButtonActionRow(inviteURL, command);
+            .addFloorbotActionRow(command, inviteURL);
         let message = component ?
             await component.update({ ...replyOptions, fetchReply: true }) :
             await command.reply({ ...replyOptions, fetchReply: true });
 
         // Send a reply with time between the interaction received and message sent
-        replyOptions = new FloorbotReplyBuilder(command)
-            .addPingEmbed({ inviteURL, interaction: component || command, message: message })
-            .addFloorbotButtonActionRow(inviteURL, command);
+        replyOptions = new FloorbotReply(command)
+            .addPingEmbed({ inviteURL, interaction: component || command, message })
+            .addFloorbotActionRow(command, inviteURL);
         return component ?
             component.editReply(replyOptions) :
             command.editReply(replyOptions);
@@ -54,16 +54,16 @@ export class FloorbotChatInputHandler extends SlashCommandHandler {
     public async runGuildComponent(command: ChatInputCommandInteraction, component: MessageComponentInteraction): Promise<APIMessage | Message> {
         const { client, guild } = component;
         if (!guild) {
-            const replyOptions = new FloorbotReplyBuilder(command)
+            const replyOptions = new FloorbotReply(command)
                 .addGuildOnlyEmbed();
             return component.reply({ ...replyOptions, fetchReply: true });
         }
         const inviteURL = client.generateInvite();
         await component.deferUpdate();
         const bans = await guild.bans.fetch({ cache: false }).catch(_error => undefined);
-        const replyOptions = new FloorbotReplyBuilder(command)
-            .addGuildEmbed(guild, bans)
-            .addFloorbotButtonActionRow(inviteURL, command);
+        const replyOptions = new FloorbotReply(command)
+            .addGuildEmbed({ guild, bans })
+            .addFloorbotActionRow(command, inviteURL);
         return component.editReply(replyOptions);
     }
 
@@ -74,16 +74,14 @@ export class FloorbotChatInputHandler extends SlashCommandHandler {
 
     public async runFeedbackModalSubmit(modal: ModalSubmitInteraction) {
         await modal.deferReply({ ephemeral: true });
-        const feedbackTitle = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackTitle);
-        const feedbackMessage = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackMessage);
         const channel = await modal.client.channels.fetch(this.feedbackChannelID);
         if (channel && channel.isTextBased()) {
-            const replyOptions = new FloorbotReplyBuilder(modal)
-                .addFeedbackEmbed(modal, feedbackTitle, feedbackMessage);
+            const replyOptions = new FloorbotReply(modal)
+                .addFeedbackEmbed({ modal });
             await channel.send(replyOptions);
         }
         else console.log('[support] Feedback received and channel does not exist');
-        const replyOptions = new FloorbotReplyBuilder(modal)
+        const replyOptions = new FloorbotReply(modal)
             .addFeedbackReceivedEmbed()
             .setEphemeral(true);
         return modal.followUp(replyOptions);
