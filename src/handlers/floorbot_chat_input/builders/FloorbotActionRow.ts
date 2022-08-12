@@ -10,7 +10,7 @@ export enum FloorbotComponentID {
     FeedbackMessage = 'feedback_message'
 }
 
-export class FloorbotMessageActionRow extends ActionRowBuilder<MessageActionRowComponentBuilder>{
+export class FloorbotMessageActionRow extends ActionRowBuilder<MessageActionRowComponentBuilder> {
 
     public addInviteButton(inviteURL: string): this {
         const button = new ButtonBuilder()

@@ -1,15 +1,16 @@
-import { ActionRowBuilder, ActionRowData, MessageActionRowComponent, SelectMenuBuilder } from 'discord.js';
+import Discord, { ActionRowBuilder, ActionRowData, MessageActionRowComponent, SelectMenuOptionBuilder } from 'discord.js';
 
 export type SelectMenuBuilderData = ConstructorParameters<typeof SelectMenuBuilder>[0];
+export type SelectMenuOptionBuilderData = ConstructorParameters<typeof SelectMenuOptionBuilder>[0];
 
-class BetterSelectMenuBuilder<T = string> extends SelectMenuBuilder {
+export class SelectMenuBuilder<T = string> extends Discord.SelectMenuBuilder {
 
     public override setCustomId(data: string | T): this {
         if (typeof data === 'string') return super.setCustomId(data);
         return super.setCustomId(this.encode(data));
     }
 
-    public override getCustomId<T>(): T | string | undefined {
+    public getCustomId<T>(): T | string | undefined {
         if ('custom_id' in this.data && typeof this.data.custom_id === 'string') {
             try { return JSON.parse(this.data.custom_id); }
             catch { return this.data.custom_id; }
@@ -17,30 +18,15 @@ class BetterSelectMenuBuilder<T = string> extends SelectMenuBuilder {
         return undefined;
     }
 
-    public override encode<T>(data: T): string {
+    public encode<T>(data: T): string {
         return JSON.stringify(data);
     }
 
-    public override decode<T>(id: string): T {
+    public decode<T>(id: string): T {
         return JSON.parse(id);
     }
 
-    public override toActionRow<T>(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterSelectMenuBuilder<T>> {
-        return new ActionRowBuilder<BetterSelectMenuBuilder<any>>(data).addComponents(this);
+    public toActionRow<T>(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<SelectMenuBuilder<T>> {
+        return new ActionRowBuilder<SelectMenuBuilder<any>>(data).addComponents(this);
     }
 };
-
-declare module 'discord.js' {
-    export interface SelectMenuBuilder<T = string> {
-        setCustomId(data: string | T): this;
-        getCustomId(): T | string | undefined;
-        encode(data: T): string;
-        decode(id: string): T;
-        toActionRow(data?: ActionRowData<MessageActionRowComponent>): ActionRowBuilder<BetterSelectMenuBuilder<T>>;
-    }
-};
-
-SelectMenuBuilder.prototype.setCustomId = BetterSelectMenuBuilder.prototype.setCustomId;
-SelectMenuBuilder.prototype.encode = BetterSelectMenuBuilder.prototype.encode;
-SelectMenuBuilder.prototype.decode = BetterSelectMenuBuilder.prototype.decode;
-SelectMenuBuilder.prototype.toActionRow = BetterSelectMenuBuilder.prototype.toActionRow;

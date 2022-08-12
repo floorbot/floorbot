@@ -1,4 +1,4 @@
-import { ActionRowBuilder, BaseInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
+import { ActionRowBuilder, BaseInteraction, ChatInputCommandInteraction, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags, MessageFlagsBitField, MessageOptions, ReplyMessageOptions } from "discord.js";
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/ResourceMixins.js';
 import { EmbedBuilder, EmbedBuilderData } from './EmbedBuilder.js';
 import { HandlerContext } from 'discord.js-handlers';
@@ -246,23 +246,23 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
     //     return this;
     // }
 
-    // public addAdminOrOwnerEmbed(): this {
-    //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
-    //     const embed = this.createEmbedBuilder()
-    //         .setThumbnail(attachment.getEmbedUrl())
-    //         .setDescription(
-    //             this.context instanceof CommandInteraction ? [
-    //                 'Sorry! Only an admin can use this command',
-    //                 '*If appropriate ask an admin to help!*'
-    //             ] : [
-    //                 'Sorry! Only the creator of this interaction can use this component',
-    //                 '*If possible try using the command for yourself!*'
-    //             ]);
-    //     this.addEmbed(embed);
-    //     this.addFile(attachment);
-    //     this.setEphemeral();
-    //     return this;
-    // }
+    public addAdminOrOwnerEmbed(): this {
+        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);
+        const embed = this.createEmbedBuilder()
+            .setThumbnail(attachment.getEmbedUrl())
+            .setDescription(
+                this.context instanceof ChatInputCommandInteraction ? [
+                    'Sorry! Only an admin can use this command',
+                    '*If appropriate ask an admin to help!*'
+                ] : [
+                    'Sorry! Only the creator of this interaction can use this component',
+                    '*If possible try using the command for yourself!*'
+                ]);
+        this.addEmbeds(embed);
+        this.addFiles(attachment);
+        this.setEphemeral();
+        return this;
+    }
 
     // public addOwnerEmbed(): this {
     //     const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.MAD);

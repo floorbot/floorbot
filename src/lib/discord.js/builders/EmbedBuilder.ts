@@ -15,7 +15,7 @@ export class EmbedBuilder extends Discord.EmbedBuilder {
         if (data && data.context) this.setAuthor(data.context);
     }
 
-    public override setAuthor(options: EmbedAuthorOptions | null | HandlerContext): this {
+    public override setAuthor(options: EmbedAuthorOptions | HandlerContext | null): this {
         if (options instanceof BaseInteraction || options instanceof Message) {
             const { member } = options;
             if (member && member instanceof GuildMember) {

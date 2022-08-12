@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
-import { DefineChatInputOption, DefineCommand } from './builders/DefineCommand.js';
-import { PageableComponentID } from '../../helpers/pageable/PageableComponent.js';
+import { DefineSlashCommandOption, DefineCommand } from './builders/DefineCommand.js';
+import { PageableComponentID } from '../../helpers/pageable/PageableActionRow.js';
 import { UrbanDictionaryAPI } from './urban_dictionary/UrbanDictionaryAPI.js';
 import { ChatInputCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { IORedisAPICache } from '../../lib/api/caches/IORedisAPICache.js';
@@ -31,7 +31,7 @@ export class DefineChatInputHandler extends ChatInputCommandHandler implements I
 
     public async run(command: ChatInputCommandInteraction): Promise<void> {
         await command.deferReply();
-        const query = command.options.getString(DefineChatInputOption.Query);
+        const query = command.options.getString(DefineSlashCommandOption.Query);
         const definitions = await this.api.define(query);
 
         // Check and reply if no definition is found

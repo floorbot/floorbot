@@ -18,57 +18,8 @@
 // export function WeatherReplyMixin<T extends MixinConstructor<ReplyBuilder>>(Builder: T) {
 //     return class WeatherReplyBuilder extends Builder {
 
-//         // protected createWeatherEmbedBuilder(pageable?: Pageable<Weather>): EmbedBuilder {
-//         //     const embed = super.createEmbedBuilder();
-//         //     const iconURL = 'https://i.pinimg.com/originals/f2/aa/37/f2aa3712516cfd0cf6f215301d87a7c2.jpg';
-//         //     if (pageable) {
-//         //         embed.setFooter(`${pageable.currentPage}/${pageable.totalPages} - Powered by Urban Dictionary`, iconURL);
-//         //     } else {
-//         //         embed.setFooter(`Powered by Urban Dictionary`, iconURL);
-//         //     }
-//         //     return embed;
-//         // }
 
-//         protected override createEmbedBuilder(viewData?: WeatherViewData): EmbedBuilder {
-//             const embed = super.createEmbedBuilder();
-//             const iconURL = 'https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png';
-//             if (viewData) {
-//                 embed.setFooter({ text: `${viewData.page + 1}/${viewData.totalPages} - Powered by OpenWeatherMap`, iconURL: iconURL });
-//             } else {
-//                 embed.setFooter({ text: `Powered by OpenWeatherMap`, iconURL: iconURL });
-//             }
-//             return embed;
-//         }
 
-//         public static formatTimezone(timezone: string): string {
-//             const date = DateTime.now().setZone(timezone);
-//             return date.toLocaleString({
-//                 hour: '2-digit',
-//                 minute: '2-digit',
-//                 hourCycle: 'h12'
-//             });
-//         }
-
-//         public addWeatherLoadingEmbed(total: number, current: number): this {
-//             const progressBar = new Array(11).fill('▬');
-//             progressBar[Math.floor(current / total * 10)] = '🟢';
-//             const embed = this.createEmbedBuilder()
-//                 .setTitle(`Loading Weather!`)
-//                 .setDescription(`Progress: ${progressBar.join('')} [${Math.round(current / total * 100)}%] ${current}/${total}`);
-//             return this.addEmbed(embed);
-//         }
-
-//         public addWeatherUnknownLocationEmbed(location: LocationQuery): this {
-//             const embed = this.createEmbedBuilder()
-//                 .setDescription(`Sorry! I could not find \`${OpenWeatherAPI.getLocationString(location, true)}\`\n*Please check the spelling or try another nearby location*`);
-//             return this.addEmbed(embed);
-//         }
-
-//         public addWeatherMissingAdminEmbed(): this {
-//             const embed = this.createEmbedBuilder()
-//                 .setDescription(`Sorry! you must be an admin to force link or unlink locations from other people!`);
-//             return this.addEmbed(embed);
-//         }
 
 //         public addWeatherMissingParamsEmbed(member: GuildMember): this {
 //             const embed = this.createEmbedBuilder()
@@ -76,23 +27,8 @@
 //             return this.addEmbed(embed);
 //         }
 
-//         public addWeatherAPIErrorEmbed(error: WeatherAPIError): this {
-//             const embed = this.createEmbedBuilder()
-//                 .setDescription([
-//                     `Sorry I seem to have an API issue:`,
-//                     `*${error.message}*`
-//                 ].join('\n'));
-//             return this.addEmbed(embed);
-//         }
 
-//         public addWeatherNoLinkedMembersEmbed(channel: GuildChannel): this {
-//             const embed = this.createEmbedBuilder()
-//                 .setDescription([
-//                     `There are no members with saved locations in ${channel}`,
-//                     'Please use \`/weather link\` to start the weather leaderboard!'
-//                 ].join('\n'));
-//             return this.addEmbed(embed);
-//         }
+
 
 //         public addWeatherLinkedEmbed(geocode: GeocodeData, member: GuildMember): this {
 //             const embed = this.createEmbedBuilder()

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandStringOption } from 'discord.js';
 
-export enum DefineChatInputOption {
+export enum DefineSlashCommandOption {
     Query = 'query'
 }
 
@@ -12,7 +12,7 @@ export class DefineCommand {
             .setDescription('Define a word yo!')
             .addStringOption(
                 new SlashCommandStringOption()
-                    .setName(DefineChatInputOption.Query)
+                    .setName(DefineSlashCommandOption.Query)
                     .setDescription('What does this mean?')
                     .setAutocomplete(true)
                     .setRequired(false)

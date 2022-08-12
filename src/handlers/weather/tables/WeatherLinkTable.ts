@@ -21,8 +21,8 @@ export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherL
         super(pool, 'weather_link');
     }
 
-    public async selectLink(scope: User | GuildMember | Guild): Promise<WeatherLinkRow | null> {
-        const link = await this.selectLinks(scope);
+    public async selectLink(user: User, guild?: Guild | null): Promise<WeatherLinkRow | null> {
+        const link = await this.select({ user_id: user.id, guild_id: guild?.id });
         return link[0] || null;
     }
 
@@ -32,10 +32,10 @@ export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherL
         else return this.select({ user_id: scope.id, guild_id: '' });
     }
 
-    public async insertLink(user: User | GuildMember, geocode: GeocodeData): Promise<void> {
+    public async insertLink(user: User, geocode: GeocodeData, guild?: Guild | null): Promise<void> {
         return this.insert({
             user_id: user.id,
-            guild_id: user instanceof User ? '' : user.guild.id,
+            guild_id: guild ? guild.id : '',
             name: geocode.name,
             state: geocode.state ?? null,
             country: geocode.country,
@@ -44,10 +44,10 @@ export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherL
         });
     }
 
-    public async deleteLink(user: User | GuildMember): Promise<void> {
+    public async deleteLink(user: User, guild?: Guild | null): Promise<void> {
         return this.delete({
             user_id: user.id,
-            guild_id: user instanceof User ? '' : user.guild.id,
+            guild_id: guild ? guild.id : '',
         });
     }
 

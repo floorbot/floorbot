@@ -5,6 +5,18 @@ import { HandlerClient } from 'discord.js-handlers';
 export class Util {
 
     /**
+     * Converts local string to emoji flag
+     * @param countryCode The local string
+     * @returns The local emoji
+     */
+    public static localeToEmoji(countryCode: string): string | null {
+        if (!countryCode.codePointAt(0) || !countryCode.codePointAt(1)) return null;
+        const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
+        const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
+        return `${firstLetter}${secondLetter}`;
+    }
+
+    /**
      * Creates a component collector with a standard time and end handler
      * @param message The message to collect component interactions from
      * @param options Collector options with overridable defaults
@@ -59,6 +71,15 @@ export class Util {
             .split(' ') // Split at " "
             .map(s => s.charAt(0).toUpperCase() + s.substring(1)) // Capitalize each word
             .join(' '); // Join the string back together
+    }
+
+    /**
+     * Converts celsius to fahrenheit
+     * @param degrees The celsius temp to convert
+     * @returns The fahrenheit conversion
+     */
+    public static toFahrenheit(degrees: number): number {
+        return Math.round((degrees) * 9 / 5 + 32);
     }
 
     /**

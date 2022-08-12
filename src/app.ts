@@ -13,13 +13,14 @@ import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 
 // Import All Handlers
+import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
+import { PresenceController } from './automations/PresenceController.js';
+import MariaDB, { PoolConfig } from 'mariadb';
 import { IntentsBitField } from 'discord.js';
 import RedisMock from 'ioredis-mock';
 import Redis from 'ioredis';
-import { PresenceController } from './automations/PresenceController.js';
-
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -28,8 +29,28 @@ const env = envalid.cleanEnv(process.env, {
 
     REDIS_PORT: num({ default: 0, desc: 'Redis Port' }),
     REDIS_HOST: str({ default: '', desc: 'Redis Host' }),
+
+    DB_HOST: str({ default: '', desc: 'MariaDB Database Host' }),
+    DB_NAME: str({ default: '', desc: 'MariaDB Database Name' }),
+    DB_USERNAME: str({ default: '', desc: 'MariaDB Database Username' }),
+    DB_PASSWORD: str({ default: '', desc: 'MariaDB Database Password' }),
+    DB_CONNECTION_LIMIT: num({ default: 0, desc: 'MariaDB Database Connection Limit' }),
+
+    OPEN_WEATHER_API_KEY: str({ desc: 'OpenWeather API Key', docs: 'https://openweathermap.org/api' })
 });
 
+const poolConfig: PoolConfig = {
+    host: env.DB_HOST,
+    database: env.DB_NAME,
+    user: env.DB_USERNAME,
+    password: env.DB_PASSWORD,
+    connectionLimit: env.DB_CONNECTION_LIMIT
+    // supportBigInt: true
+};
+
+
+let pool = MariaDB.createPool(poolConfig);
+if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
@@ -37,7 +58,8 @@ const client = new HandlerClient({
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FloorbotChatInputHandler(env.DISCORD_FEEDBACK),
-        new DefineChatInputHandler(redis)
+        new DefineChatInputHandler(redis),
+        new WeatherChatInputHandler({ pool, redis, apiKey: env.OPEN_WEATHER_API_KEY })
     ]
 });
 
