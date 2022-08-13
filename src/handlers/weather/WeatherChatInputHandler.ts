@@ -153,23 +153,23 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
         };
     }
 
-    private async fetchWeather(location: LocationQuery): Promise<WeatherAPIError | { geocode: GeocodeData; onecall: OneCallData; air: AirPollutionData; } | null> {
+    private async fetchWeather(location: LocationQuery): Promise<WeatherAPIError | { geocode: GeocodeData; onecall: OneCallData; airQuality: AirPollutionData; } | null> {
         const geocoding = await this.openweather.geocoding(location);
         if (this.openweather.isError(geocoding)) return geocoding;
         if (!geocoding[0]) return null;
         const onecall = await this.openweather.oneCall(geocoding[0]);
         if (this.openweather.isError(onecall)) return onecall;
-        const air = await this.openweather.airPollution(geocoding[0]);
-        if (this.openweather.isError(air)) return air;
-        return { geocode: geocoding[0], onecall, air };
+        const airQuality = await this.openweather.airPollution(geocoding[0]);
+        if (this.openweather.isError(airQuality)) return airQuality;
+        return { geocode: geocoding[0], onecall, airQuality };
     }
 
-    private createCollectorFunction(weather: { geocode: GeocodeData; onecall: OneCallData; air: AirPollutionData; }): (component: MessageComponentInteraction) => void {
+    private createCollectorFunction(weather: { geocode: GeocodeData; onecall: OneCallData; airQuality: AirPollutionData; }): (component: MessageComponentInteraction) => void {
         return async (component: MessageComponentInteraction) => {
             switch (component.customId) {
                 case WeatherButtonId.Current: return component.update(WeatherReply.current(weather));
-                case WeatherButtonId.Forecast: return component.update(WeatherReply.forecast({ ...weather, emojis: this.emojiTable }));
-                // case WeatherButtonId.AirQuality: return component.update(WeatherReply.airQuality(weather));
+                case WeatherButtonId.Forecast: return component.update(WeatherReply.forecast({ ...weather, emojiTable: this.emojiTable }));
+                case WeatherButtonId.AirQuality: return component.update(WeatherReply.airQuality({ ...weather, emojiTable: this.emojiTable }));
                 case WeatherButtonId.Alert: return component.update(WeatherReply.alert(weather));
                 default: throw component;
             }

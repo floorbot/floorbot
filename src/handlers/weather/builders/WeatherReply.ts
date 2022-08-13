@@ -1,3 +1,4 @@
+import { AirPollutionData } from '../open_weather/interfaces/AirPollutionData.js';
 import { ReplyBuilder } from '../../../lib/discord.js/builders/ReplyBuilder.js';
 import { WeatherAPIError } from '../open_weather/interfaces/WeatherAPIError.js';
 import { OneCallData } from '../open_weather/interfaces/OneCallData.js';
@@ -60,10 +61,16 @@ export class WeatherReply extends ReplyBuilder {
             .addComponents(WeatherActionRow.detailButtons(onecall, WeatherButtonId.Current));
     }
 
-    public static forecast({ onecall, geocode, emojis }: { onecall: OneCallData, geocode: GeocodeData, emojis: WeatherEmojiTable; }): WeatherReply {
+    public static forecast({ onecall, geocode, emojiTable }: { onecall: OneCallData, geocode: GeocodeData, emojiTable: WeatherEmojiTable; }): WeatherReply {
         return new WeatherReply()
-            .addEmbeds(WeatherEmbed.forecast({ onecall, geocode, emojis }))
+            .addEmbeds(WeatherEmbed.forecast({ onecall, geocode, emojiTable }))
             .addComponents(WeatherActionRow.detailButtons(onecall, WeatherButtonId.Forecast));
+    }
+
+    public static airQuality({ onecall, geocode, airQuality, emojiTable }: { onecall: OneCallData, geocode: GeocodeData, airQuality: AirPollutionData, emojiTable: WeatherEmojiTable; }): WeatherReply {
+        return new WeatherReply()
+            .addEmbeds(WeatherEmbed.airQuality({ geocode, airQuality, emojiTable }))
+            .addComponents(WeatherActionRow.detailButtons(onecall, WeatherButtonId.AirQuality));
     }
 
     public static alert({ onecall, geocode }: { onecall: OneCallData, geocode: GeocodeData; }): WeatherReply {

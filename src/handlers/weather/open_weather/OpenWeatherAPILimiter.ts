@@ -66,7 +66,7 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
 
         super({
             limits: {
-                'ata/2.5/air_pollution': minutelyLimit,
+                'data/2.5/air_pollution': minutelyLimit,
                 'data/2.5/onecall': onecallLimit,
                 'geo/1.0/direct': minutelyLimit
             }
