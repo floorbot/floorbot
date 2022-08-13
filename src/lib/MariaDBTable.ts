@@ -23,6 +23,13 @@ export abstract class MariaDBTable<R extends P & F, P, F = {}> {
         return this.query(sql, data);
     }
 
+    public async selectAll(constraints?: { limit?: number | null; order?: { [key in keyof R]?: 'DESC' | 'ASC' }; }): Promise<R[]> {
+        const { limit, order } = constraints ?? {};
+        const orderString = order ? Object.entries(order).map(([key, value]) => `${key} ${value}`).join(', ') : '';
+        const sql = `SELECT * FROM ${this.table} ${orderString.length ? ` ORDER BY ${orderString}` : ''}${limit ? ` LIMIT ${limit}` : ''};`;
+        return this.query(sql);
+    }
+
     public async selectCount(column: keyof R, data: NoExtraProperties<Partial<R>>): Promise<{ count: bigint; }> {
         const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
         const sql = `SELECT COUNT(${String(column)}) AS count FROM ${this.table} WHERE ${conditions};`;

@@ -52,8 +52,8 @@ export class DefineChatInputHandler extends ChatInputCommandHandler implements I
         const collector = Util.createComponentCollector(command.client, message);
         collector.on('collect', async (component: ButtonInteraction) => {
             await component.deferUpdate();
-            if (component.customId === PageableComponentID.NEXT_PAGE) pageable.page++;
-            if (component.customId === PageableComponentID.PREVIOUS_PAGE) pageable.page--;
+            if (component.customId === PageableComponentID.NextPage) pageable.page++;
+            if (component.customId === PageableComponentID.PreviousPage) pageable.page--;
             const replyOptions = new DefineReply(command)
                 .addDefinitionEmbed(pageable)
                 .addDefinitionPageableButtonActionRow(pageable);

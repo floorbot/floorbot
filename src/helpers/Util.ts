@@ -1,6 +1,7 @@
 import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOptions } from './ComponentCollector.js';
 import { APIMessage, Client, CollectedInteraction, Interaction, Message, PermissionsBitField } from 'discord.js';
 import { HandlerClient } from 'discord.js-handlers';
+import { DateTime } from 'luxon';
 
 export class Util {
 
@@ -14,6 +15,20 @@ export class Util {
         const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
         const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
         return `${firstLetter}${secondLetter}`;
+    }
+
+    /**
+     * Converts a timezone string to current time string
+     * @param timezone The timezone to get time for
+     * @returns The current time string
+     */
+    public static formatTimezone(timezone: string): string {
+        const date = DateTime.now().setZone(timezone);
+        return date.toLocaleString({
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h12'
+        });
     }
 
     /**
@@ -71,6 +86,15 @@ export class Util {
             .split(' ') // Split at " "
             .map(s => s.charAt(0).toUpperCase() + s.substring(1)) // Capitalize each word
             .join(' '); // Join the string back together
+    }
+
+    /**
+     * Formats a number to a string with commas
+     * @param number The number to format
+     * @returns The formatted number
+     */
+    public static formatCommas(number: number): string {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     /**

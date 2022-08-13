@@ -1,7 +1,7 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export enum WeatherButtonId {
-    Warning = 'warning',
+    Alert = 'alert',
     Current = 'current',
     Forecast = 'forecast',
     AirQuality = 'air_quality'
@@ -9,9 +9,9 @@ export enum WeatherButtonId {
 
 export class WeatherButton extends ButtonBuilder {
 
-    public static warning(): WeatherButton {
+    public static alert(): WeatherButton {
         return new WeatherButton()
-            .setCustomId(WeatherButtonId.Warning)
+            .setCustomId(WeatherButtonId.Alert)
             .setStyle(ButtonStyle.Danger)
             .setLabel('⚠️ Weather Alert');
     }

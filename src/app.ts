@@ -77,7 +77,7 @@ client.once('ready', () => {
 
 // Handle uncaught or internal errors
 client.on('error', (error: Error) => {
-    if (error instanceof HandlerError) { console.error(`[error] ${error.handler.constructor.name} has run into an error <${error.message}>`); }
+    if (error instanceof HandlerError) { console.error(`[error](${error.handler.constructor.name}) <${error.message}>`, error); }
     else { console.error('[error] An unknown error as occurred', error.message); }
 });
 

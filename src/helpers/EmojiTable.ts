@@ -35,7 +35,7 @@ export class EmojiTable extends MariaDBTable<EmojiRow, Pick<EmojiRow, 'name'>> {
 
     public async refreshCache(): Promise<Collection<string, EmojiRow>> {
         await this.createTable();
-        const emojis = await this.select({});
+        const emojis = await this.selectAll();
         for (const emoji of emojis) { this.emojis.set(emoji.name, emoji); }
         return this.emojis.clone();
     }

@@ -29,7 +29,7 @@ export class ButtonBuilder<T = string> extends Discord.ButtonBuilder {
         return new ActionRowBuilder<ButtonBuilder<any>>(data).addComponents(this);
     }
 
-    public static viewOnlineButton(url: string): ButtonBuilder {
+    public static viewOnline(url: string): ButtonBuilder {
         return new ButtonBuilder()
             .setURL(url)
             .setStyle(ButtonStyle.Link)

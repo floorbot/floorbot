@@ -5,8 +5,6 @@ import { WeatherAPIError } from './interfaces/WeatherAPIError.js';
 import { GeocodeData } from './interfaces/GeocodeData.js';
 import { OneCallData } from './interfaces/OneCallData.js';
 
-export type OpenWeatherData = OneCallData & GeocodeData & AirPollutionData;
-
 export type LatLonData = Pick<GeocodeData, 'lat' | 'lon'>;
 
 export interface LocationQuery {
@@ -16,7 +14,7 @@ export interface LocationQuery {
 }
 
 export interface OpenWeatherRequestOptions extends RequestOptions {
-    readonly endpoint: 'geo/1.0/direct' | 'data/2.5/onecall' | 'ata/2.5/air_pollution';
+    readonly endpoint: 'geo/1.0/direct' | 'data/2.5/onecall' | 'data/2.5/air_pollution';
     readonly params?: (['appid', string] | ['q', string] | ['lat', string] | ['lon', string] | ['exclude', string] | ['units', 'standard' | 'metric' | 'imperial'])[];
 }
 
@@ -31,7 +29,7 @@ export class OpenWeatherAPI extends API<OpenWeatherRequestOptions> {
 
     protected override fetch(request: OpenWeatherRequestOptions & { type: 'json', endpoint: 'geo/1.0/direct'; }): Promise<GeocodeData[] | WeatherAPIError>;
     protected override fetch(request: OpenWeatherRequestOptions & { type: 'json', endpoint: 'data/2.5/onecall'; }): Promise<OneCallData | WeatherAPIError>;
-    protected override fetch(request: OpenWeatherRequestOptions & { type: 'json', endpoint: 'ata/2.5/air_pollution'; }): Promise<AirPollutionData | WeatherAPIError>;
+    protected override fetch(request: OpenWeatherRequestOptions & { type: 'json', endpoint: 'data/2.5/air_pollution'; }): Promise<AirPollutionData | WeatherAPIError>;
     protected override fetch(request: OpenWeatherRequestOptions): Promise<unknown> {
         if (request.params && !request.params.some(param => param[0] === 'appid')) request.params.push(['appid', this.apiKey]);
         return super.fetch(request);
@@ -64,13 +62,12 @@ export class OpenWeatherAPI extends API<OpenWeatherRequestOptions> {
 
     public async airPollution(latlon: LatLonData): Promise<AirPollutionData | WeatherAPIError> {
         return this.fetch({
-            endpoint: 'ata/2.5/air_pollution', type: 'json', params: [
+            endpoint: 'data/2.5/air_pollution', type: 'json', params: [
                 ['lat', latlon.lat.toString()],
                 ['lon', latlon.lon.toString()],
                 ['units', 'metric']
             ]
         });
-
     }
 
     public static getLocationString(scope: LocationQuery | GeocodeData | { name: string, state?: string, country?: string; }, space?: boolean): string {

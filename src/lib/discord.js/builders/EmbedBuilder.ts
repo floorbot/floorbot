@@ -1,4 +1,4 @@
-import { BaseInteraction, EmbedAuthorOptions, EmbedFooterOptions, GuildMember, Message } from 'discord.js';
+import { APIEmbedField, BaseInteraction, EmbedAuthorOptions, EmbedFooterOptions, GuildMember, Message, RestOrArray } from 'discord.js';
 import { ReplyBuilder, ResponseOptions } from './ReplyBuilder.js';
 import { HandlerContext } from 'discord.js-handlers';
 import * as Discord from 'discord.js';
@@ -42,6 +42,16 @@ export class EmbedBuilder extends Discord.EmbedBuilder {
                 options.text.join(' ') :
                 options.text
         });
+    }
+
+    public override setFields(...fields: RestOrArray<Pick<APIEmbedField, 'name' | 'inline'> & { value: string | string[]; }>): this {
+        for (const field of [fields].flat(2)) { if (Array.isArray(field.value)) field.value = field.value.join('\n'); }
+        return super.setFields(...fields as APIEmbedField[]);
+    }
+
+    public override addFields(...fields: RestOrArray<Pick<APIEmbedField, 'name' | 'inline'> & { value: string | string[]; }>): this {
+        for (const field of [fields].flat(2)) { if (Array.isArray(field.value)) field.value = field.value.join('\n'); }
+        return super.addFields(...fields as APIEmbedField[]);
     }
 
     public toReplyOptions(replyOptions: ResponseOptions = {}): ReplyBuilder {
