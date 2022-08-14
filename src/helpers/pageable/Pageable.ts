@@ -16,11 +16,17 @@ export class Pageable<T> {
         return pagedArray as NonEmptyArray<NonEmptyArray<T>>;
     }
 
-    get firstPage(): number { return 0; };
-    get lastPage(): number { return this.totalPages - 1; };
-    get currentPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages); }
-    get nextPage(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages); }
-    get previousPage(): number { return Pageable.resolvePageIndex(this.page - 1, this.totalPages); }
+    get firstPageIndex(): number { return 0; };
+    get lastPageIndex(): number { return this.totalPages - 1; };
+    get currentPageIndex(): number { return Pageable.resolvePageIndex(this.page, this.totalPages); }
+    get nextPageIndex(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages); }
+    get previousPageIndex(): number { return Pageable.resolvePageIndex(this.page - 1, this.totalPages); }
+
+    get firstPage(): number { return 1; };
+    get lastPage(): number { return this.totalPages; };
+    get currentPage(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages); }
+    get nextPage(): number { return Pageable.resolvePageIndex(this.page + 2, this.totalPages); }
+    get previousPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages); }
 
     constructor(array: NonEmptyArray<T>, options?: { page?: number, perPage?: number; }) {
         this.perPage = (options && options.perPage) || 1;
@@ -34,6 +40,10 @@ export class Pageable<T> {
 
     public getPage(page?: number): NonEmptyArray<T> {
         return Pageable.resolveArrayPage(this.pagedArray, page ?? this.page);
+    }
+
+    public sortPages(compare?: ((a: T, b: T) => number) | undefined): NonEmptyArray<T> {
+        return this.array.sort(compare);
     }
 
     public static resolvePageIndex(page: number, pages: number): number {

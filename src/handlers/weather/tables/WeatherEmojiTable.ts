@@ -21,7 +21,7 @@ export class WeatherEmojiTable extends EmojiTable {
     }
 
     public getQualityEmoji(index: number, client?: Client): string {
-        const emoji = this.getEmoji(`weather_${index}`, client);
+        const emoji = this.getEmoji(`weather_air_${index}`, client);
         if (emoji) return emoji;
         switch (index) {
             case 1: return '⚪';

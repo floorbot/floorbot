@@ -12,7 +12,7 @@ export class DefineReply extends ReplyBuilder {
         const embed = super.createEmbedBuilder().setFooter({
             iconURL: 'https://i.pinimg.com/originals/f2/aa/37/f2aa3712516cfd0cf6f215301d87a7c2.jpg',
             text: [
-                ...(pageable ? [`${pageable.currentPage + 1}/${pageable.totalPages} -`] : []),
+                ...(pageable ? [`${pageable.currentPage}/${pageable.totalPages} -`] : []),
                 'Powered by Urban Dictionary'
             ]
         });

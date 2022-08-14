@@ -1,18 +1,23 @@
 import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
 import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
+import { ChatInputCommandInteraction, GuildMember, MessageComponentInteraction } from 'discord.js';
+import { WeatherSelectMenuOptionValue } from './builders/components/WeatherSelectMenuOption.js';
 import { WeatherSubcommandName } from './builders/commands/WeatherSlashCommandSubcommand.js';
-import { ChatInputCommandInteraction, MessageComponentInteraction } from 'discord.js';
+import { WeatherSelectMenuId } from './builders/components/WeatherSelectMenu.js';
 import { LocationQuery, OpenWeatherAPI } from './open_weather/OpenWeatherAPI.js';
 import { AirPollutionData } from './open_weather/interfaces/AirPollutionData.js';
 import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';
 import { OpenWeatherAPILimiter } from './open_weather/OpenWeatherAPILimiter.js';
 import WeatherLinkRow, { WeatherLinkTable } from './tables/WeatherLinkTable.js';
 import { WeatherAPIError } from './open_weather/interfaces/WeatherAPIError.js';
+import { PageableButtonId } from '../../helpers/pageable/PageableButton.js';
 import { WeatherButtonId } from './builders/components/WeatherButton.js';
 import { GeocodeData } from './open_weather/interfaces/GeocodeData.js';
 import { OneCallData } from './open_weather/interfaces/OneCallData.js';
 import { WeatherEmojiTable } from './tables/WeatherEmojiTable.js';
+import { FloorbotReply } from '../../helpers/FloorbotReply.js';
 import { ChatInputCommandHandler } from 'discord.js-handlers';
+import { Pageable } from '../../helpers/pageable/Pageable.js';
 import { WeatherReply } from './builders/WeatherReply.js';
 import { Util } from '../../helpers/Util.js';
 import { Redis } from 'ioredis';
@@ -88,52 +93,42 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                 const replyOptions = WeatherReply.unlinked(user);
                 return command.followUp(replyOptions);
             }
-        }
-
-
-        switch (subCommand) {
-            // case WeatherSubcommandName.All: {
-            //     // await command.deferReply();
-            //     // const { channel, guild } = command;
-            //     // const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
-            //     // const allLinks = await this.database.selectLinks(guild);
-            //     // const loadingEmbed = WeatherReply.loading(allLinks.length, 0);
-            //     // let lastUpdate = (await command.followUp(loadingEmbed)).createdTimestamp;
-            //     // for (const [i, link] of allLinks.entries()) {
-            //     //     const member = channel.members.get(link.user_id.toString());
-            //     //     if (member) {
-            //     //         const onecall = await this.openweather.oneCall(link);
-            //     //         if (this.openweather.isError(onecall)) continue;
-            //     //         links.push([onecall, member, link]);
-            //     //     }
-            //     //     if (Date.now() - lastUpdate >= 1000) {
-            //     //         const loadingEmbed = WeatherReply.loading(allLinks.length, i + 1);
-            //     //         lastUpdate = (await command.editReply(loadingEmbed)).createdTimestamp;
-            //     //     }
-            //     // }
-            //     // if (!links.length) return command.followUp(WeatherReply.missingLinkedMembers(channel));
-            //     // const viewData = { page: 0, perPage: 40, totalPages: Math.floor(links.length / 40) + 1, order: WeatherSelectMenuOptionValue.Hottest };
-            //     // const embed = new WeatherReply(command)
-            //     //     // .addWeatherServerTempsEmbed(links, viewData)
-            //     //     // .addComponents(new WeatherMessageActionRow().addWeatherSelectMenu(viewData.order))
-            //     //     // .addWeatherPageActionRow(viewData);
-            //     // const message = await command.editReply(embed);
-            //     // const collector = Util.createComponentCollector(command.client, message);
-            //     // collector.on('collect', async component => {
-            //     //     await component.deferUpdate();
-            //     //     if (component.isButton() && component.customId === PageableComponentID.NEXT_PAGE) { viewData.page++; }
-            //     //     if (component.isButton() && component.customId === PageableComponentID.PREVIOUS_PAGE) { viewData.page--; }
-            //     //     if (component.isSelectMenu() && component.customId === WeatherComponentID.Order) { viewData.order = component.values[0]; }
-            //     //     viewData.page = viewData.page % (Math.floor(links.length / viewData.perPage) + 1);
-            //     //     viewData.page = viewData.page >= 0 ? viewData.page : (Math.floor(links.length / viewData.perPage) + 1) + viewData.page;
-            //     //     const embed = new WeatherReply(command)
-            //     //         .addWeatherServerTempsEmbed(links, viewData)
-            //     //         .addComponents(new WeatherMessageActionRow().addWeatherSelectMenu(viewData.order))
-            //     //         .addWeatherPageActionRow(viewData);
-            //     //     await component.editReply(embed);
-            //     // });
-            //     // break;
-            // }
+            case WeatherSubcommandName.All: {
+                if (!command.inGuild() || !command.guild) return command.reply(FloorbotReply.guildOnly());
+                await command.deferReply();
+                const { guild } = command;
+                const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
+                const allLinks = await this.linkTable.selectLinks(guild);
+                const loadingReply = WeatherReply.loading(allLinks.length, 0);
+                let lastUpdate = (await command.followUp(loadingReply)).createdTimestamp;
+                for (const [i, link] of allLinks.entries()) {
+                    const member = await guild.members.fetch(link.user_id);
+                    if (member) {
+                        const onecall = await this.openweather.oneCall(link);
+                        if (this.openweather.isError(onecall)) continue;
+                        links.push([onecall, member, link]);
+                    }
+                    if (Date.now() - lastUpdate >= 1000) {
+                        const loadingReply = WeatherReply.loading(allLinks.length, i + 1);
+                        lastUpdate = (await command.editReply(loadingReply)).createdTimestamp;
+                    }
+                }
+                if (!Pageable.isNonEmptyArray(links)) return command.followUp(WeatherReply.missingLinkedMembers());
+                const pageable = new Pageable(links, { perPage: 40 });
+                let order = WeatherSelectMenuOptionValue.Hottest;
+                const replyOptions = WeatherReply.allTemps(pageable, this.emojiTable, order);
+                const message = await command.followUp(replyOptions);
+                const collector = Util.createComponentCollector(command.client, message);
+                collector.on('collect', async component => {
+                    await component.deferUpdate();
+                    if (component.isButton() && component.customId === PageableButtonId.NextPage) { pageable.page++; }
+                    if (component.isButton() && component.customId === PageableButtonId.PreviousPage) { pageable.page--; }
+                    if (component.isSelectMenu() && component.customId === WeatherSelectMenuId.Order) { order = component.values[0] as WeatherSelectMenuOptionValue; }
+                    const replyOptions = WeatherReply.allTemps(pageable, this.emojiTable, order);
+                    await component.editReply(replyOptions);
+                });
+                break;
+            }
         }
     }
 

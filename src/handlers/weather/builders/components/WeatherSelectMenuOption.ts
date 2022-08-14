@@ -11,7 +11,7 @@ export class WeatherSelectMenuOption extends SelectMenuOptionBuilder {
 
     public override setDefault(isDefault?: boolean | WeatherSelectMenuOptionValue): this {
         if (typeof isDefault === 'string') return super.setDefault(this.data.value === isDefault);
-        return super.setDefault(isDefault);
+        return super.setDefault(isDefault === true);
     }
 
     public static timezone(): WeatherSelectMenuOption {
@@ -22,19 +22,19 @@ export class WeatherSelectMenuOption extends SelectMenuOptionBuilder {
 
     public static humidity(): WeatherSelectMenuOption {
         return new WeatherSelectMenuOption()
-            .setValue(WeatherSelectMenuOptionValue.Timezone)
+            .setValue(WeatherSelectMenuOptionValue.Humidity)
             .setLabel(`Order by Humidity`);
     }
 
     public static hottest(): WeatherSelectMenuOption {
         return new WeatherSelectMenuOption()
-            .setValue(WeatherSelectMenuOptionValue.Timezone)
+            .setValue(WeatherSelectMenuOptionValue.Hottest)
             .setLabel(`Order by Hottest`);
     }
 
     public static coldest(): WeatherSelectMenuOption {
         return new WeatherSelectMenuOption()
-            .setValue(WeatherSelectMenuOptionValue.Timezone)
+            .setValue(WeatherSelectMenuOptionValue.Coldest)
             .setLabel(`Order by Coldest`);
     }
 }

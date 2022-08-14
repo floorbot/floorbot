@@ -63,7 +63,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public setEmbeds(embeds: ResponseOptions['embeds']): this {
+    public setEmbeds(...embeds: NonNullable<ResponseOptions['embeds']>): this {
         this.embeds = embeds;
         return this;
     }
@@ -79,7 +79,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public setFiles(files: ResponseOptions['files']): this {
+    public setFiles(...files: NonNullable<ResponseOptions['files']>): this {
         this.files = files;
         return this;
     }
@@ -90,7 +90,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public setComponents(components: ResponseOptions['components']): this {
+    public setComponents(...components: NonNullable<ResponseOptions['components']>): this {
         this.components = components;
         return this;
     }
@@ -101,7 +101,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         return this;
     }
 
-    public setAttachments(attachments: ResponseOptions['attachments']): this {
+    public setAttachments(...attachments: NonNullable<ResponseOptions['attachments']>): this {
         this.attachments = attachments;
         return this;
     }
@@ -150,9 +150,9 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         builder.setTTS(message.tts);
         if (message.nonce) builder.setNonce(message.nonce);
         if (message.content) builder.setContent(message.content);
-        if (message.embeds.length) builder.setEmbeds(message.embeds);
-        if (message.attachments.size) builder.setFiles([...message.attachments.values()]);
-        if (message.components.length) builder.setComponents(message.components);
+        if (message.embeds.length) builder.setEmbeds(...message.embeds);
+        if (message.attachments.size) builder.setFiles(...message.attachments.values());
+        if (message.components.length) builder.setComponents(...message.components);
         return builder;
     }
 

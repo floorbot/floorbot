@@ -1,25 +1,26 @@
 import { LocationQuery, OpenWeatherAPI } from '../open_weather/OpenWeatherAPI.js';
 import { AirPollutionData } from '../open_weather/interfaces/AirPollutionData.js';
-import { EmbedFooterOptions, GuildChannel, GuildMember, User } from 'discord.js';
 import { EmbedBuilder } from '../../../lib/discord.js/builders/EmbedBuilder.js';
 import { WeatherAPIError } from '../open_weather/interfaces/WeatherAPIError.js';
 import { OneCallData } from '../open_weather/interfaces/OneCallData.js';
 import { GeocodeData } from '../open_weather/interfaces/GeocodeData.js';
+import { EmbedFooterOptions, GuildMember, User } from 'discord.js';
 import { WeatherEmojiTable } from '../tables/WeatherEmojiTable.js';
 import { Pageable } from '../../../helpers/pageable/Pageable.js';
+import WeatherLinkRow from '../tables/WeatherLinkTable.js';
 import { Util } from '../../../helpers/Util.js';
 
 export class WeatherEmbed extends EmbedBuilder {
 
-    constructor(pageable?: Pageable<OneCallData>) {
+    constructor(pageable?: Pageable<any>) {
         super();
         this.setFooter(pageable ?? null);
     }
 
-    public override setFooter(options: EmbedFooterOptions | { text: string[]; } | Pageable<OneCallData> | null): this {
+    public override setFooter(options: EmbedFooterOptions | { text: string[]; } | Pageable<any> | null): this {
         const iconURL = 'https://openweathermap.org/themes/openweathermap/assets/img/logo_white_cropped.png';
-        if (options instanceof Pageable) return super.setFooter({ text: `${options.currentPage}/${options.totalPages} - Powered by OpenWeatherMap`, iconURL });
-        return super.setFooter(options ?? { text: `Powered by OpenWeatherMap`, iconURL });
+        if (options instanceof Pageable && options.totalPages - 1) return super.setFooter({ text: `${options.currentPage}/${options.totalPages} - Powered by OpenWeatherMap`, iconURL });
+        return super.setFooter((options instanceof Pageable ? null : options) ?? { text: `Powered by OpenWeatherMap`, iconURL });
     }
 
     public static loading(total: number, current: number): WeatherEmbed {
@@ -46,10 +47,10 @@ export class WeatherEmbed extends EmbedBuilder {
             .setDescription(`Sorry! I do not have a saved location for ${user}. Please use \`/weather link\` to set one!`);
     }
 
-    public static missingLinkedMembers(channel: GuildChannel): WeatherEmbed {
+    public static missingLinkedMembers(): WeatherEmbed {
         return new WeatherEmbed()
             .setDescription([
-                `There are no members in ${channel} with saved locations`,
+                'There are no members in this guild with saved locations',
                 'Please use \`/weather link\` to start comparing weather!'
             ].join('\n'));
     }
@@ -73,6 +74,21 @@ export class WeatherEmbed extends EmbedBuilder {
                 `Sorry I seem to have an API issue:`,
                 `*${error.message}*`
             ]);
+    }
+
+    public static allTemps(pageable: Pageable<[OneCallData, GuildMember, WeatherLinkRow]>, emojiTable: WeatherEmojiTable): WeatherEmbed {
+        const guild = pageable.array[0][1].guild;
+        return new WeatherEmbed(pageable)
+            .setAuthor({ name: `Temps for ${guild.name}`, iconURL: guild.iconURL() ?? undefined })
+            .setDescription(pageable.getPage().map(([onecall, member, link]) => {
+                const timeString = Util.formatTimezone(onecall.timezone);
+                const localeEmoji = Util.localeToEmoji(link.country);
+                const weatherEmoji = emojiTable.getWeatherEmoji(onecall.current.weather[0].icon);
+                const tempString = `${onecall.current.temp.toFixed(2)}°C`.padEnd(8); // -99.99°C
+                const tempStringF = `(${Util.toFahrenheit(onecall.current.temp)}°F)`.padEnd(7); // (999°F)
+                const humidityString = `${onecall.current.humidity}%`.padEnd(4); // 100%
+                return `${localeEmoji} \`${timeString}\` ${weatherEmoji} \`${tempString} ${tempStringF} ${humidityString}\` ${member}`;
+            }));
     }
 
     public static current({ onecall, geocode }: { onecall: OneCallData, geocode: GeocodeData; }): WeatherEmbed {

@@ -1,9 +1,11 @@
-import { WeatherSelectMenu, WeatherSelectMenuId, WeatherSelectMenuOptionValue } from './WeatherSelectMenu.js';
 import { ActionRowBuilder, AnyComponentBuilder, MessageActionRowComponentBuilder } from 'discord.js';
-import { OneCallData } from '../../open_weather/interfaces/OneCallData.js';
-import { WeatherButton, WeatherButtonId } from './WeatherButton.js';
 import { ButtonBuilder } from '../../../../lib/discord.js/builders/ButtonBuilder.js';
+import { WeatherSelectMenu, WeatherSelectMenuId } from './WeatherSelectMenu.js';
+import { PageableButton } from '../../../../helpers/pageable/PageableButton.js';
+import { WeatherSelectMenuOptionValue } from './WeatherSelectMenuOption.js';
+import { OneCallData } from '../../open_weather/interfaces/OneCallData.js';
 import { OpenWeatherAPI } from '../../open_weather/OpenWeatherAPI.js';
+import { WeatherButton, WeatherButtonId } from './WeatherButton.js';
 
 export type WeatherComponentID = WeatherButtonId | WeatherSelectMenuId;
 
@@ -20,7 +22,15 @@ export class WeatherActionRow<T extends AnyComponentBuilder> extends ActionRowBu
             );
     }
 
-    public static viewOrderSelectMenu(selected: WeatherSelectMenuOptionValue): WeatherActionRow<MessageActionRowComponentBuilder> {
+    public static pageableButtons(): WeatherActionRow<MessageActionRowComponentBuilder> {
+        return new WeatherActionRow<MessageActionRowComponentBuilder>()
+            .setComponents(
+                PageableButton.previousPage(),
+                PageableButton.nextPage()
+            );
+    }
+
+    public static viewOrderSelectMenu(selected?: WeatherSelectMenuOptionValue): WeatherActionRow<MessageActionRowComponentBuilder> {
         const selectMenu = WeatherSelectMenu.viewOrder(selected);
         return new WeatherActionRow<MessageActionRowComponentBuilder>()
             .setComponents(selectMenu);
