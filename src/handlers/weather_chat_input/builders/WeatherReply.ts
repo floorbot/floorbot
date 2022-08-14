@@ -23,7 +23,7 @@ export class WeatherReply extends ReplyBuilder {
     public static linked(user: User | GuildMember, onecall: OneCallData, geocode: GeocodeData): WeatherReply {
         return new WeatherReply()
             .addEmbeds(WeatherEmbed.linked(user, geocode))
-            .addComponents(WeatherActionRow.detailButtons(onecall, WeatherButtonId.Current));
+            .addComponents(WeatherActionRow.detailButtons(onecall));
     }
 
     public static unlinked(user: User | GuildMember): WeatherReply {

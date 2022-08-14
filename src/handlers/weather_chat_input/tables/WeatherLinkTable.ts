@@ -22,7 +22,7 @@ export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherL
     }
 
     public async selectLink(user: User, guild?: Guild | null): Promise<WeatherLinkRow | null> {
-        const link = await this.select({ user_id: user.id, guild_id: guild?.id });
+        const link = await this.select({ user_id: user.id, guild_id: guild?.id ?? '' });
         return link[0] || null;
     }
 

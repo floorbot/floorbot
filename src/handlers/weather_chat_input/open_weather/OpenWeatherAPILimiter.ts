@@ -11,7 +11,7 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
         const monthlyLimit = new Bottleneck({
             id: `openweather-month-${apiKey}`, maxConcurrent: 1, minTime: 0,
             reservoir: Math.floor(perMonth / 31),
-            reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31,
+            reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31 / 31,
             reservoirRefreshAmount: Math.floor(perMonth / 31),
             highWater: 10, // Same as maxConcurrent
             strategy: Bottleneck.strategy.OVERFLOW,

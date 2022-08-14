@@ -13,8 +13,8 @@ import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 
 // Import All Handlers
-import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
+import { WeatherChatInputHandler } from './handlers/weather_chat_input/WeatherChatInputHandler.js';
 import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
 import { PresenceController } from './automations/PresenceController.js';
 import MariaDB, { PoolConfig } from 'mariadb';

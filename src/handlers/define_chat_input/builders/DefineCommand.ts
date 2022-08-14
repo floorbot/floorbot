@@ -9,6 +9,7 @@ export class DefineCommand {
     public static slashCommand(): SlashCommandBuilder {
         return new SlashCommandBuilder()
             .setName('define')
+            .setDefaultMemberPermissions(0)
             .setDescription('Define a word yo!')
             .addStringOption(
                 new SlashCommandStringOption()
