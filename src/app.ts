@@ -1,5 +1,5 @@
-import './lib/discord.js/builders/ModalBuilder.js';
-import './lib/discord.js/builders/EmbedBuilder.js';
+import './lib/builders/ModalBuilder.js';
+import './lib/builders/EmbedBuilder.js';
 
 // Pipe console usage to prettifier
 import consolePrettifier from './lib/console-prettifier.js';
@@ -13,10 +13,12 @@ import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
 
 // Import All Handlers
-import { FloorbotChatInputHandler } from './handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
-import { WeatherChatInputHandler } from './handlers/weather_chat_input/WeatherChatInputHandler.js';
-import { DefineChatInputHandler } from './handlers/define_chat_input/DefineChatInputHandler.js';
-import { PresenceController } from './automations/PresenceController.js';
+import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot_chat_input/FloorbotChatInputHandler.js';
+import { WeatherChatInputHandler } from './floorbot/handlers/weather_chat_input/WeatherChatInputHandler.js';
+import { DefineChatInputHandler } from './floorbot/handlers/define_chat_input/DefineChatInputHandler.js';
+
+import { PresenceController } from './floorbot/automations/PresenceController.js';
+
 import MariaDB, { PoolConfig } from 'mariadb';
 import { IntentsBitField } from 'discord.js';
 import RedisMock from 'ioredis-mock';
