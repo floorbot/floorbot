@@ -1,11 +1,10 @@
-import { MessageActionRowBuilder } from '../../../../lib/builders/ActionRowBuilder.js';
-import { APIButtonComponent, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, APIButtonComponent, ButtonBuilder, ButtonStyle, MessageActionRowComponentBuilder } from 'discord.js';
 import { PageableButtonId } from './PageableButton.js';
-import { Pageable } from '../../../../lib/Pageable.js';
+import { Pageable } from '../../../../discord/Pageable.js';
 
 export type PageableComponentId = PageableButtonId;
 
-export class PageableActionRow<T> extends MessageActionRowBuilder {
+export class PageableActionRow<T> extends ActionRowBuilder<MessageActionRowComponentBuilder> {
 
     public addFirstPageButton(data: Partial<APIButtonComponent> & { pageable?: null | number | Pageable<T>; } = {}): this {
         const button = new ButtonBuilder()

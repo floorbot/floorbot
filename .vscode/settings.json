@@ -16,11 +16,15 @@
         "asmr",
         "automations",
         "bitfield",
+        "booru",
         "capitalise",
         "capitalised",
         "colour",
+        "danbooru",
+        "dapi",
         "defid",
         "discordjs",
+        "Donmai",
         "envalid",
         "floorbot",
         "hentai",
@@ -30,7 +34,8 @@
         "magick",
         "onecall",
         "openweather",
-        "Pageable"
+        "Pageable",
+        "safebooru"
     ],
     "javascript.preferences.quoteStyle": "single",
     "typescript.preferences.quoteStyle": "single"

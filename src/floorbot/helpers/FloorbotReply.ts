@@ -1,11 +1,11 @@
-import { EmbedBuilder } from '../../lib/builders/EmbedBuilder.js';
-import { ReplyBuilder } from '../../lib/builders/ReplyBuilder.js';
-import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from './ResourceMixins.js';
+import { AttachmentFactory, AvatarExpression } from './AttachmentFactory.js';
+import { ReplyBuilder } from '../../discord/builders/ReplyBuilder.js';
+import { EmbedBuilder } from 'discord.js';
 
 export class FloorbotReply extends ReplyBuilder {
 
     public static guildOnly(): FloorbotReply {
-        const attachment = ResourceAttachmentBuilder.createAvatarAttachment(AvatarAttachmentExpression.FROWN);
+        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Frown });
         const embed = new EmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([

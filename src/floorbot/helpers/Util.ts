@@ -1,5 +1,5 @@
-import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOptions } from './ComponentCollector.js';
-import { APIMessage, Client, CollectedInteraction, Interaction, Message, PermissionsBitField } from 'discord.js';
+import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOptions } from '../../discord/ComponentCollector.js';
+import { APIMessage, BaseInteraction, Client, CollectedInteraction, Message, PermissionsBitField } from 'discord.js';
 import { HandlerClient } from 'discord.js-handlers';
 import { DateTime } from 'luxon';
 
@@ -48,7 +48,7 @@ export class Util {
      * @param source An optional interaction for comparing invoking user
      * @returns Whether the invoker is considered an admin or owner depending on scope
      */
-    public static isAdminOrOwner(target: Interaction, source?: Interaction): boolean {
+    public static isAdminOrOwner(target: BaseInteraction, source?: BaseInteraction): boolean {
         if (target.client instanceof HandlerClient && target.client.ownerIDs.includes(target.user.id)) return true;
         if (source && target.user.id === source.user.id) return true;
         if (target.inGuild()) {
@@ -86,6 +86,10 @@ export class Util {
             .split(' ') // Split at " "
             .map(s => s.charAt(0).toUpperCase() + s.substring(1)) // Capitalize each word
             .join(' '); // Join the string back together
+    }
+
+    public static lowercaseString(string: string | boolean): string {
+        return Util.capitaliseString(string).toLowerCase();
     }
 
     /**
@@ -129,9 +133,14 @@ export class Util {
         return messages.concat(msg).filter(m => m);
     }
 
-    public static shortenText(text: string, { maxLength = 2000, append = '...' } = {}): string {
+    public static shortenText(text: string, { maxLength = 2000, append = '...', char = '' } = {}): string {
         if (text.length <= maxLength) return text;
         const substring = text.substring(0, maxLength - append.length);
-        return substring.trimEnd() + append;
+        if (!char) return substring.trimEnd() + append;
+        const splitSubstring = substring.split(char);
+        const splitText = text.split(char);
+        const last = splitSubstring.length - 1;
+        if (splitSubstring[last] !== splitText[last]) splitSubstring.pop();
+        return splitSubstring.join(char).trimEnd() + append;
     }
 }
