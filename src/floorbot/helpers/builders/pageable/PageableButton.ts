@@ -1,5 +1,5 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
-import { Pageable } from '../../../lib/Pageable.js';
+import { Pageable } from '../../../../lib/Pageable.js';
 
 export enum PageableButtonId {
     FirstPage = 'first_page',

@@ -10,8 +10,7 @@ export interface BottleneckRequestOptions extends RequestOptions {
 export class APIBottleneckLimiter<T extends BottleneckRequestOptions> extends APILimiter<T, Bottleneck> {
 
     constructor(options: APILimiterOptions<T, Bottleneck>) {
-        const created = options;
-        super(created);
+        super(options);
     }
 
     public async limit(request: T, fetchable: () => Promise<Response>): Promise<Response> {

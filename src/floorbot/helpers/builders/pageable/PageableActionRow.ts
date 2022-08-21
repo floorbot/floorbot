@@ -1,7 +1,7 @@
-import { MessageActionRowBuilder } from '../../../lib/builders/ActionRowBuilder.js';
+import { MessageActionRowBuilder } from '../../../../lib/builders/ActionRowBuilder.js';
 import { APIButtonComponent, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { PageableButtonId } from './PageableButton.js';
-import { Pageable } from '../../../lib/Pageable.js';
+import { Pageable } from '../../../../lib/Pageable.js';
 
 export type PageableComponentId = PageableButtonId;
 

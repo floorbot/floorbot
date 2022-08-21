@@ -1,13 +1,9 @@
-import { LocationQuery, OpenWeatherAPI } from '../../../apis/open_weather/OpenWeatherAPI.js';
-import { AirPollutionData } from '../../../apis/open_weather/interfaces/AirPollutionData.js';
-import { WeatherAPIError } from '../../../apis/open_weather/interfaces/WeatherAPIError.js';
-import { OneCallData } from '../../../apis/open_weather/interfaces/OneCallData.js';
-import { GeocodeData } from '../../../apis/open_weather/interfaces/GeocodeData.js';
+import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../../apis/open_weather/OpenWeatherAPI.js';
 import { EmbedBuilder } from '../../../../lib/builders/EmbedBuilder.js';
 import { EmbedFooterOptions, GuildMember, User } from 'discord.js';
 import { WeatherEmojiTable } from '../tables/WeatherEmojiTable.js';
-import { Pageable } from '../../../../lib/Pageable.js';
 import WeatherLinkRow from '../tables/WeatherLinkTable.js';
+import { Pageable } from '../../../../lib/Pageable.js';
 import { Util } from '../../../helpers/Util.js';
 
 export class WeatherEmbed<T = any> extends EmbedBuilder {

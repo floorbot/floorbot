@@ -41,7 +41,7 @@ export abstract class API<T extends RequestOptions> {
     }
 
     protected getURL(request: T): string {
-        const paramString = (request.params ?? []).map((param) => `${param[0]}=${param[1]}`).join('&');
+        const paramString = API.createParamString(request);
         return `${this.url}/${request.endpoint}?${paramString}`;
     }
 
@@ -49,7 +49,7 @@ export abstract class API<T extends RequestOptions> {
         return request.body ?? null;
     }
 
-    protected getHeaders(request: T): HeadersInit {
+    protected getHeaders(request: T): Headers {
         return new Headers(request.headers);
     }
 
@@ -76,5 +76,9 @@ export abstract class API<T extends RequestOptions> {
         const data = request.type === 'json' ? await response.json() : await response.text();
         if (this.cache) this.cache.set(request, typeof data === 'string' ? data : JSON.stringify(data), cacheOptions);
         return data;
+    }
+
+    public static createParamString<T extends RequestOptions>(request: T): string {
+        return (request.params ?? []).map((param) => `${param[0]}=${encodeURIComponent(param[1])}`).join('&');
     }
 }

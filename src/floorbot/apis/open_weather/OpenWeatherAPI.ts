@@ -5,6 +5,8 @@ import { WeatherAPIError } from './interfaces/WeatherAPIError.js';
 import { GeocodeData } from './interfaces/GeocodeData.js';
 import { OneCallData } from './interfaces/OneCallData.js';
 
+export { AirPollutionData, GeocodeData, OneCallData, WeatherAPIError };
+
 export type LatLonData = Pick<GeocodeData, 'lat' | 'lon'>;
 
 export interface LocationQuery {

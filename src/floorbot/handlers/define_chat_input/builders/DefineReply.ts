@@ -1,6 +1,6 @@
 import { UrbanDictionaryAPIDefinition } from '../urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
 import { AvatarAttachmentExpression, ResourceAttachmentBuilder } from '../../../helpers/ResourceMixins.js';
-import { PageableActionRow } from '../../../helpers/pageable/PageableActionRow.js';
+import { PageableActionRow } from '../../../helpers/builders/pageable/PageableActionRow.js';
 import { EmbedBuilder } from '../../../../lib/builders/EmbedBuilder.js';
 import { ReplyBuilder } from '../../../../lib/builders/ReplyBuilder.js';
 import { Pageable } from '../../../../lib/Pageable.js';

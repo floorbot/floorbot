@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 import { DefineSlashCommandOption, DefineCommand } from './builders/DefineCommand.js';
+import { PageableButtonId } from '../../helpers/builders/pageable/PageableButton.js';
 import { UrbanDictionaryAPI } from './urban_dictionary/UrbanDictionaryAPI.js';
 import { ChatInputCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { IORedisAPICache } from '../../../lib/api/caches/IORedisAPICache.js';
-import { PageableButtonId } from '../../helpers/pageable/PageableButton.js';
-import { Pageable } from '../../../lib/Pageable.js';
 import { DefineReply } from "./builders/DefineReply.js";
+import { Pageable } from '../../../lib/Pageable.js';
 import { Util } from '../../helpers/Util.js';
 import { Redis } from 'ioredis';
 

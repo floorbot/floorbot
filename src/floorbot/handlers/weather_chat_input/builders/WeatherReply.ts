@@ -7,9 +7,9 @@ import { LocationQuery } from '../../../apis/open_weather/OpenWeatherAPI.js';
 import { ReplyBuilder } from '../../../../lib/builders/ReplyBuilder.js';
 import { WeatherActionRow } from './components/WeatherActionRow.js';
 import { WeatherEmojiTable } from '../tables/WeatherEmojiTable.js';
-import { Pageable } from '../../../../lib/Pageable.js';
 import { WeatherButtonId } from './components/WeatherButton.js';
 import WeatherLinkRow from '../tables/WeatherLinkTable.js';
+import { Pageable } from '../../../../lib/Pageable.js';
 import { WeatherEmbed } from './WeatherEmbed.js';
 import { GuildMember, User } from 'discord.js';
 

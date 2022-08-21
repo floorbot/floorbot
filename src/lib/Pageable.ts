@@ -1,4 +1,4 @@
-import { NonEmptyArray } from './types/non-empty-array.js';
+import { NonEmptyArray } from '../lib/types/non-empty-array.js';
 
 export class Pageable<T> {
 

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AnyComponentBuilder, MessageActionRowComponentBuilder } from 'discord.js';
 import { OneCallData } from '../../../../apis/open_weather/interfaces/OneCallData.js';
 import { OpenWeatherAPI } from '../../../../apis/open_weather/OpenWeatherAPI.js';
-import { PageableButton } from '../../../../helpers/pageable/PageableButton.js';
+import { PageableButton } from '../../../../helpers/builders/pageable/PageableButton.js';
 import { WeatherSelectMenu, WeatherSelectMenuId } from './WeatherSelectMenu.js';
 import { ButtonBuilder } from '../../../../../lib/builders/ButtonBuilder.js';
 import { WeatherSelectMenuOptionValue } from './WeatherSelectMenuOption.js';
