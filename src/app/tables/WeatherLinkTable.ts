@@ -53,7 +53,7 @@ export class WeatherLinkTable extends MariaDBTable<WeatherLinkRow, Pick<WeatherL
     }
 
     public async createTable(): Promise<void> {
-        const sql = fs.readFileSync(`${path.resolve()}/res/schemas/weather_link.sql`, 'utf8');
+        const sql = fs.readFileSync(`${path.resolve()}/res/schemas/${this.table}.sql`, 'utf8');
         return this.query(sql).catch(error => {
             if (error.code !== 'ER_TABLE_EXISTS_ERROR') throw error.reason;
         });

@@ -67,7 +67,7 @@ export class Util {
      * @param significance The level of significance
      * @returns The stringified formatted decimal
      */
-    public static formatNumber(number: number | string, { significance = null, commas = false }): string {
+    public static formatNumber(number: number | string, { significance = null, commas = false }: { significance?: number | null, commas?: boolean; }): string {
         if (significance !== null) number = (Number(number) || 0).toFixed(significance).replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1');
         if (commas) number = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return number.toString();

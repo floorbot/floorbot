@@ -32,6 +32,7 @@ import Redis from 'ioredis';
 import { E621ChatInputCommandHandler } from './floorbot/handlers/e621/E621ChatInputHandler.js';
 import { DonmaiChatInputCommandHandler } from './floorbot/handlers/donmai/DonmaiChatInputHandler.js';
 import { Rule34ChatInputCommandHandler } from './floorbot/handlers/rule34/Rule34ChatInputHandler.js';
+import { MarkovChatInputCommandHandler } from './floorbot/handlers/markov/MarkovChatInputHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -81,7 +82,8 @@ const client = new HandlerClient({
         new E621ChatInputCommandHandler({ redis, apiKey: env.E621_API_KEY, userAgent: env.E621_USER_AGENT, username: env.E621_USERNAME }),
         new DonmaiChatInputCommandHandler({ subDomain: 'safebooru', redis, apiKey: env.DONMAI_API_KEY, username: env.DONMAI_USERNAME }),
         new DonmaiChatInputCommandHandler({ subDomain: 'danbooru', redis, apiKey: env.DONMAI_API_KEY, username: env.DONMAI_USERNAME }),
-        new Rule34ChatInputCommandHandler({ redis })
+        new Rule34ChatInputCommandHandler({ redis }),
+        new MarkovChatInputCommandHandler({ pool })
     ]
 });
 

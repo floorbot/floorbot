@@ -74,6 +74,7 @@ export abstract class API<T extends RequestOptions> {
 
         // Save to cache and return data
         const data = request.type === 'json' ? await response.json() : await response.text();
+        Object.assign(<any>data, { _ok: response.ok, _status: response.status, _statusText: response.statusText });
         if (this.cache) this.cache.set(request, typeof data === 'string' ? data : JSON.stringify(data), cacheOptions);
         return data;
     }
