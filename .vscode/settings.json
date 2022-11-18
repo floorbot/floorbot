@@ -3,40 +3,23 @@
     "editor.formatOnSave": true,
     "editor.detectIndentation": false,
     "editor.bracketPairColorization.enabled": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+    },
     // Files
     "files.trimFinalNewlines": true,
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
     // TypeScript
     "typescript.format.semicolons": "insert",
+    "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+    "typescript.inlayHints.enumMemberValues.enabled": true,
+    "typescript.inlayHints.parameterNames.enabled": "literals",
+    "typescript.inlayHints.variableTypes.enabled": true,
+    "typescript.inlayHints.parameterTypes.enabled": true,
+    "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
     "typescript.preferences.importModuleSpecifierEnding": "js",
+    "typescript.preferences.quoteStyle": "single",
     // Spell Check
-    "cSpell.words": [
-        "Arcadeena",
-        "asmr",
-        "automations",
-        "bitfield",
-        "booru",
-        "capitalise",
-        "capitalised",
-        "colour",
-        "danbooru",
-        "dapi",
-        "defid",
-        "discordjs",
-        "Donmai",
-        "envalid",
-        "floorbot",
-        "hentai",
-        "latlon",
-        "loli",
-        "luxon",
-        "magick",
-        "onecall",
-        "openweather",
-        "Pageable",
-        "safebooru"
-    ],
-    "javascript.preferences.quoteStyle": "single",
-    "typescript.preferences.quoteStyle": "single"
+    "cSpell.words": []
 }

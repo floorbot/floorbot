@@ -20,10 +20,19 @@ export enum AvatarExpression {
     SadTearsBlue = 8
 }
 
+export enum FloorbotAvatar {
+    FloorbotYap = 'floorbot_yap.gif'
+}
+
 export class AttachmentFactory {
 
     public static avatarExpression({ expression = AvatarExpression.SmileOpen, view = AvatarView.Full }): AttachmentBuilder {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${view}-${expression}.png`);
         return new AttachmentBuilder(buffer, { name: 'avatar.png' });
+    }
+
+    public static avatar({ avatar }: { avatar: FloorbotAvatar; }): AttachmentBuilder {
+        const buffer = fs.readFileSync(`${path.resolve()}/res/${avatar}`);
+        return new AttachmentBuilder(buffer, { name: avatar });
     }
 }

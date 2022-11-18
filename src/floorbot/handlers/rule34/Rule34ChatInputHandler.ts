@@ -2,8 +2,8 @@ import { AutocompleteInteraction, ChatInputCommandInteraction, MessageComponentI
 import { Rule34ChatInputCommandData, Rule34SlashCommandStringOptionName } from './Rule34ChatInputCommandData.js';
 import { BooruMessageComponentId } from '../../../app/builders/booru/BooruActionRowBuilder.js';
 import { Rule34API, Rule34APIPost } from '../../../app/api/apis/rule34/Rule34API.js';
-import { ChatInputCommandHandler, IAutocomplete } from 'discord.js-handlers';
 import { IORedisAPICache } from '../../../app/api/caches/IORedisAPICache.js';
+import { ChatInputCommandHandler, IAutocomplete } from 'discord.js-handlers';
 import { Rule34ReplyBuilder } from './Rule34ReplyBuilder.js';
 import { Util } from '../../helpers/Util.js';
 import { Redis } from 'ioredis';

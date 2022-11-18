@@ -28,7 +28,7 @@ export abstract class MariaDBTable<R extends P & F, P, F = {}> {
     }
 
     public async select(data: PartialRow<R>, { limit, order }: { limit?: number | null; order?: SelectOrder<R>; } = {}): Promise<R[]> {
-        const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
+        const conditions = Object.entries(data).map(([key, value]) => value === null ? `${key} IS NULL` : `${key} = :${key}`).join(' AND ');
         const orderString = order ? Object.entries(order).map(([key, value]) => `${key} ${value}`).join(', ') : '';
         const sql = `SELECT * FROM ${this.table} WHERE ${conditions}${orderString.length ? ` ORDER BY ${orderString}` : ''}${limit ? ` LIMIT ${limit}` : ''};`;
         return this.query(sql, data);
@@ -41,7 +41,7 @@ export abstract class MariaDBTable<R extends P & F, P, F = {}> {
     }
 
     public async selectCount(column: keyof R, data: PartialRow<R>): Promise<{ count: bigint; }> {
-        const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
+        const conditions = Object.entries(data).map(([key, value]) => value === null ? `${key} IS NULL` : `${key} = :${key}`).join(' AND ');
         const sql = `SELECT COUNT(${String(column)}) AS count FROM ${this.table} WHERE ${conditions};`;
         return (await this.query(sql, data))[0];
     }
@@ -53,7 +53,7 @@ export abstract class MariaDBTable<R extends P & F, P, F = {}> {
     }
 
     public async delete(data: PartialRow<R>): Promise<void> {
-        const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
+        const conditions = Object.entries(data).map(([key, value]) => value === null ? `${key} IS NULL` : `${key} = :${key}`).join(' AND ');
         const sql = `DELETE FROM ${this.table} WHERE ${conditions};`;
         return this.query(sql, data);
     }

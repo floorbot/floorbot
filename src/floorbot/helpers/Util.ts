@@ -98,6 +98,7 @@ export class Util {
      * @returns The formatted number
      */
     public static formatCommas(number: number): string {
+        console.log('util format commas is to be deleto');
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 

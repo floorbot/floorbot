@@ -1,16 +1,17 @@
 import { chatInputApplicationCommandMention, CommandInteraction, ComponentType, EmbedBuilder, MessageComponentInteraction } from 'discord.js';
-import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
-import { Util } from '../../../floorbot/helpers/Util.js';
 import { HandlerContext } from 'discord.js-handlers';
+import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
+import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
+import { Util } from '../../../floorbot/helpers/Util.js';
 
+export type ReplyEmbedBuilderOptions = { context?: HandlerContext, prefix?: string, suffix?: string; };
 
 export class FloorbotReplyBuilder extends ReplyBuilder {
 
     public static AUTO_AUTHOR: boolean = false;
 
     /** This is a unique helper function for consistent embeds */
-    public override createEmbedBuilder({ context, prefix, suffix }: { context?: HandlerContext, prefix?: string, suffix?: string; } = {}): EmbedBuilder {
+    public override createEmbedBuilder({ context, prefix, suffix }: ReplyEmbedBuilderOptions = {}): EmbedBuilder {
         const embed = new EmbedBuilder();
         if (context || this.context) {
             embed.setContextColor(context ?? this.context ?? null);
@@ -19,6 +20,12 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
         if (prefix) embed.setFooter({ text: prefix });
         if (suffix) embed.setAuthor({ name: suffix });
         return embed;
+    }
+
+    public override addEmbedMessage({ content }: { content: string; }): this {
+        const embed = this.createEmbedBuilder()
+            .setDescription(content);
+        return this.addEmbeds(embed);
     }
 
     public override addGuildOnlyEmbed({ command }: { command?: CommandInteraction; } = {}): this {
@@ -109,7 +116,8 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
 
 declare module '../../../discord/builders/ReplyBuilder' {
     export interface ReplyBuilder {
-        createEmbedBuilder({ context, prefix, suffix }?: { context?: HandlerContext, prefix?: string, suffix?: string; }): EmbedBuilder;
+        createEmbedBuilder({ context, prefix, suffix }?: ReplyEmbedBuilderOptions): EmbedBuilder;
+        addEmbedMessage({ content }: { content: string; }): this;
         addGuildOnlyEmbed({ command }?: { command?: CommandInteraction; }): this;
         addAdminOrOwnerEmbed({ command, component }: { command?: CommandInteraction, component?: MessageComponentInteraction; }): this;
         addUnknownComponentEmbed({ component }: { component?: MessageComponentInteraction; }): this;
@@ -119,6 +127,7 @@ declare module '../../../discord/builders/ReplyBuilder' {
 };
 
 ReplyBuilder.prototype.createEmbedBuilder = FloorbotReplyBuilder.prototype.createEmbedBuilder;
+ReplyBuilder.prototype.addEmbedMessage = FloorbotReplyBuilder.prototype.addEmbedMessage;
 ReplyBuilder.prototype.addGuildOnlyEmbed = FloorbotReplyBuilder.prototype.addGuildOnlyEmbed;
 ReplyBuilder.prototype.addAdminOrOwnerEmbed = FloorbotReplyBuilder.prototype.addAdminOrOwnerEmbed;
 ReplyBuilder.prototype.addUnknownComponentEmbed = FloorbotReplyBuilder.prototype.addUnknownComponentEmbed;

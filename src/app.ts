@@ -1,11 +1,11 @@
+import './app/builders/booru/BooruActionRowBuilder.js';
+import './app/builders/booru/BooruReplyBuilder.js';
+import './app/builders/floorbot/FloorbotActionRowBuilder.js';
+import './app/builders/floorbot/FloorbotReplyBuilder.js';
+import './app/builders/PageableActionRowBuilder.js';
 import './discord/builders/AttachmentBuilder.js';
 import './discord/builders/EmbedBuilder.js';
 import './discord/builders/ModalBuilder.js';
-import './app/builders/floorbot/FloorbotReplyBuilder.js';
-import './app/builders/floorbot/FloorbotActionRowBuilder.js';
-import './app/builders/booru/BooruReplyBuilder.js';
-import './app/builders/booru/BooruActionRowBuilder.js';
-import './app/builders/PageableActionRowBuilder.js';
 
 // Pipe console usage to prettifier
 import consolePrettifier from './app/console-prettifier.js';
@@ -15,24 +15,25 @@ console.log = consolePrettifier(console.log);
 
 import { HandlerClient, HandlerError } from 'discord.js-handlers';
 // import { GatewayIntentBits } from 'discord.js';
-import envalid, { num, str } from 'envalid';
 import exitHook from 'async-exit-hook';
+import envalid, { num, str } from 'envalid';
 
 // Import All Handlers
+import { DefineChatInputHandler } from './floorbot/handlers/define/DefineChatInputHandler.js';
 import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot/FloorbotChatInputHandler.js';
 import { WeatherChatInputHandler } from './floorbot/handlers/weather/WeatherChatInputHandler.js';
-import { DefineChatInputHandler } from './floorbot/handlers/define/DefineChatInputHandler.js';
 
 import { PresenceController } from './floorbot/automations/PresenceController.js';
 
-import MariaDB, { PoolConfig } from 'mariadb';
 import { IntentsBitField } from 'discord.js';
-import RedisMock from 'ioredis-mock';
 import Redis from 'ioredis';
-import { E621ChatInputCommandHandler } from './floorbot/handlers/e621/E621ChatInputHandler.js';
+import RedisMock from 'ioredis-mock';
+import MariaDB, { PoolConfig } from 'mariadb';
 import { DonmaiChatInputCommandHandler } from './floorbot/handlers/donmai/DonmaiChatInputHandler.js';
-import { Rule34ChatInputCommandHandler } from './floorbot/handlers/rule34/Rule34ChatInputHandler.js';
+import { E621ChatInputCommandHandler } from './floorbot/handlers/e621/E621ChatInputHandler.js';
 import { MarkovChatInputCommandHandler } from './floorbot/handlers/markov/MarkovChatInputHandler.js';
+import { MarkovMessageCommandHandler } from './floorbot/handlers/markov/MarkovMessageCommandHandler.js';
+import { Rule34ChatInputCommandHandler } from './floorbot/handlers/rule34/Rule34ChatInputHandler.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
@@ -73,7 +74,7 @@ if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db 
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({
-    intents: [IntentsBitField.Flags.Guilds],
+    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FloorbotChatInputHandler(env.DISCORD_FEEDBACK),
@@ -83,7 +84,8 @@ const client = new HandlerClient({
         new DonmaiChatInputCommandHandler({ subDomain: 'safebooru', redis, apiKey: env.DONMAI_API_KEY, username: env.DONMAI_USERNAME }),
         new DonmaiChatInputCommandHandler({ subDomain: 'danbooru', redis, apiKey: env.DONMAI_API_KEY, username: env.DONMAI_USERNAME }),
         new Rule34ChatInputCommandHandler({ redis }),
-        new MarkovChatInputCommandHandler({ pool })
+        new MarkovChatInputCommandHandler({ pool }),
+        new MarkovMessageCommandHandler({ pool })
     ]
 });
 
