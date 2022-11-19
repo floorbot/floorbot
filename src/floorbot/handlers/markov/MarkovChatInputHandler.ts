@@ -26,8 +26,8 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         if (!command.inGuild()) return await command.reply(new MarkovReplyBuilder(command).addGuildOnlyEmbed({ command }));
         await command.deferReply();
 
-        let settings = await this.settingsTable.selectChannel({ guildId: command.guildId, channelId: command.channelId });
-        let totals = await this.stateTable.selectStateTotals({ channelId: command.channelId });
+        let settings = await this.settingsTable.selectChannel({ guild_id: command.guildId, channel_id: command.channelId });
+        let totals = await this.stateTable.selectStateTotals({ channel_id: command.channelId });
         const replyOptions = new MarkovReplyBuilder(command)
             .addControlPanelEmbed({ settings, totals })
             .addControlPanelComponents({ settings });
@@ -52,7 +52,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     const minutesValue = interaction.fields.getTextInputValue(MarkovTextInputId.Minutes);
                     const messages = messagesValue.length ? Math.max(parseInt(messagesValue), 5) : MarkovSettingsTable.DEFAULT_MESSAGES;
                     const minutes = minutesValue.length ? Math.abs(parseInt(minutesValue)) : MarkovSettingsTable.DEFAULT_MINUTES;
-                    settings = await this.settingsTable.insertChannel({ guildId: settings.guild_id, channelId: settings.channel_id }, { ...(!isNaN(messages) && { messages }), ...(!isNaN(minutes) && { minutes }) });
+                    settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, ...(!isNaN(messages) && { messages }), ...(!isNaN(minutes) && { minutes }) });
                     break;
                 }
                 case MarkovButtonId.DeleteData: {
@@ -67,8 +67,8 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     await interaction.deferUpdate();
                     await this.settingsTable.delete({ channel_id: settings.channel_id });
                     await this.stateTable.delete({ channel_id: settings.channel_id });
-                    settings = settings = await this.settingsTable.selectChannel({ guildId: command.guildId, channelId: command.channelId });
-                    totals = await this.stateTable.selectStateTotals({ channelId: command.channelId });
+                    settings = settings = await this.settingsTable.selectChannel({ guild_id: command.guildId, channel_id: command.channelId });
+                    totals = await this.stateTable.selectStateTotals({ channel_id: command.channelId });
                     break;
                 }
                 case MarkovSelectMenuId.Settings: {
@@ -78,21 +78,21 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     const tracking = interaction.values.includes(MarkovSettingsSelectMenuOptionValue.Tracking);
                     const owoify = interaction.values.includes(MarkovSettingsSelectMenuOptionValue.Owoify);
                     const bots = interaction.values.includes(MarkovSettingsSelectMenuOptionValue.Bots);
-                    settings = await this.settingsTable.insertChannel({ guildId: settings.guild_id, channelId: settings.channel_id }, { posting, tracking, owoify, bots });
+                    settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, posting, tracking, owoify, bots });
                     break;
                 }
                 case MarkovSelectMenuId.Mentions: {
                     if (!interaction.isSelectMenu()) return;
                     await interaction.deferUpdate();
                     const mentionsPolicy = (interaction.values[0] as MarkovSettingsRow['mentions']) ?? settings.mentions;
-                    settings = await this.settingsTable.insertChannel({ guildId: settings.guild_id, channelId: settings.channel_id }, { mentions: mentionsPolicy });
+                    settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, mentions: mentionsPolicy });
                     break;
                 }
                 case MarkovSelectMenuId.Links: {
                     if (!interaction.isSelectMenu()) return;
                     await interaction.deferUpdate();
                     const linksPolicy = (interaction.values[0] as MarkovSettingsRow['links']) ?? settings.links;
-                    settings = await this.settingsTable.insertChannel({ guildId: settings.guild_id, channelId: settings.channel_id }, { links: linksPolicy });
+                    settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, links: linksPolicy });
                     break;
                 }
             }
@@ -104,20 +104,20 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
     }
 
     public async generateMarkov({ guildId, channelId }: { guildId: string, channelId: string; }): Promise<MarkovReplyBuilder | null> {
-        const settings = await this.settingsTable.selectChannel({ guildId, channelId });
+        const settings = await this.settingsTable.selectChannel({ guild_id: guildId, channel_id: channelId });
         const options = {
-            channelId: settings.channel_id,
-            bot: settings.bots,
-            mention: settings.mentions !== 'disable',
-            link: settings.links !== 'disable'
+            channel_id: settings.channel_id,
+            ...(settings.bots === false && { bot: false }),
+            ...(settings.mentions === 'disable' && { mention: true }),
+            ...(settings.links === 'disable' && { link: true })
         };
         for (let i = 0; i < 100; i++) {
-            let state = await this.stateTable.selectRandomState({ ...options, currentState: null });
+            let state = await this.stateTable.selectRandomState({ ...options, current_state: null });
             const states = [state];
             const words = [];
             if (state) words.push(state.next_value);
             while (state && state.next_value) {
-                state = await this.stateTable.selectRandomState({ ...options, currentState: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
+                state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
                 if (state) words.push(state.next_value);
                 states.push(state);
             }
@@ -141,7 +141,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
 
     private async storeMessage(message: Message): Promise<void> {
         if (!message.inGuild() || !message.content.length) return;
-        const settings = await this.settingsTable.selectChannel({ guildId: message.guildId, channelId: message.channelId });
+        const settings = await this.settingsTable.selectChannel({ guild_id: message.guildId, channel_id: message.channelId });
         if (settings.tracking) {
             if (message.editedTimestamp) await this.stateTable.delete({ channel_id: message.channelId, message_id: message.id });
             const split = [...message.content.split(' ').filter(part => part), null];
@@ -188,7 +188,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         client.on('messageUpdate', (_oldMessage, newMessage) => { if (newMessage instanceof Message) this.storeMessage(newMessage); });
         setInterval(async () => {
             for (const [guildId, _guild] of client.guilds.cache) {
-                const rows = await this.settingsTable.selectChannels({ guildId, posting: true });
+                const rows = await this.settingsTable.select({ guild_id: guildId, posting: true });
                 for (const row of rows) {
                     const channel = await client.channels.fetch(row.channel_id);
                     if (!channel || !channel.isTextBased()) return;

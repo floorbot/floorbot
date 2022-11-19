@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Pool } from 'mariadb';
 import path from 'path';
-import { MariaDBTable } from '../../../../discord/MariaDBTable.js';
+import { MariaDBTable, SelectionRow, SelectOrder } from '../../../../discord/MariaDBTable.js';
 
 export default interface MarkovStateRow {
     readonly epoch: number;
@@ -29,27 +29,21 @@ export class MarkovStateTable extends MariaDBTable<MarkovStateRow, Pick<MarkovSt
         super(pool, 'markov_state');
     }
 
-    public async selectRandomState({ currentState, channelId, bot, link, mention, limit = 100 }: { currentState: string | null, channelId: string, bot?: boolean, link?: boolean, mention?: boolean, limit?: number; }): Promise<MarkovStateRow | null> {
-        const data = {
-            channel_id: channelId,
-            ...(bot === false && { bot }),
-            ...(link === false && { link }),
-            ...(mention === false && { mention })
-        };
-        const conditions = Object.keys(data).map(key => `${key} = :${key}`).join(' AND ');
-        const sql = currentState ?
-            `SELECT * FROM (SELECT * FROM ${this.table} WHERE ${conditions} AND current_state = :current_state ORDER BY epoch DESC LIMIT ${limit}) as T ORDER BY RAND() LIMIT 1;` :
-            `SELECT * FROM (SELECT * FROM ${this.table} WHERE ${conditions} AND current_state IS NULL ORDER BY epoch DESC LIMIT ${limit}) as T ORDER BY RAND() LIMIT 1;`;
-        const rows = await this.query(sql, { ...data, ...(currentState && { current_state: currentState }) });
+    public async selectRandomState(data: SelectionRow<MarkovStateRow, 'channel_id'>, { limit = 100, order = { epoch: 'DESC' } }: { limit?: number; order?: SelectOrder<MarkovStateRow>; } = {}): Promise<MarkovStateRow | null> {
+        const conditionString = this.createConditionString(data);
+        const orderString = this.createOrderString(order);
+        const limitString = this.createLimitString(limit);
+        const sql = `SELECT * FROM (SELECT * FROM ${this.table} ${conditionString} ${orderString} ${limitString}) as T ORDER BY RAND() LIMIT 1;`;
+        const rows = await this.query(sql, data);
         return rows[0] || null;
     }
 
-    public async selectStateTotals({ channelId }: { channelId: string; }): Promise<MarkovStateTotals> {
-        const query = { channel_id: channelId };
+    public async selectStateTotals(data: SelectionRow<Omit<MarkovStateRow, 'bot'>, 'channel_id'>): Promise<MarkovStateTotals> {
+        const conditionString = this.createConditionString(data);
         return {
-            users: (await this.query(`SELECT COUNT(DISTINCT user_id) AS total FROM ${this.table} WHERE channel_id = :channel_id AND bot = false;`, query))[0]?.total ?? 0,
-            bots: (await this.query(`SELECT COUNT(DISTINCT user_id) AS total FROM ${this.table} WHERE channel_id = :channel_id AND bot = true;`, query))[0]?.total ?? 0,
-            messages: (await this.query(`SELECT COUNT(DISTINCT message_id) AS total FROM ${this.table} WHERE channel_id = :channel_id;`, query))[0]?.total ?? 0
+            users: (await this.query(`SELECT COUNT(DISTINCT user_id) AS total FROM ${this.table} ${conditionString} AND bot = false;`, data))[0]?.total ?? 0,
+            bots: (await this.query(`SELECT COUNT(DISTINCT user_id) AS total FROM ${this.table} ${conditionString} AND bot = true;`, data))[0]?.total ?? 0,
+            messages: (await this.query(`SELECT COUNT(DISTINCT message_id) AS total FROM ${this.table} ${conditionString};`, data))[0]?.total ?? 0
         };
     }
 

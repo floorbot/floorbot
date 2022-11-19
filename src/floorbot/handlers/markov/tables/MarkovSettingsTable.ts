@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Pool } from "mariadb";
 import path from 'path';
-import { MariaDBTable } from '../../../../discord/MariaDBTable.js';
+import { MariaDBTable, PartRow, SelectionRow } from '../../../../discord/MariaDBTable.js';
 
 export interface MarkovSettingsRow {
     readonly guild_id: string;
@@ -18,24 +18,24 @@ export interface MarkovSettingsRow {
 
 export class MarkovSettingsTable extends MariaDBTable<MarkovSettingsRow, Pick<MarkovSettingsRow, 'guild_id' | 'channel_id'>> {
 
-    public static readonly DEFAULT_MESSAGES = 50;
-    public static readonly DEFAULT_MINUTES = 100;
-    public static readonly DEFAULT_POSTING = false;
-    public static readonly DEFAULT_TRACKING = false;
-    public static readonly DEFAULT_LINKS = 'suppress';
-    public static readonly DEFAULT_MENTIONS = 'suppress';
-    public static readonly DEFAULT_OWOIFY = false;
-    public static readonly DEFAULT_BOTS = true;
+    public static readonly DEFAULT_MESSAGES: MarkovSettingsRow['messages'] = 50;
+    public static readonly DEFAULT_MINUTES: MarkovSettingsRow['minutes'] = 100;
+    public static readonly DEFAULT_POSTING: MarkovSettingsRow['posting'] = false;
+    public static readonly DEFAULT_TRACKING: MarkovSettingsRow['tracking'] = false;
+    public static readonly DEFAULT_LINKS: MarkovSettingsRow['links'] = 'suppress';
+    public static readonly DEFAULT_MENTIONS: MarkovSettingsRow['mentions'] = 'suppress';
+    public static readonly DEFAULT_OWOIFY: MarkovSettingsRow['owoify'] = false;
+    public static readonly DEFAULT_BOTS: MarkovSettingsRow['bots'] = true;
 
     constructor(pool: Pool) {
         super(pool, 'markov_settings');
     }
 
-    public async selectChannel({ guildId, channelId }: { guildId: string, channelId: string; }): Promise<MarkovSettingsRow> {
-        const query = { guild_id: guildId, channel_id: channelId };
-        const rows = await this.select(query, { limit: 1 });
+    public async selectChannel({ guild_id, channel_id }: PartRow<MarkovSettingsRow, 'guild_id' | 'channel_id'>): Promise<MarkovSettingsRow> {
+        const rows = await this.select({ guild_id, channel_id }, { limit: 1 });
         return rows[0] || {
-            ...query,
+            guild_id,
+            channel_id,
             minutes: MarkovSettingsTable.DEFAULT_MINUTES,
             messages: MarkovSettingsTable.DEFAULT_MESSAGES,
             posting: MarkovSettingsTable.DEFAULT_POSTING,
@@ -47,38 +47,22 @@ export class MarkovSettingsTable extends MariaDBTable<MarkovSettingsRow, Pick<Ma
         };
     }
 
-    public async selectChannels({ guildId, posting }: { guildId: string, posting?: boolean; }): Promise<MarkovSettingsRow[]> {
-        const query = { guild_id: guildId, ...(posting !== undefined && { posting }) };
-        return this.select(query);
-    }
-
-    public async insertChannel({ guildId, channelId }: { guildId: string, channelId: string; }, options: Partial<Omit<MarkovSettingsRow, 'guild_id' | 'channel_id'>>): Promise<MarkovSettingsRow> {
-        const existing = await this.selectChannel({ guildId, channelId });
-        const data = {
-            guild_id: guildId,
-            channel_id: channelId,
-            minutes: Math.abs(options.minutes ?? existing.minutes),
-            messages: Math.abs(options.messages ?? existing.messages),
-            posting: options.posting ?? existing.posting,
-            tracking: options.tracking ?? existing.tracking,
-            links: options.links ?? existing.links,
-            mentions: options.mentions ?? existing.mentions,
-            owoify: options.owoify ?? existing.owoify,
-            bots: options.bots ?? existing.bots
+    public async insertChannel(data: SelectionRow<MarkovSettingsRow, 'guild_id' | 'channel_id'>): Promise<MarkovSettingsRow> {
+        const existing = await this.selectChannel(data);
+        const settings = {
+            guild_id: data.guild_id,
+            channel_id: data.channel_id,
+            minutes: Math.abs(data.minutes ?? existing.minutes),
+            messages: Math.abs(data.messages ?? existing.messages),
+            posting: data.posting ?? existing.posting,
+            tracking: data.tracking ?? existing.tracking,
+            links: data.links ?? existing.links,
+            mentions: data.mentions ?? existing.mentions,
+            owoify: data.owoify ?? existing.owoify,
+            bots: data.bots ?? existing.bots
         };
-        await this.insert(data);
-        return data;
-    }
-
-    public async deleteChannels({ guildId, channelId }: { guildId?: string, channelId?: string; }): Promise<void> {
-        if (guildId && !channelId) return this.delete({ guild_id: guildId });
-        if (channelId) return this.delete({ channel_id: channelId });
-    }
-
-    public async selectTotalChannels({ guildId }: { guildId: string; }): Promise<number> {
-        const sql = 'SELECT COUNT(*) AS total FROM markov_channel WHERE guild_id = :guild_id';
-        const rows = await this.query(sql, { guild_id: guildId });
-        return rows[0] ? rows[0].total : 0;
+        await this.insert(settings);
+        return settings;
     }
 
     public async createTable(): Promise<void> {
