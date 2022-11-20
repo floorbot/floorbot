@@ -1,9 +1,9 @@
 import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from 'discord.js';
-import { FloorbotComponentID, FloorbotMessageActionRow } from './FloorbotActionRow.js';
-import { ReplyBuilder } from '../../../../discord/builders/ReplyBuilder.js';
 import { HandlerContext } from 'discord.js-handlers';
 import humanizeDuration from 'humanize-duration';
-import { Util } from '../../../helpers/Util.js';
+import { Util } from '../../../../app/Util.js';
+import { ReplyBuilder } from '../../../../discord/builders/ReplyBuilder.js';
+import { FloorbotComponentID, FloorbotMessageActionRow } from './FloorbotActionRow.js';
 
 export class FloorbotReply extends ReplyBuilder {
 

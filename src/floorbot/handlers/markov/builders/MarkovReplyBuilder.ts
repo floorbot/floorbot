@@ -1,8 +1,8 @@
 import { channelMention, EmbedBuilder, ModalBuilder } from 'discord.js';
+import { FloorbotAttachmentBuilder, FloorbotAvatar } from '../../../../app/builders/floorbot/FloorbotAttachmentBuilder.js';
 import { ReplyEmbedBuilderOptions } from '../../../../app/builders/floorbot/FloorbotReplyBuilder.js';
+import { Util } from '../../../../app/Util.js';
 import { ReplyBuilder } from '../../../../discord/builders/ReplyBuilder.js';
-import { AttachmentFactory, FloorbotAvatar } from '../../../helpers/AttachmentFactory.js';
-import { Util } from '../../../helpers/Util.js';
 import { MarkovSettingsRow } from '../tables/MarkovSettingsTable.js';
 import { MarkovStateTotals } from '../tables/MarkovStateTable.js';
 import { MarkovMessageActionRowBuilder } from './MarkovMessageActionRowBuilder.js';
@@ -51,7 +51,7 @@ export class MarkovReplyBuilder extends ReplyBuilder {
     }
 
     public addControlPanelEmbed({ settings, totals }: { settings: MarkovSettingsRow, totals: MarkovStateTotals; }): this {
-        const attachment = AttachmentFactory.avatar({ avatar: FloorbotAvatar.FloorbotYap });
+        const attachment = FloorbotAttachmentBuilder.avatar({ avatar: FloorbotAvatar.FloorbotYap });
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(`**Markov Control Panel for ${channelMention(settings.channel_id)}**`)

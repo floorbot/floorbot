@@ -1,7 +1,7 @@
 import { ActionRowBuilder, chatInputApplicationCommandMention, ChatInputCommandInteraction, MessageActionRowComponentBuilder } from 'discord.js';
 import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
-import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
-import { Util } from '../../../floorbot/helpers/Util.js';
+import { Util } from '../../Util.js';
+import { AvatarExpression, FloorbotAttachmentBuilder } from '../floorbot/FloorbotAttachmentBuilder.js';
 
 export interface BooruPostData {
     readonly score: number | null;
@@ -18,8 +18,8 @@ export class BooruReplyBuilder extends ReplyBuilder {
     protected static getPostDetails(tags: string | null, post: BooruPostData): string {
         const escapedQuery = tags ? tags.replace(/\+/g, ' ') : '';
         const queryString = tags ? `**[${escapedQuery}](${post.postURL})** ` : '';
-        const scoreString = post.score !== null ? Util.formatCommas(post.score) : 'unknown';
-        const countString = post.count !== null ? Util.formatCommas(post.count) : 'unknown';
+        const scoreString = post.score !== null ? Util.formatNumber(post.score, { commas: true }) : 'unknown';
+        const countString = post.count !== null ? Util.formatNumber(post.count, { commas: true }) : 'unknown';
         return queryString + `\`score: ${scoreString}\` \`count: ${countString}\``;
     }
 
@@ -52,8 +52,8 @@ export class BooruReplyBuilder extends ReplyBuilder {
     }
 
     public override addSuggestionsEmbed({ tags, suggestions, message, command }: { tags: string, suggestions: { name: string; count: number; }[], message?: string, command: ChatInputCommandInteraction; }): this {
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Sad });
-        const suggestionString = suggestions.slice(0, 5).map(tag => `${tag.name} \`${Util.formatCommas(tag.count)} posts\``).join('\n');
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Sad });
+        const suggestionString = suggestions.slice(0, 5).map(tag => `${tag.name} \`${Util.formatNumber(tag.count, { commas: true })} posts\``).join('\n');
         const commandMention = chatInputApplicationCommandMention(command.commandName, command.commandId);
         const embed = this.createEmbedBuilder({ suffix: 'Not Found' })
             .setThumbnail(attachment.getEmbedUrl())

@@ -1,10 +1,10 @@
 import { APIMessage, ChatInputCommandInteraction, CollectedInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
+import { ChatInputCommandHandler } from "discord.js-handlers";
+import { Util } from '../../../app/Util.js';
 import { FloorbotComponentID } from './builders/FloorbotActionRow.js';
 import { FloorbotCommand } from './builders/FloorbotCommand.js';
-import { ChatInputCommandHandler } from "discord.js-handlers";
 import { FloorbotModal } from './builders/FloorbotModal.js';
 import { FloorbotReply } from './builders/FloorbotReply.js';
-import { Util } from '../../helpers/Util.js';
 
 export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 

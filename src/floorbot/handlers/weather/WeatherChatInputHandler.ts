@@ -8,12 +8,11 @@ import { OneCallData } from '../../../app/api/apis/open_weather/interfaces/OneCa
 import { WeatherAPIError } from '../../../app/api/apis/open_weather/interfaces/WeatherAPIError.js';
 import { LocationQuery, OpenWeatherAPI } from '../../../app/api/apis/open_weather/OpenWeatherAPI.js';
 import { OpenWeatherAPILimiter } from '../../../app/api/apis/open_weather/OpenWeatherAPILimiter.js';
+import { PageableButtonId } from '../../../app/builders/PageableActionRowBuilder.js';
 import { WeatherEmojiTable } from '../../../app/tables/emoji/WeatherEmojiTable.js';
 import WeatherLinkRow, { WeatherLinkTable } from '../../../app/tables/WeatherLinkTable.js';
+import { Util } from '../../../app/Util.js';
 import { Pageable } from '../../../discord/Pageable.js';
-import { PageableButtonId } from '../../helpers/builders/pageable/PageableButton.js';
-import { FloorbotReply } from '../../helpers/FloorbotReply.js';
-import { Util } from '../../helpers/Util.js';
 import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
 import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
 import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';
@@ -94,7 +93,7 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                 return command.followUp(replyOptions);
             }
             case WeatherSubcommandName.All: {
-                if (!command.inGuild() || !command.guild) return command.reply(FloorbotReply.guildOnly());
+                if (!command.inGuild() || !command.guild) return command.reply(new WeatherReply().addGuildOnlyEmbed({ command }));
                 await command.deferReply();
                 const { guild } = command;
                 const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();

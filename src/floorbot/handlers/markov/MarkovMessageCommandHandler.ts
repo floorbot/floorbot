@@ -1,7 +1,7 @@
 import { MessageContextMenuCommandInteraction } from 'discord.js';
 import { HandlerClient, MessageContextMenuCommandHandler } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
-import { Util } from '../../helpers/Util.js';
+import { Util } from '../../../app/Util.js';
 import { MarkovReplyBuilder } from './builders/MarkovReplyBuilder.js';
 import { MarkovMessageCommandData } from './MarkovMessageCommandData.js';
 import { MarkovStateTable } from './tables/MarkovStateTable.js';

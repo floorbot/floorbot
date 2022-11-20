@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuBuilder } from 'discord.js';
-import { Util } from '../../../floorbot/helpers/Util.js';
+import { Util } from '../../Util.js';
 
 export enum BooruMessageComponentId {
     Suggestions = 'suggestions',
@@ -44,7 +44,7 @@ export class BooruActionRowBuilder extends ActionRowBuilder {
             .addOptions(...suggestions.map(suggestion => {
                 return {
                     label: Util.shortenText(suggestion.name, { char: '', append: '...', maxLength: 25 }),
-                    description: `${Util.formatCommas(suggestion.count)} posts for ${suggestion.name}`,
+                    description: `${Util.formatNumber(suggestion.count, { commas: true })} posts for ${suggestion.name}`,
                     value: suggestion.name,
                 };
             }));

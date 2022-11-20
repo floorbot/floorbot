@@ -1,9 +1,9 @@
-import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../../../app/api/apis/open_weather/OpenWeatherAPI.js';
 import { EmbedBuilder, EmbedFooterOptions, GuildMember, User } from 'discord.js';
-import { Pageable } from '../../../../discord/Pageable.js';
-import { Util } from '../../../helpers/Util.js';
-import WeatherLinkRow from '../../../../app/tables/WeatherLinkTable.js';
+import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../../../../app/api/apis/open_weather/OpenWeatherAPI.js';
 import { WeatherEmojiTable } from '../../../../app/tables/emoji/WeatherEmojiTable.js';
+import WeatherLinkRow from '../../../../app/tables/WeatherLinkTable.js';
+import { Util } from '../../../../app/Util.js';
+import { Pageable } from '../../../../discord/Pageable.js';
 
 export class WeatherEmbed<T = any> extends EmbedBuilder {
 
@@ -102,7 +102,7 @@ export class WeatherEmbed<T = any> extends EmbedBuilder {
                     `Max: **${onecall.daily[0]?.temp.max.toFixed(1) ?? '∞'}°C** (**${onecall.daily[0] ? Util.toFahrenheit(onecall.daily[0].temp.max) : '∞'}°F**)`,
                     `Dew Point: **${onecall.current.dew_point.toFixed(1)}°C** (**${Util.toFahrenheit(onecall.current.dew_point)}°F**)`,
                     `Humidity: **${onecall.current.humidity}%**`,
-                    `Pressure: **${Util.formatCommas(onecall.current.pressure)}hPa**`
+                    `Pressure: **${Util.formatNumber(onecall.current.pressure, { commas: true })}hPa**`
                 ].join('\n'),
                 inline: true
             }, {
@@ -112,7 +112,7 @@ export class WeatherEmbed<T = any> extends EmbedBuilder {
                     `Clouds: **${onecall.current.clouds}%**`,
                     `Wind Speed: **${onecall.current.wind_speed}km/h**`,
                     `Wind Deg: **${onecall.current.wind_deg}°**`,
-                    `Visibility: **${Util.formatCommas(onecall.current.visibility)}m**`,
+                    `Visibility: **${Util.formatNumber(onecall.current.visibility, { commas: true })}m**`,
                     `UV Index: **${onecall.current.uvi}**`
                 ].join('\n'),
                 inline: true

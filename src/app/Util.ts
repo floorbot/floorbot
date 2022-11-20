@@ -1,7 +1,7 @@
-import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOptions } from '../../discord/ComponentCollector.js';
 import { APIMessage, BaseInteraction, Client, CollectedInteraction, Message, PermissionsBitField } from 'discord.js';
 import { HandlerClient } from 'discord.js-handlers';
 import { DateTime } from 'luxon';
+import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOptions } from '../discord/ComponentCollector.js';
 
 export class Util {
 
@@ -90,16 +90,6 @@ export class Util {
 
     public static lowercaseString(string: string | boolean): string {
         return Util.capitaliseString(string).toLowerCase();
-    }
-
-    /**
-     * Formats a number to a string with commas
-     * @param number The number to format
-     * @returns The formatted number
-     */
-    public static formatCommas(number: number): string {
-        console.log('util format commas is to be deleto');
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     /**

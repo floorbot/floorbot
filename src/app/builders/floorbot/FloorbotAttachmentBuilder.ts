@@ -1,6 +1,6 @@
 import { AttachmentBuilder } from 'discord.js';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 export enum AvatarView {
     Full = 1,
@@ -24,7 +24,7 @@ export enum FloorbotAvatar {
     FloorbotYap = 'floorbot_yap.gif'
 }
 
-export class AttachmentFactory {
+export class FloorbotAttachmentBuilder extends AttachmentBuilder {
 
     public static avatarExpression({ expression = AvatarExpression.SmileOpen, view = AvatarView.Full }): AttachmentBuilder {
         const buffer = fs.readFileSync(`${path.resolve()}/res/avatars/${view}-${expression}.png`);

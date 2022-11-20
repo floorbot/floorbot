@@ -1,10 +1,9 @@
+import { ActionRowBuilder, EmbedBuilder, MessageActionRowComponentBuilder } from 'discord.js';
 import { UrbanDictionaryAPIDefinition } from '../../../../app/api/apis/urban_dictionary/interfaces/UrbanDictionaryAPIDefinition.js';
-import { AttachmentFactory, AvatarExpression } from '../../../helpers/AttachmentFactory.js';
-import { PageableActionRow } from '../../../helpers/builders/pageable/PageableActionRow.js';
+import { AvatarExpression, FloorbotAttachmentBuilder } from '../../../../app/builders/floorbot/FloorbotAttachmentBuilder.js';
+import { Util } from '../../../../app/Util.js';
 import { ReplyBuilder } from '../../../../discord/builders/ReplyBuilder.js';
 import { Pageable } from '../../../../discord/Pageable.js';
-import { Util } from '../../../helpers/Util.js';
-import { EmbedBuilder } from 'discord.js';
 
 export class DefineReply extends ReplyBuilder {
 
@@ -37,7 +36,7 @@ export class DefineReply extends ReplyBuilder {
     }
 
     public addDefinitionPageableButtonActionRow(pageable: Pageable<UrbanDictionaryAPIDefinition>): this {
-        const actionRow = new PageableActionRow()
+        const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>()
             .addViewOnlineButton(pageable.getPageFirst().permalink)
             .addPreviousPageButton({ disabled: pageable.totalPages < 2 })
             .addNextPageButton({ disabled: pageable.totalPages < 2 });
@@ -45,7 +44,7 @@ export class DefineReply extends ReplyBuilder {
     }
 
     public addDefinitionNotFoundEmbed(query?: string | null): this {
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Frown });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Frown });
         const embed = this.createDefineEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription(query ? [

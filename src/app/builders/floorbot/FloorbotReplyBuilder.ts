@@ -1,8 +1,8 @@
 import { chatInputApplicationCommandMention, CommandInteraction, ComponentType, EmbedBuilder, MessageComponentInteraction } from 'discord.js';
 import { HandlerContext } from 'discord.js-handlers';
 import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
-import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
-import { Util } from '../../../floorbot/helpers/Util.js';
+import { Util } from '../../Util.js';
+import { AvatarExpression, FloorbotAttachmentBuilder } from './FloorbotAttachmentBuilder.js';
 
 export type ReplyEmbedBuilderOptions = { context?: HandlerContext, prefix?: string, suffix?: string; };
 
@@ -29,7 +29,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     }
 
     public override addGuildOnlyEmbed({ command }: { command?: CommandInteraction; } = {}): this {
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Frown });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Frown });
         const commandMention = command ? `${chatInputApplicationCommandMention(command.commandName, command.commandId)} ` : 'this feature';
         const embed = this.createEmbedBuilder({ suffix: 'Guild Only Command' })
             .setThumbnail(attachment.getEmbedUrl())
@@ -44,7 +44,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     }
 
     public override addAdminOrOwnerEmbed({ command, component }: { command?: CommandInteraction, component?: MessageComponentInteraction; } = {}): this {
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Mad });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Mad });
         const commandMention = command ? `${chatInputApplicationCommandMention(command.commandName, command.commandId)} ` : 'this feature';
         const componentType = component?.componentType ? ComponentType[component.componentType] ?? 'component' : 'component';
         const embed = this.createEmbedBuilder({ suffix: 'Admin or Owner Permission' })
@@ -67,7 +67,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     public override addUnknownComponentEmbed({ component }: { component?: MessageComponentInteraction; } = {}): this {
         const componentType = component?.componentType ? ComponentType[component.componentType] ?? 'component' : 'component';
         if (component) console.warn(`[support] Unknown ${componentType} - <${component.customId}>`, component);
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Sad });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Sad });
         const embed = this.createEmbedBuilder()
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([
@@ -81,7 +81,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     }
 
     public override addNotFoundEmbed({ query, message, command }: { query?: string | null, message?: string, command?: CommandInteraction; } = {}): this {
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.Frown });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.Frown });
         const commandMention = command ? `${chatInputApplicationCommandMention(command.commandName, command.commandId)} ` : '';
         const embed = this.createEmbedBuilder({ suffix: 'Not Found' })
             .setThumbnail(attachment.getEmbedUrl())
@@ -97,7 +97,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
 
     public override addUnexpectedErrorEmbed({ error }: { error?: any; } = {}): this {
         if (error) console.error('[error] Unexpected Error', error);
-        const attachment = AttachmentFactory.avatarExpression({ expression: AvatarExpression.SadTears });
+        const attachment = FloorbotAttachmentBuilder.avatarExpression({ expression: AvatarExpression.SadTears });
         const embed = this.createEmbedBuilder({ suffix: 'Unexpected Error' })
             .setThumbnail(attachment.getEmbedUrl())
             .setDescription([

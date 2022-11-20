@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, Events, Message, MessageComponentInteracti
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
-import { Util } from '../../helpers/Util.js';
+import { Util } from '../../../app/Util.js';
 import { MarkovButtonId, MarkovSelectMenuId, MarkovSettingsSelectMenuOptionValue } from './builders/MarkovMessageActionRowBuilder.js';
 import { MarkovTextInputId } from './builders/MarkovModalActionRowBuilder.js';
 import { MarkovModalId, MarkovReplyBuilder } from './builders/MarkovReplyBuilder.js';
@@ -169,7 +169,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             }
         }
         if (settings.posting && !message.editedTimestamp) {
-            if (message.mentions.users.has(message.client.user.id) && message.author.id !== message.client.user.id) {
+            if (message.mentions.users.has(message.client.user.id) && !message.author.bot) {
                 await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.reply(replyOptions);
