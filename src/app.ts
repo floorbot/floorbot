@@ -13,9 +13,8 @@ console.error = consolePrettifier(console.error);
 console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
 
-import { HandlerClient, HandlerError } from 'discord.js-handlers';
-// import { GatewayIntentBits } from 'discord.js';
 import exitHook from 'async-exit-hook';
+import { HandlerClient, HandlerError } from 'discord.js-handlers';
 import envalid, { num, str } from 'envalid';
 
 // Import All Handlers
@@ -70,7 +69,6 @@ const poolConfig: PoolConfig = {
 
 
 let pool = MariaDB.createPool(poolConfig);
-if (Object.values(poolConfig).some(val => !val)) console.warn('[env] missing db details, using temporary in-memory database');
 const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
 
 const client = new HandlerClient({

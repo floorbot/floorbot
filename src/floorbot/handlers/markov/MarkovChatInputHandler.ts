@@ -122,6 +122,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                 states.push(state);
             }
             let markov = words.join(' ');
+            if (!markov.length) continue;
             if (settings.links === 'substitute') markov = markov.replaceAll(MarkovChatInputCommandHandler.LinksPattern, '[LINK]');
             if (settings.mentions === 'substitute') {
                 markov = markov.replaceAll(new RegExp(MessageMentions.ChannelsPattern, 'g'), '[CHANNEL]');
