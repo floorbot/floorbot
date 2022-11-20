@@ -1,4 +1,4 @@
-import { Client, DiscordAPIError, Message } from 'discord.js';
+import { Client, DiscordAPIError, Message, MessageType } from 'discord.js';
 
 
 export class MessageReaction {
@@ -14,11 +14,16 @@ export class MessageReaction {
 
     // This should exist, I shouldn't have to make this shitty function
     private static MessageHasAnyMentions(message: Message): boolean {
+        console.log(message.mentions.users.map(user => user.username));
+        console.log(message.type, message.reference);
         return Boolean(
             message.mentions.everyone
-            || message.mentions.users.size
             || message.mentions.roles.size
             || message.mentions.channels.size
+            || (message.type === MessageType.Reply ? // This will only fail when the only mention in the message is to the using being replied
+                message.mentions.users.size > 1 :
+                message.mentions.users.size
+            )
         );
     }
 

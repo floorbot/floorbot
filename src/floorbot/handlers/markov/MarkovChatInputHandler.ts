@@ -169,7 +169,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             }
         }
         if (settings.posting && !message.editedTimestamp) {
-            if (message.mentions.users.has(message.client.user.id)) {
+            if (message.mentions.users.has(message.client.user.id) && message.author.id !== message.client.user.id) {
                 await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.reply(replyOptions);
