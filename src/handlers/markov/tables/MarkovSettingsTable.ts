@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Pool } from "mariadb";
 import path from 'path';
-import { MariaDBTable, PartRow, SelectionRow } from '../../../discord/MariaDBTable.js';
+import { MariaDBTable, PartRow, SelectionRow } from '../../../core/MariaDBTable.js';
 
 export interface MarkovSettingsRow {
     readonly guild_id: string;

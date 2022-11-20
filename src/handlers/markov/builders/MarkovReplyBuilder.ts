@@ -1,8 +1,8 @@
 import { channelMention, EmbedBuilder, ModalBuilder } from 'discord.js';
-import { FloorbotAttachmentBuilder, FloorbotAvatar } from '../../../discord/builders/floorbot/FloorbotAttachmentBuilder.js';
-import { ReplyEmbedBuilderOptions } from '../../../discord/builders/floorbot/FloorbotReplyBuilder.js';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
-import { Util } from '../../../discord/Util.js';
+import { FloorbotAttachmentBuilder, FloorbotAvatar } from '../../../core/builders/floorbot/FloorbotAttachmentBuilder.js';
+import { ReplyEmbedBuilderOptions } from '../../../core/builders/floorbot/FloorbotReplyBuilder.js';
+import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { Util } from '../../../core/Util.js';
 import { MarkovSettingsRow } from '../tables/MarkovSettingsTable.js';
 import { MarkovStateTotals } from '../tables/MarkovStateTable.js';
 import { MarkovMessageActionRowBuilder } from './MarkovMessageActionRowBuilder.js';

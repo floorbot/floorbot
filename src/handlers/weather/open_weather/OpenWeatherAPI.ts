@@ -1,5 +1,5 @@
 
-import { API, APIOptions, RequestOptions } from '../../../discord/api/API.js';
+import { API, APIOptions, RequestOptions } from '../../../core/api/API.js';
 import { AirPollutionData } from './interfaces/AirPollutionData.js';
 import { GeocodeData } from './interfaces/GeocodeData.js';
 import { OneCallData } from './interfaces/OneCallData.js';

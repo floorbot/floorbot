@@ -1,6 +1,6 @@
 import { EmbedBuilder, EmbedFooterOptions, GuildMember, User } from 'discord.js';
-import { Pageable } from '../../../discord/Pageable.js';
-import { Util } from '../../../discord/Util.js';
+import { Pageable } from '../../../core/Pageable.js';
+import { Util } from '../../../core/Util.js';
 import { AirPollutionData, GeocodeData, LocationQuery, OneCallData, OpenWeatherAPI, WeatherAPIError } from '../open_weather/OpenWeatherAPI.js';
 import { WeatherEmojiTable } from '../tables/emoji/WeatherEmojiTable.js';
 import WeatherLinkRow from '../tables/WeatherLinkTable.js';

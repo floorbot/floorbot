@@ -2,9 +2,9 @@ import { ChatInputCommandInteraction, GuildMember, MessageComponentInteraction }
 import { ChatInputCommandHandler } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
 import { Pool } from 'mariadb';
-import { PageableButtonId } from '../../discord/builders/pageable/PageableActionRowBuilder.js';
-import { Pageable } from '../../discord/Pageable.js';
-import { Util } from '../../discord/Util.js';
+import { PageableButtonId } from '../../core/builders/pageable/PageableActionRowBuilder.js';
+import { Pageable } from '../../core/Pageable.js';
+import { Util } from '../../core/Util.js';
 import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
 import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
 import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';

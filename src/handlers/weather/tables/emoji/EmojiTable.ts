@@ -2,7 +2,7 @@ import { Client, Collection, GuildEmoji } from 'discord.js';
 import fs from 'fs';
 import { Pool } from 'mariadb';
 import path from 'path';
-import { MariaDBTable } from '../../../../discord/MariaDBTable.js';
+import { MariaDBTable } from '../../../../core/MariaDBTable.js';
 
 export interface EmojiRow {
     readonly name: string,

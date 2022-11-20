@@ -1,5 +1,5 @@
 import xml2js from 'xml2js';
-import { API, APIOptions, RequestOptions } from '../../../../discord/api/API.js';
+import { API, APIOptions, RequestOptions } from '../../../../core/api/API.js';
 import { Rule34APIAutocomplete } from './interfaces/Rule34APIAutocomplete.js';
 import { Rule34APIPost } from './interfaces/Rule34APIPost.js';
 

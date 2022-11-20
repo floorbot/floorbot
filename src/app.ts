@@ -1,14 +1,14 @@
-import './discord/builders/AttachmentBuilder.js';
-import './discord/builders/booru/BooruActionRowBuilder.js';
-import './discord/builders/booru/BooruReplyBuilder.js';
-import './discord/builders/EmbedBuilder.js';
-import './discord/builders/floorbot/FloorbotActionRowBuilder.js';
-import './discord/builders/floorbot/FloorbotReplyBuilder.js';
-import './discord/builders/ModalBuilder.js';
-import './discord/builders/pageable/PageableActionRowBuilder.js';
+import './core/builders/AttachmentBuilder.js';
+import './core/builders/booru/BooruActionRowBuilder.js';
+import './core/builders/booru/BooruReplyBuilder.js';
+import './core/builders/EmbedBuilder.js';
+import './core/builders/floorbot/FloorbotActionRowBuilder.js';
+import './core/builders/floorbot/FloorbotReplyBuilder.js';
+import './core/builders/ModalBuilder.js';
+import './core/builders/pageable/PageableActionRowBuilder.js';
 
 // Pipe console usage to prettifier
-import consolePrettifier from './console-prettifier.js';
+import consolePrettifier from './core/console-prettifier.js';
 console.error = consolePrettifier(console.error);
 console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);

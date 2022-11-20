@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Pool } from 'mariadb';
 import path from 'path';
-import { MariaDBTable, SelectionRow, SelectOrder } from '../../../discord/MariaDBTable.js';
+import { MariaDBTable, SelectionRow, SelectOrder } from '../../../core/MariaDBTable.js';
 
 export default interface MarkovStateRow {
     readonly epoch: number;

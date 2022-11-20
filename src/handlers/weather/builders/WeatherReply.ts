@@ -1,6 +1,6 @@
 import { GuildMember, User } from 'discord.js';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
-import { Pageable } from '../../../discord/Pageable.js';
+import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { Pageable } from '../../../core/Pageable.js';
 import { AirPollutionData } from '../open_weather/interfaces/AirPollutionData.js';
 import { GeocodeData } from '../open_weather/interfaces/GeocodeData.js';
 import { OneCallData } from '../open_weather/interfaces/OneCallData.js';

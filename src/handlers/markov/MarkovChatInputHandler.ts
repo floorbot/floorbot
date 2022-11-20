@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, Events, Message, MessageComponentInteracti
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
-import { Util } from '../../discord/Util.js';
+import { Util } from '../../core/Util.js';
 import { MarkovButtonId, MarkovSelectMenuId, MarkovSettingsSelectMenuOptionValue } from './builders/MarkovMessageActionRowBuilder.js';
 import { MarkovTextInputId } from './builders/MarkovModalActionRowBuilder.js';
 import { MarkovModalId, MarkovReplyBuilder } from './builders/MarkovReplyBuilder.js';

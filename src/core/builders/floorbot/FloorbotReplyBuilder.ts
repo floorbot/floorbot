@@ -1,7 +1,7 @@
 import { chatInputApplicationCommandMention, CommandInteraction, ComponentType, EmbedBuilder, MessageComponentInteraction } from 'discord.js';
 import { HandlerContext } from 'discord.js-handlers';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
 import { Util } from '../../Util.js';
+import { ReplyBuilder } from '../ReplyBuilder.js';
 import { AvatarExpression, FloorbotAttachmentBuilder } from './FloorbotAttachmentBuilder.js';
 
 export type ReplyEmbedBuilderOptions = { context?: HandlerContext, prefix?: string, suffix?: string; };
@@ -114,7 +114,7 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
     }
 }
 
-declare module '../../../discord/builders/ReplyBuilder' {
+declare module '../../../core/builders/ReplyBuilder' {
     export interface ReplyBuilder {
         createEmbedBuilder({ context, prefix, suffix }?: ReplyEmbedBuilderOptions): EmbedBuilder;
         addEmbedMessage({ content }: { content: string; }): this;

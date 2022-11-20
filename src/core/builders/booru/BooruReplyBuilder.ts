@@ -1,7 +1,7 @@
 import { ActionRowBuilder, chatInputApplicationCommandMention, ChatInputCommandInteraction, MessageActionRowComponentBuilder } from 'discord.js';
-import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
 import { Util } from '../../Util.js';
 import { AvatarExpression, FloorbotAttachmentBuilder } from '../floorbot/FloorbotAttachmentBuilder.js';
+import { ReplyBuilder } from '../ReplyBuilder.js';
 
 export interface BooruPostData {
     readonly score: number | null;
@@ -96,7 +96,7 @@ export class BooruReplyBuilder extends ReplyBuilder {
     }
 }
 
-declare module '../../../discord/builders/ReplyBuilder' {
+declare module '../../../core/builders/ReplyBuilder' {
     export interface ReplyBuilder {
         addImageEmbed({ tags, post }: { tags: string | null, post: BooruPostData; }): this;
         addTagsEmbed({ tags, post }: { tags: string | null, post: BooruPostData; }): this;

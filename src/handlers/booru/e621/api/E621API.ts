@@ -1,6 +1,6 @@
 import { Headers } from 'node-fetch';
-import { API, APIOptions, RequestOptions } from '../../../../discord/api/API.js';
-import { APICacheOptions } from '../../../../discord/api/APICache.js';
+import { API, APIOptions, RequestOptions } from '../../../../core/api/API.js';
+import { APICacheOptions } from '../../../../core/api/APICache.js';
 import { E621APIAutocomplete } from './interfaces/E621APIAutocomplete.js';
 import { E621APIError } from './interfaces/E621APIError.js';
 import { E621APIPost } from './interfaces/E621APIPost.js';
