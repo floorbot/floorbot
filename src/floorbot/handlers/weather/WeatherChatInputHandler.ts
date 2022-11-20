@@ -1,27 +1,27 @@
-import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
-import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
 import { ChatInputCommandInteraction, GuildMember, MessageComponentInteraction } from 'discord.js';
-import { WeatherSelectMenuOptionValue } from './builders/components/WeatherSelectMenuOption.js';
-import { WeatherSubcommandName } from './builders/commands/WeatherSlashCommandSubcommand.js';
-import { LocationQuery, OpenWeatherAPI } from '../../../app/api/apis/open_weather/OpenWeatherAPI.js';
-import { AirPollutionData } from '../../../app/api/apis/open_weather/interfaces/AirPollutionData.js';
-import { OpenWeatherAPILimiter } from '../../../app/api/apis/open_weather/OpenWeatherAPILimiter.js';
-import { WeatherAPIError } from '../../../app/api/apis/open_weather/interfaces/WeatherAPIError.js';
-import { PageableButtonId } from '../../helpers/builders/pageable/PageableButton.js';
-import { GeocodeData } from '../../../app/api/apis/open_weather/interfaces/GeocodeData.js';
-import { OneCallData } from '../../../app/api/apis/open_weather/interfaces/OneCallData.js';
-import { WeatherEmojiTable } from '../../../app/tables/emoji/WeatherEmojiTable.js';
-import { WeatherSelectMenuId } from './builders/components/WeatherSelectMenu.js';
-import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';
-import WeatherLinkRow, { WeatherLinkTable } from '../../../app/tables/WeatherLinkTable.js';
-import { WeatherButtonId } from './builders/components/WeatherButton.js';
-import { FloorbotReply } from '../../helpers/FloorbotReply.js';
 import { ChatInputCommandHandler } from 'discord.js-handlers';
-import { WeatherReply } from './builders/WeatherReply.js';
-import { Pageable } from '../../../discord/Pageable.js';
-import { Util } from '../../helpers/Util.js';
 import { Redis } from 'ioredis';
 import { Pool } from 'mariadb';
+import { AirPollutionData } from '../../../app/api/apis/open_weather/interfaces/AirPollutionData.js';
+import { GeocodeData } from '../../../app/api/apis/open_weather/interfaces/GeocodeData.js';
+import { OneCallData } from '../../../app/api/apis/open_weather/interfaces/OneCallData.js';
+import { WeatherAPIError } from '../../../app/api/apis/open_weather/interfaces/WeatherAPIError.js';
+import { LocationQuery, OpenWeatherAPI } from '../../../app/api/apis/open_weather/OpenWeatherAPI.js';
+import { OpenWeatherAPILimiter } from '../../../app/api/apis/open_weather/OpenWeatherAPILimiter.js';
+import { WeatherEmojiTable } from '../../../app/tables/emoji/WeatherEmojiTable.js';
+import WeatherLinkRow, { WeatherLinkTable } from '../../../app/tables/WeatherLinkTable.js';
+import { Pageable } from '../../../discord/Pageable.js';
+import { PageableButtonId } from '../../helpers/builders/pageable/PageableButton.js';
+import { FloorbotReply } from '../../helpers/FloorbotReply.js';
+import { Util } from '../../helpers/Util.js';
+import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
+import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
+import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';
+import { WeatherSubcommandName } from './builders/commands/WeatherSlashCommandSubcommand.js';
+import { WeatherButtonId } from './builders/components/WeatherButton.js';
+import { WeatherSelectMenuId } from './builders/components/WeatherSelectMenu.js';
+import { WeatherSelectMenuOptionValue } from './builders/components/WeatherSelectMenuOption.js';
+import { WeatherReply } from './builders/WeatherReply.js';
 
 export class WeatherChatInputHandler extends ChatInputCommandHandler {
 
@@ -113,11 +113,11 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                         lastUpdate = (await command.editReply(loadingReply)).createdTimestamp;
                     }
                 }
-                if (!Pageable.isNonEmptyArray(links)) return command.followUp(WeatherReply.missingLinkedMembers());
+                if (!Pageable.isNonEmptyArray(links)) return command.editReply(WeatherReply.missingLinkedMembers());
                 const pageable = new Pageable(links, { perPage: 40 });
                 let order = WeatherSelectMenuOptionValue.Hottest;
                 const replyOptions = WeatherReply.allTemps(pageable, this.emojiTable, order);
-                const message = await command.followUp(replyOptions);
+                const message = await command.editReply(replyOptions);
                 const collector = Util.createComponentCollector(command.client, message);
                 collector.on('collect', async component => {
                     await component.deferUpdate();

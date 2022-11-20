@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, Events, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction } from 'discord.js';
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
@@ -170,11 +170,13 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         }
         if (settings.posting && !message.editedTimestamp) {
             if (message.mentions.users.has(message.client.user.id)) {
+                await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.reply(replyOptions);
             }
             const random = Math.floor(Math.random() * settings.messages);
             if (!random) {
+                await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.channel.send(replyOptions);
             }
@@ -185,8 +187,8 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         const setup = await super.setup({ client });
         await this.settingsTable.createTable();
         await this.stateTable.createTable();
-        client.on('messageCreate', (message) => this.storeMessage(message));
-        client.on('messageUpdate', (_oldMessage, newMessage) => { if (newMessage instanceof Message) this.storeMessage(newMessage); });
+        client.on(Events.MessageCreate, (message) => this.storeMessage(message));
+        client.on(Events.MessageUpdate, (_oldMessage, newMessage) => { if (newMessage instanceof Message) this.storeMessage(newMessage); });
         setInterval(async () => {
             for (const [guildId, _guild] of client.guilds.cache) {
                 const rows = await this.settingsTable.select({ guild_id: guildId, posting: true });
@@ -195,6 +197,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     if (!channel || !channel.isTextBased()) return;
                     const random = Math.floor(Math.random() * row.minutes);
                     if (!random) {
+                        await channel.sendTyping();
                         const replyOptions = await this.generateMarkov({ guildId, channelId: channel.id });
                         if (replyOptions) await channel.send(replyOptions);
                     }

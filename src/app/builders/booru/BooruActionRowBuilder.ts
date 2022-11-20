@@ -12,7 +12,7 @@ export class BooruActionRowBuilder extends ActionRowBuilder {
 
     public override addRecycleButton(): this {
         const button = new ButtonBuilder()
-            .setLabel('Recycle')
+            .setLabel('♻')
             .setStyle(ButtonStyle.Success)
             .setCustomId(BooruMessageComponentId.Recycle);
         return this.addComponents(button);

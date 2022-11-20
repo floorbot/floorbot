@@ -28,6 +28,8 @@ import { IntentsBitField } from 'discord.js';
 import Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
 import MariaDB, { PoolConfig } from 'mariadb';
+import { MessageReaction } from './floorbot/automations/MessageReaction.js';
+import { NhentaiCodes } from './floorbot/automations/NhentaiCodes.js';
 import { DonmaiChatInputCommandHandler } from './floorbot/handlers/donmai/DonmaiChatInputHandler.js';
 import { E621ChatInputCommandHandler } from './floorbot/handlers/e621/E621ChatInputHandler.js';
 import { MarkovChatInputCommandHandler } from './floorbot/handlers/markov/MarkovChatInputHandler.js';
@@ -91,6 +93,8 @@ const client = new HandlerClient({
 client.once('ready', () => {
     console.log(`[login] Logged in as <${client.user!.tag}>`);
     PresenceController.setup(client);
+    MessageReaction.setup(client);
+    NhentaiCodes.setup(client);
 
     exitHook((done) => {
         console.log(`[exit-hook] Logged out of <${client.user!.tag}>`);

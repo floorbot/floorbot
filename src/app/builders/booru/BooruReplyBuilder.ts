@@ -1,6 +1,6 @@
-import { ActionRowBuilder, chatInputApplicationCommandMention, ChatInputCommandInteraction, escapeMarkdown, MessageActionRowComponentBuilder } from 'discord.js';
-import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
+import { ActionRowBuilder, chatInputApplicationCommandMention, ChatInputCommandInteraction, MessageActionRowComponentBuilder } from 'discord.js';
 import { ReplyBuilder } from '../../../discord/builders/ReplyBuilder.js';
+import { AttachmentFactory, AvatarExpression } from '../../../floorbot/helpers/AttachmentFactory.js';
 import { Util } from '../../../floorbot/helpers/Util.js';
 
 export interface BooruPostData {
@@ -16,7 +16,7 @@ export interface BooruPostData {
 export class BooruReplyBuilder extends ReplyBuilder {
 
     protected static getPostDetails(tags: string | null, post: BooruPostData): string {
-        const escapedQuery = tags ? escapeMarkdown(tags).replace(/\+/g, ' ') : '';
+        const escapedQuery = tags ? tags.replace(/\+/g, ' ') : '';
         const queryString = tags ? `**[${escapedQuery}](${post.postURL})** ` : '';
         const scoreString = post.score !== null ? Util.formatCommas(post.score) : 'unknown';
         const countString = post.count !== null ? Util.formatCommas(post.count) : 'unknown';
