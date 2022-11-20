@@ -1,14 +1,14 @@
-import './app/builders/booru/BooruActionRowBuilder.js';
-import './app/builders/booru/BooruReplyBuilder.js';
-import './app/builders/floorbot/FloorbotActionRowBuilder.js';
-import './app/builders/floorbot/FloorbotReplyBuilder.js';
-import './app/builders/PageableActionRowBuilder.js';
 import './discord/builders/AttachmentBuilder.js';
+import './discord/builders/booru/BooruActionRowBuilder.js';
+import './discord/builders/booru/BooruReplyBuilder.js';
 import './discord/builders/EmbedBuilder.js';
+import './discord/builders/floorbot/FloorbotActionRowBuilder.js';
+import './discord/builders/floorbot/FloorbotReplyBuilder.js';
 import './discord/builders/ModalBuilder.js';
+import './discord/builders/pageable/PageableActionRowBuilder.js';
 
 // Pipe console usage to prettifier
-import consolePrettifier from './app/console-prettifier.js';
+import consolePrettifier from './console-prettifier.js';
 console.error = consolePrettifier(console.error);
 console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
@@ -18,23 +18,23 @@ import { HandlerClient, HandlerError } from 'discord.js-handlers';
 import envalid, { num, str } from 'envalid';
 
 // Import All Handlers
-import { DefineChatInputHandler } from './floorbot/handlers/define/DefineChatInputHandler.js';
-import { FloorbotChatInputHandler } from './floorbot/handlers/floorbot/FloorbotChatInputHandler.js';
-import { WeatherChatInputHandler } from './floorbot/handlers/weather/WeatherChatInputHandler.js';
+import { DefineChatInputHandler } from './handlers/define/DefineChatInputHandler.js';
+import { FloorbotChatInputHandler } from './handlers/floorbot/FloorbotChatInputHandler.js';
+import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
 
-import { PresenceController } from './floorbot/automations/PresenceController.js';
+import { PresenceController } from './tasks/PresenceController.js';
 
 import { IntentsBitField } from 'discord.js';
 import Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
 import MariaDB, { PoolConfig } from 'mariadb';
-import { MessageReaction } from './floorbot/automations/MessageReaction.js';
-import { NhentaiCodes } from './floorbot/automations/NhentaiCodes.js';
-import { DonmaiChatInputCommandHandler } from './floorbot/handlers/donmai/DonmaiChatInputHandler.js';
-import { E621ChatInputCommandHandler } from './floorbot/handlers/e621/E621ChatInputHandler.js';
-import { MarkovChatInputCommandHandler } from './floorbot/handlers/markov/MarkovChatInputHandler.js';
-import { MarkovMessageCommandHandler } from './floorbot/handlers/markov/MarkovMessageCommandHandler.js';
-import { Rule34ChatInputCommandHandler } from './floorbot/handlers/rule34/Rule34ChatInputHandler.js';
+import { DonmaiChatInputCommandHandler } from './handlers/booru/donmai/DonmaiChatInputHandler.js';
+import { E621ChatInputCommandHandler } from './handlers/booru/e621/E621ChatInputHandler.js';
+import { Rule34ChatInputCommandHandler } from './handlers/booru/rule34/Rule34ChatInputHandler.js';
+import { MarkovChatInputCommandHandler } from './handlers/markov/MarkovChatInputHandler.js';
+import { MarkovMessageCommandHandler } from './handlers/markov/MarkovMessageCommandHandler.js';
+import { MessageReaction } from './tasks/MessageReaction.js';
+import { NhentaiCodes } from './tasks/NhentaiCodes.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
