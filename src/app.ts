@@ -14,64 +14,57 @@ console.warn = consolePrettifier(console.warn);
 console.log = consolePrettifier(console.log);
 
 import exitHook from 'async-exit-hook';
+import { Events, IntentsBitField } from 'discord.js';
 import { HandlerClient, HandlerError } from 'discord.js-handlers';
 import envalid, { num, str } from 'envalid';
-
-// Import All Handlers
-import { DefineChatInputHandler } from './handlers/define/DefineChatInputHandler.js';
-import { FloorbotChatInputHandler } from './handlers/floorbot/FloorbotChatInputHandler.js';
-import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
-
-import { PresenceController } from './tasks/PresenceController.js';
-
-import { IntentsBitField } from 'discord.js';
 import Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
-import MariaDB, { PoolConfig } from 'mariadb';
+import MariaDB from 'mariadb';
 import { DonmaiChatInputCommandHandler } from './handlers/booru/donmai/DonmaiChatInputHandler.js';
 import { E621ChatInputCommandHandler } from './handlers/booru/e621/E621ChatInputHandler.js';
 import { Rule34ChatInputCommandHandler } from './handlers/booru/rule34/Rule34ChatInputHandler.js';
+import { DefineChatInputHandler } from './handlers/define/DefineChatInputHandler.js';
+import { FloorbotChatInputHandler } from './handlers/floorbot/FloorbotChatInputHandler.js';
 import { MarkovChatInputCommandHandler } from './handlers/markov/MarkovChatInputHandler.js';
 import { MarkovMessageCommandHandler } from './handlers/markov/MarkovMessageCommandHandler.js';
+import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
 import { MessageReaction } from './tasks/MessageReaction.js';
 import { NhentaiCodes } from './tasks/NhentaiCodes.js';
+import { PresenceController } from './tasks/PresenceController.js';
 
 const env = envalid.cleanEnv(process.env, {
     DISCORD_TOKEN: str({ desc: 'Discord Token', docs: 'https://discord.com/developers/docs/intro' }),
-    DISCORD_OWNERS: str({ default: '', desc: 'Discord IDs separated by space' }),
-    DISCORD_FEEDBACK: str({ default: '', desc: 'Discord feedback channel ID' }),
+    DISCORD_OWNERS: str({ desc: 'Discord IDs separated by space' }),
+    DISCORD_FEEDBACK: str({ desc: 'Discord feedback channel ID' }),
 
-    REDIS_PORT: num({ default: 0, desc: 'Redis Port' }),
+    REDIS_PORT: num({ default: NaN, desc: 'Redis Port' }),
     REDIS_HOST: str({ default: '', desc: 'Redis Host' }),
 
-    DB_HOST: str({ default: '', desc: 'MariaDB Database Host' }),
-    DB_NAME: str({ default: '', desc: 'MariaDB Database Name' }),
-    DB_USERNAME: str({ default: '', desc: 'MariaDB Database Username' }),
-    DB_PASSWORD: str({ default: '', desc: 'MariaDB Database Password' }),
-    DB_CONNECTION_LIMIT: num({ default: 0, desc: 'MariaDB Database Connection Limit' }),
+    DB_HOST: str({ desc: 'MariaDB Database Host' }),
+    DB_NAME: str({ desc: 'MariaDB Database Name' }),
+    DB_USERNAME: str({ desc: 'MariaDB Database Username' }),
+    DB_PASSWORD: str({ desc: 'MariaDB Database Password' }),
+    DB_CONNECTION_LIMIT: num({ desc: 'MariaDB Database Connection Limit' }),
 
     OPEN_WEATHER_API_KEY: str({ desc: 'OpenWeather API Key', docs: 'https://openweathermap.org/api' }),
 
-    DONMAI_USERNAME: str({ default: '', desc: 'Donmai Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
-    DONMAI_API_KEY: str({ default: '', desc: 'Donmai API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
+    DONMAI_USERNAME: str({ desc: 'Donmai Username', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
+    DONMAI_API_KEY: str({ desc: 'Donmai API Key', docs: 'https://danbooru.donmai.us/wiki_pages/help:api' }),
 
-    E621_USERNAME: str({ default: '', desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
-    E621_API_KEY: str({ default: '', desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
-    E621_USER_AGENT: str({ default: '', desc: 'E621 User Agent', docs: 'https://e621.net/help/api' })
+    E621_USERNAME: str({ desc: 'E621 Username', docs: 'https://e621.net/help/api' }),
+    E621_API_KEY: str({ desc: 'E621 API Key', docs: 'https://e621.net/help/api' }),
+    E621_USER_AGENT: str({ desc: 'E621 User Agent', docs: 'https://e621.net/help/api' })
 });
 
-const poolConfig: PoolConfig = {
+const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
+let pool = MariaDB.createPool({
     host: env.DB_HOST,
     database: env.DB_NAME,
     user: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     connectionLimit: env.DB_CONNECTION_LIMIT
     // supportBigInt: true
-};
-
-
-let pool = MariaDB.createPool(poolConfig);
-const redis = env.REDIS_HOST && env.REDIS_PORT ? new Redis(env.REDIS_PORT, env.REDIS_HOST) : new RedisMock();
+});
 
 const client = new HandlerClient({
     intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
@@ -90,7 +83,7 @@ const client = new HandlerClient({
 });
 
 // One time login and exit hook handlers
-client.once('ready', () => {
+client.once(Events.ClientReady, () => {
     console.log(`[login] Logged in as <${client.user!.tag}>`);
     PresenceController.setup(client);
     MessageReaction.setup(client);
@@ -104,7 +97,7 @@ client.once('ready', () => {
 });
 
 // Handle uncaught or internal errors
-client.on('error', error => {
+client.on(Events.Error, error => {
     if (error instanceof HandlerError) { console.error(`[error](${error.handler.constructor.name}) <${error.message}>`, error); }
     else { console.error('[error] An unknown error as occurred', error); }
 });

@@ -7,8 +7,8 @@
     "scripts": {
         "depcheck": "depcheck",
         "build": "tsc",
-        "watch": "tsc-watch --onSuccess \"node --experimental-json-modules --require dotenv/config ./dist/app.js\"",
-        "start": "node --experimental-json-modules --require dotenv/config ./dist/app.js",
+        "watch": "tsc-watch --onSuccess \"node --require dotenv/config ./dist/app.js\"",
+        "start": "node --require dotenv/config ./dist/app.js",
         "test": "npm run watch"
     },
     "repository": {

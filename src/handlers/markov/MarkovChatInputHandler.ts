@@ -170,15 +170,15 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         }
         if (settings.posting && !message.editedTimestamp) {
             if (message.mentions.users.has(message.client.user.id) && !message.author.bot) {
-                await message.channel.sendTyping();
+                await message.channel.sendTyping().catch(err => console.log(err));
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
-                if (replyOptions) await message.reply(replyOptions);
+                if (replyOptions) await message.reply(replyOptions).catch(err => console.log(err));
             }
             const random = Math.floor(Math.random() * settings.messages);
             if (!random) {
                 await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
-                if (replyOptions) await message.channel.send(replyOptions);
+                if (replyOptions) await message.channel.send(replyOptions).catch(err => console.log(err));
             }
         }
     }
@@ -199,7 +199,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     if (!random) {
                         await channel.sendTyping();
                         const replyOptions = await this.generateMarkov({ guildId, channelId: channel.id });
-                        if (replyOptions) await channel.send(replyOptions);
+                        if (replyOptions) await channel.send(replyOptions).catch(err => console.log(err));
                     }
                 }
             }

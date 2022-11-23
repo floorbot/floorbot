@@ -24,9 +24,9 @@ export class Pageable<T> {
 
     get firstPage(): number { return 1; };
     get lastPage(): number { return this.totalPages; };
-    get currentPage(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages); }
-    get nextPage(): number { return Pageable.resolvePageIndex(this.page + 2, this.totalPages); }
-    get previousPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages); }
+    get currentPage(): number { return Pageable.resolvePageIndex(this.page, this.totalPages) + 1; }
+    get nextPage(): number { return Pageable.resolvePageIndex(this.page + 1, this.totalPages) + 1; }
+    get previousPage(): number { return Pageable.resolvePageIndex(this.page - 1, this.totalPages); }
 
     constructor(array: NonEmptyArray<T>, options?: { page?: number, perPage?: number; }) {
         this.perPage = (options && options.perPage) || 1;
@@ -44,6 +44,10 @@ export class Pageable<T> {
 
     public sortPages(compare?: ((a: T, b: T) => number) | undefined): NonEmptyArray<T> {
         return this.array.sort(compare);
+    }
+
+    public toString() {
+        return `${this.currentPage}/${this.totalPages}`;
     }
 
     public static resolvePageIndex(page: number, pages: number): number {

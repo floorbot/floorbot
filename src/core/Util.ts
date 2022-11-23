@@ -6,32 +6,6 @@ import { ComponentCollector, ComponentCollectorEndHandler, ComponentCollectorOpt
 export class Util {
 
     /**
-     * Converts local string to emoji flag
-     * @param countryCode The local string
-     * @returns The local emoji
-     */
-    public static localeToEmoji(countryCode: string): string | null {
-        if (!countryCode.codePointAt(0) || !countryCode.codePointAt(1)) return null;
-        const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
-        const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
-        return `${firstLetter}${secondLetter}`;
-    }
-
-    /**
-     * Converts a timezone string to current time string
-     * @param timezone The timezone to get time for
-     * @returns The current time string
-     */
-    public static formatTimezone(timezone: string): string {
-        const date = DateTime.now().setZone(timezone);
-        return date.toLocaleString({
-            hour: '2-digit',
-            minute: '2-digit',
-            hourCycle: 'h12'
-        });
-    }
-
-    /**
      * Creates a component collector with a standard time and end handler
      * @param message The message to collect component interactions from
      * @param options Collector options with overridable defaults
@@ -59,6 +33,32 @@ export class Util {
             if (permissions.has(PermissionsBitField.Flags.Administrator)) return true;
         }
         return false;
+    }
+
+    /**
+     * Converts local string to emoji flag
+     * @param countryCode The local string
+     * @returns The local emoji
+     */
+    public static localeToEmoji(countryCode: string): string | null {
+        if (!countryCode.codePointAt(0) || !countryCode.codePointAt(1)) return null;
+        const firstLetter: string = String.fromCodePoint(countryCode.codePointAt(0)! - 0x41 + 0x1F1E6);
+        const secondLetter: string = String.fromCodePoint(countryCode.codePointAt(1)! - 0x41 + 0x1F1E6);
+        return `${firstLetter}${secondLetter}`;
+    }
+
+    /**
+     * Converts a timezone string to current time string
+     * @param timezone The timezone to get time for
+     * @returns The current time string
+     */
+    public static formatTimezone(timezone: string): string {
+        const date = DateTime.now().setZone(timezone);
+        return date.toLocaleString({
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h12'
+        });
     }
 
     /**
