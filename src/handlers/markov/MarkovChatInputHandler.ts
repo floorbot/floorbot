@@ -112,12 +112,16 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             ...(settings.links === 'disable' && { link: true })
         };
         for (let i = 0; i < 100; i++) {
-            let state = await this.stateTable.selectRandomState({ ...options, current_state: null });
+            let allStates = await this.stateTable.select({ ...options, current_state: null });
+            let state = allStates[allStates.length * Math.random() << 0] ?? null;
+            // let state = await this.stateTable.selectRandomState({ ...options, current_state: null });
             const states = [state];
             const words = [];
             if (state) words.push(state.next_value);
             while (state && state.next_value) {
-                state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
+                allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
+                state = allStates[allStates.length * Math.random() << 0] ?? null;
+                // state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
                 if (state) words.push(state.next_value);
                 states.push(state);
             }
