@@ -12,5 +12,6 @@ CREATE TABLE markov_state (
     mention BOOLEAN NOT NULL,
     CONSTRAINT id PRIMARY KEY (channel_id, message_id, message_part),
     INDEX index_channel_id (channel_id),
+    INDEX index_epoch (epoch DESC),
     INDEX index_channel_states (channel_id, current_state(100))
 );

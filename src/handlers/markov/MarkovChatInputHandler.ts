@@ -112,16 +112,16 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             ...(settings.links === 'disable' && { link: true })
         };
         for (let i = 0; i < 100; i++) {
-            // let allStates = await this.stateTable.select({ ...options, current_state: null }, { limit: 10000 });
+            // let allStates = await this.stateTable.select({ ...options, current_state: null }, { limit: 10000, order: { epoch: 'DESC' } });
             // let state = allStates[allStates.length * Math.random() << 0] ?? null;
-            let state = await this.stateTable.selectRandomState({ ...options, current_state: null }, { limit: 10000 });
+            let state = await this.stateTable.selectRandomState({ ...options, current_state: null }, { limit: 10000, order: { epoch: 'DESC' } });
             const states = [state];
             const words = [];
             if (state) words.push(state.next_value);
             while (state && state.next_value) {
-                // allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000 });
+                // allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000, order: { epoch: 'DESC' } });
                 // state = allStates[allStates.length * Math.random() << 0] ?? null;
-                state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000 });
+                state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000, order: { epoch: 'DESC' } });
                 if (state) words.push(state.next_value);
                 states.push(state);
             }
