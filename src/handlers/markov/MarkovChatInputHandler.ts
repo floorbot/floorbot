@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Events, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, Events, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction, TextBasedChannel } from 'discord.js';
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
@@ -112,16 +112,16 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             ...(settings.links === 'disable' && { link: true })
         };
         for (let i = 0; i < 100; i++) {
-            let allStates = await this.stateTable.select({ ...options, current_state: null });
+            let allStates = await this.stateTable.select({ ...options, current_state: null }, { limit: 10000 });
             let state = allStates[allStates.length * Math.random() << 0] ?? null;
             // let state = await this.stateTable.selectRandomState({ ...options, current_state: null });
             const states = [state];
             const words = [];
             if (state) words.push(state.next_value);
             while (state && state.next_value) {
-                allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
-                state = allStates[allStates.length * Math.random() << 0] ?? null;
-                // state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
+                // allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10 });
+                // state = allStates[allStates.length * Math.random() << 0] ?? null;
+                state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') });
                 if (state) words.push(state.next_value);
                 states.push(state);
             }
@@ -174,17 +174,26 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         }
         if (settings.posting && !message.editedTimestamp) {
             if (message.mentions.users.has(message.client.user.id) && !message.author.bot) {
-                await message.channel.sendTyping().catch(err => console.log(err));
+                const timer = this.setTyping(message.channel);
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.reply(replyOptions).catch(err => console.log(err));
+                clearTimeout(timer);
             }
             const random = Math.floor(Math.random() * settings.messages);
             if (!random) {
-                await message.channel.sendTyping();
+                const timer = this.setTyping(message.channel);
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
                 if (replyOptions) await message.channel.send(replyOptions).catch(err => console.log(err));
+                clearTimeout(timer);
             }
         }
+    }
+
+    public setTyping(channel: TextBasedChannel): NodeJS.Timer {
+        channel.sendTyping();
+        return setInterval(() => {
+            channel.sendTyping().catch(err => console.log(err));
+        }, 5000);
     }
 
     public override async setup({ client }: { client: HandlerClient; }): Promise<any> {
@@ -201,9 +210,10 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     if (!channel || !channel.isTextBased()) return;
                     const random = Math.floor(Math.random() * row.minutes);
                     if (!random) {
-                        await channel.sendTyping();
+                        const timer = this.setTyping(channel);
                         const replyOptions = await this.generateMarkov({ guildId, channelId: channel.id });
                         if (replyOptions) await channel.send(replyOptions).catch(err => console.log(err));
+                        clearTimeout(timer);
                     }
                 }
             }

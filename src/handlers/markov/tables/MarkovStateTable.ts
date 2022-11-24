@@ -29,7 +29,7 @@ export class MarkovStateTable extends MariaDBTable<MarkovStateRow, Pick<MarkovSt
         super(pool, 'markov_state');
     }
 
-    public async selectRandomState(data: SelectionRow<MarkovStateRow, 'channel_id'>, { limit = 100, order = { epoch: 'DESC' } }: { limit?: number; order?: SelectOrder<MarkovStateRow>; } = {}): Promise<MarkovStateRow | null> {
+    public async selectRandomState(data: SelectionRow<MarkovStateRow, 'channel_id'>, { limit = 100, order }: { limit?: number; order?: SelectOrder<MarkovStateRow>; } = {}): Promise<MarkovStateRow | null> {
         const conditionString = this.createConditionString(data);
         const orderString = this.createOrderString(order);
         const limitString = this.createLimitString(limit);
