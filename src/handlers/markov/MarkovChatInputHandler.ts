@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Events, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction, TextBasedChannel } from 'discord.js';
+import { ChatInputCommandInteraction, Events, Message, MessageComponentInteraction, MessageMentions, ModalSubmitInteraction } from 'discord.js';
 import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
@@ -7,7 +7,7 @@ import { MarkovButtonId, MarkovSelectMenuId, MarkovSettingsSelectMenuOptionValue
 import { MarkovTextInputId } from './builders/MarkovModalActionRowBuilder.js';
 import { MarkovModalId, MarkovReplyBuilder } from './builders/MarkovReplyBuilder.js';
 import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
-import { MarkovSettingsRow, MarkovSettingsTable } from './tables/MarkovSettingsTable.js';
+import { MarkovSettingsRowPolicy, MarkovSettingsTable } from './tables/MarkovSettingsTable.js';
 import { MarkovStateTable } from './tables/MarkovStateTable.js';
 
 export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
@@ -84,14 +84,14 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                 case MarkovSelectMenuId.Mentions: {
                     if (!interaction.isSelectMenu()) return;
                     await interaction.deferUpdate();
-                    const mentionsPolicy = (interaction.values[0] as MarkovSettingsRow['mentions']) ?? settings.mentions;
+                    const mentionsPolicy = (interaction.values[0] as MarkovSettingsRowPolicy) ?? settings.mentions;
                     settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, mentions: mentionsPolicy });
                     break;
                 }
                 case MarkovSelectMenuId.Links: {
                     if (!interaction.isSelectMenu()) return;
                     await interaction.deferUpdate();
-                    const linksPolicy = (interaction.values[0] as MarkovSettingsRow['links']) ?? settings.links;
+                    const linksPolicy = (interaction.values[0] as MarkovSettingsRowPolicy) ?? settings.links;
                     settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, links: linksPolicy });
                     break;
                 }
@@ -111,16 +111,12 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
             ...(settings.mentions === 'disable' && { mention: true }),
             ...(settings.links === 'disable' && { link: true })
         };
-        for (let i = 0; i < 100; i++) {
-            // let allStates = await this.stateTable.select({ ...options, current_state: null }, { limit: 10000, order: { epoch: 'DESC' } });
-            // let state = allStates[allStates.length * Math.random() << 0] ?? null;
+        for (let i = 0; i < 10; i++) {
             let state = await this.stateTable.selectRandomState({ ...options, current_state: null }, { limit: 10000, order: { epoch: 'DESC' } });
             const states = [state];
             const words = [];
             if (state) words.push(state.next_value);
             while (state && state.next_value) {
-                // allStates = await this.stateTable.select({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000, order: { epoch: 'DESC' } });
-                // state = allStates[allStates.length * Math.random() << 0] ?? null;
                 state = await this.stateTable.selectRandomState({ ...options, current_state: [words[words.length - 2], words[words.length - 1]].filter(part => part).join(' ') }, { limit: 10000, order: { epoch: 'DESC' } });
                 if (state) words.push(state.next_value);
                 states.push(state);
@@ -174,26 +170,17 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
         }
         if (settings.posting && !message.editedTimestamp) {
             if (message.mentions.users.has(message.client.user.id) && !message.author.bot) {
-                const timer = this.setTyping(message.channel);
+                await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
-                clearTimeout(timer);
                 if (replyOptions) await message.reply(replyOptions).catch(err => console.log(err));
             }
             const random = Math.floor(Math.random() * settings.messages);
             if (!random) {
-                const timer = this.setTyping(message.channel);
+                await message.channel.sendTyping();
                 const replyOptions = await this.generateMarkov({ guildId: message.guildId, channelId: message.channelId });
-                clearTimeout(timer);
                 if (replyOptions) await message.channel.send(replyOptions).catch(err => console.log(err));
             }
         }
-    }
-
-    public setTyping(channel: TextBasedChannel): NodeJS.Timer {
-        channel.sendTyping();
-        return setInterval(() => {
-            channel.sendTyping().catch(err => console.log(err));
-        }, 5000);
     }
 
     public override async setup({ client }: { client: HandlerClient; }): Promise<any> {
@@ -210,9 +197,8 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     if (!channel || !channel.isTextBased()) return;
                     const random = Math.floor(Math.random() * row.minutes);
                     if (!random) {
-                        const timer = this.setTyping(channel);
+                        await channel.sendTyping();
                         const replyOptions = await this.generateMarkov({ guildId, channelId: channel.id });
-                        clearTimeout(timer);
                         if (replyOptions) await channel.send(replyOptions).catch(err => console.log(err));
                     }
                 }

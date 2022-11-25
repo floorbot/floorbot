@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageActionRowComponentBuilder, SelectMenuBuilder } from 'discord.js';
-import { MarkovSettingsRow } from '../tables/MarkovSettingsTable.js';
+import { MarkovSettingsRow, MarkovSettingsRowPolicy } from '../tables/MarkovSettingsTable.js';
 
 export enum MarkovButtonId {
     EditFrequencies = 'edit_frequencies',
@@ -17,20 +17,6 @@ export enum MarkovSettingsSelectMenuOptionValue {
     Tracking = 'tracking',
     Owoify = 'owoify',
     Bots = 'bots',
-}
-
-export enum MarkovMentionsSelectMenuOptionValue {
-    Enable = 'enable',
-    Disable = 'disable',
-    Substitute = 'substitute',
-    Suppress = 'suppress'
-}
-
-export enum MarkovLinksSelectMenuOptionValue {
-    Enable = 'enable',
-    Disable = 'disable',
-    Substitute = 'substitute',
-    Suppress = 'suppress'
 }
 
 export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActionRowComponentBuilder> {
@@ -73,10 +59,10 @@ export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActio
             .setMinValues(0)
             .setMaxValues(1)
             .addOptions([
-                { value: MarkovMentionsSelectMenuOptionValue.Enable, label: 'Enabled', default: settings && settings.mentions === 'enable', description: 'Mentions will appear and ping members' },
-                { value: MarkovMentionsSelectMenuOptionValue.Disable, label: 'Disabled', default: settings && settings.mentions === 'disable', description: 'Mentions will not be allowed for generated messages' },
-                { value: MarkovMentionsSelectMenuOptionValue.Substitute, label: 'Substituted', default: settings && settings.mentions === 'substitute', description: 'Mentions will be substituted with [MENTION]' },
-                { value: MarkovMentionsSelectMenuOptionValue.Suppress, label: 'Suppressed', default: settings && settings.mentions === 'suppress', description: 'Mentions will appear without pinging members' }
+                { value: MarkovSettingsRowPolicy.Enable, label: 'Enabled', default: settings && settings.mentions === 'enable', description: 'Mentions will appear and ping members' },
+                { value: MarkovSettingsRowPolicy.Disable, label: 'Disabled', default: settings && settings.mentions === 'disable', description: 'Mentions will not be allowed for generated messages' },
+                { value: MarkovSettingsRowPolicy.Substitute, label: 'Substituted', default: settings && settings.mentions === 'substitute', description: 'Mentions will be substituted with [MENTION]' },
+                { value: MarkovSettingsRowPolicy.Suppress, label: 'Suppressed', default: settings && settings.mentions === 'suppress', description: 'Mentions will appear without pinging members' }
             ]);
         return this.addComponents(selectMenu);
     }
@@ -88,10 +74,10 @@ export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActio
             .setMinValues(0)
             .setMaxValues(1)
             .addOptions([
-                { value: MarkovLinksSelectMenuOptionValue.Enable, label: 'Enabled', default: settings && settings.links === 'enable', description: 'Links will appear and embed' },
-                { value: MarkovLinksSelectMenuOptionValue.Disable, label: 'Disabled', default: settings && settings.links === 'disable', description: 'Links will not be allowed for generated messages' },
-                { value: MarkovLinksSelectMenuOptionValue.Substitute, label: 'Substituted', default: settings && settings.links === 'substitute', description: 'Links will be substituted with [LINK]' },
-                { value: MarkovLinksSelectMenuOptionValue.Suppress, label: 'Suppressed', default: settings && settings.links === 'suppress', description: 'Links will appear without embeds' }
+                { value: MarkovSettingsRowPolicy.Enable, label: 'Enabled', default: settings && settings.links === 'enable', description: 'Links will appear and embed' },
+                { value: MarkovSettingsRowPolicy.Disable, label: 'Disabled', default: settings && settings.links === 'disable', description: 'Links will not be allowed for generated messages' },
+                { value: MarkovSettingsRowPolicy.Substitute, label: 'Substituted', default: settings && settings.links === 'substitute', description: 'Links will be substituted with [LINK]' },
+                { value: MarkovSettingsRowPolicy.Suppress, label: 'Suppressed', default: settings && settings.links === 'suppress', description: 'Links will appear without embeds' }
             ]);
         return this.addComponents(selectMenu);
     }

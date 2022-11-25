@@ -3,6 +3,13 @@ import { Pool } from "mariadb";
 import path from 'path';
 import { MariaDBTable, PartRow, SelectionRow } from '../../../core/MariaDBTable.js';
 
+export enum MarkovSettingsRowPolicy {
+    Enable = 'enable',
+    Disable = 'disable',
+    Suppress = 'suppress',
+    Substitute = 'substitute'
+}
+
 export interface MarkovSettingsRow {
     readonly guild_id: string;
     readonly channel_id: string;
@@ -10,8 +17,8 @@ export interface MarkovSettingsRow {
     readonly messages: number;
     readonly posting: boolean;
     readonly tracking: boolean;
-    readonly links: 'enable' | 'disable' | 'suppress' | 'substitute';
-    readonly mentions: 'enable' | 'disable' | 'suppress' | 'substitute';
+    readonly links: MarkovSettingsRowPolicy;
+    readonly mentions: MarkovSettingsRowPolicy;
     readonly owoify: boolean;
     readonly bots: boolean;
 }
@@ -22,8 +29,8 @@ export class MarkovSettingsTable extends MariaDBTable<MarkovSettingsRow, Pick<Ma
     public static readonly DEFAULT_MINUTES: MarkovSettingsRow['minutes'] = 100;
     public static readonly DEFAULT_POSTING: MarkovSettingsRow['posting'] = false;
     public static readonly DEFAULT_TRACKING: MarkovSettingsRow['tracking'] = false;
-    public static readonly DEFAULT_LINKS: MarkovSettingsRow['links'] = 'suppress';
-    public static readonly DEFAULT_MENTIONS: MarkovSettingsRow['mentions'] = 'suppress';
+    public static readonly DEFAULT_LINKS: MarkovSettingsRow['links'] = MarkovSettingsRowPolicy.Suppress;
+    public static readonly DEFAULT_MENTIONS: MarkovSettingsRow['mentions'] = MarkovSettingsRowPolicy.Suppress;
     public static readonly DEFAULT_OWOIFY: MarkovSettingsRow['owoify'] = false;
     public static readonly DEFAULT_BOTS: MarkovSettingsRow['bots'] = true;
 
