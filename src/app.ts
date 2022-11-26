@@ -25,8 +25,9 @@ import { E621ChatInputCommandHandler } from './handlers/booru/e621/E621ChatInput
 import { Rule34ChatInputCommandHandler } from './handlers/booru/rule34/Rule34ChatInputHandler.js';
 import { DefineChatInputHandler } from './handlers/define/DefineChatInputHandler.js';
 import { FloorbotChatInputHandler } from './handlers/floorbot/FloorbotChatInputHandler.js';
-import { MarkovChatInputCommandHandler } from './handlers/markov/MarkovChatInputHandler.js';
+import { MarkovChatInputCommandHandler } from './handlers/markov/MarkovChatInputCommandHandler.js';
 import { MarkovMessageCommandHandler } from './handlers/markov/MarkovMessageCommandHandler.js';
+import { RadioChatInputCommandHandler } from './handlers/radio/RadioChatInputCommandHandler.js';
 import { WeatherChatInputHandler } from './handlers/weather/WeatherChatInputHandler.js';
 import { MessageReaction } from './tasks/MessageReaction.js';
 import { NhentaiCodes } from './tasks/NhentaiCodes.js';
@@ -67,7 +68,7 @@ let pool = MariaDB.createPool({
 });
 
 const client = new HandlerClient({
-    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
+    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent, IntentsBitField.Flags.GuildVoiceStates],
     ownerIDs: (env.DISCORD_OWNERS || '').split(' '),
     handlers: [
         new FloorbotChatInputHandler(env.DISCORD_FEEDBACK),
@@ -78,7 +79,8 @@ const client = new HandlerClient({
         new DonmaiChatInputCommandHandler({ subDomain: 'danbooru', redis, apiKey: env.DONMAI_API_KEY, username: env.DONMAI_USERNAME }),
         new Rule34ChatInputCommandHandler({ redis }),
         new MarkovChatInputCommandHandler({ pool }),
-        new MarkovMessageCommandHandler({ pool })
+        new MarkovMessageCommandHandler({ pool }),
+        new RadioChatInputCommandHandler()
     ]
 });
 
