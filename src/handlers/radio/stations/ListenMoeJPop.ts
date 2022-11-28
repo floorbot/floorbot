@@ -4,8 +4,8 @@ export class ListenMoeJPop extends AudioPlayer {
 
     constructor() {
         super();
-        this.on('stateChange', (state) => {
-            console.log(`[ListenMoeJPop] ${state.status}`);
+        this.on('stateChange', (oldState, newState) => {
+            console.log(`[ListenMoeJPop] ${oldState.status} -> ${newState.status}`);
         });
         this.on('error', error => {
             console.error(`[ListenMoeJPop] Error: ${error.message} with resource `);
