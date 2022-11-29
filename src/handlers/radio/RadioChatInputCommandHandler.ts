@@ -42,7 +42,6 @@ export class RadioChatInputCommandHandler extends ChatInputCommandHandler {
 
     public override async setup({ client }: { client: HandlerClient; }): Promise<any> {
         const setup = await super.setup({ client });
-        this.jPop.startRadio();
         this.kPop.startRadio();
         return setup;
     }

@@ -4,12 +4,12 @@ export class ListenMoeKPop extends AudioPlayer {
 
     constructor() {
         super();
-        this.on('stateChange', (state) => {
-            console.log(`[ListenMoeKPop] ${state.status}`);
-        });
-        this.on('error', error => {
-            console.error(`[ListenMoeKPop] Error: ${error.message} with resource `);
-        });
+        // this.on('stateChange', (state) => {
+        //     // console.log(`[ListenMoeKPop] ${state.status}`);
+        // });
+        // this.on('error', error => {
+        //     // console.error(`[ListenMoeKPop] Error: ${error.message} with resource `);
+        // });
     }
 
     public startRadio(): void {
