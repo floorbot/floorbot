@@ -20,7 +20,6 @@ export class ComponentCollector<T extends CollectedInteraction> extends Interact
 
     constructor(client: Client, options?: ComponentCollectorOptions<T>) {
         super(client, options);
-
         // Redirect all errors to the client
         this.on(Events.Error, ((error: any) => {
             const collectorError = new Error(`InteractionCollector "${error}" encountered an error`, error);
@@ -52,7 +51,11 @@ export class ComponentCollector<T extends CollectedInteraction> extends Interact
     public override on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
     public override on(event: 'collect', listener: (...args: any[]) => Awaitable<any>): this; // Additional
     public override on(event: string, listener: (...args: any[]) => Awaitable<any>): this {
-        return super.on(event, listener);
+        // Need to proxy these so we can catch and emit errors without crashing
+        return super.on(event, async (...args: any[]) => {
+            try { await listener(...args); }
+            catch (error) { this.emit(Events.Error, error); }
+        });
     }
 
     public override once(event: 'collect' | 'dispose' | 'ignore', listener: (interaction: T) => Awaitable<void>): this;
@@ -60,6 +63,10 @@ export class ComponentCollector<T extends CollectedInteraction> extends Interact
     public override once(event: string, listener: (...args: any[]) => Awaitable<void>): this;
     public override once(event: 'collect', listener: (...args: any[]) => Awaitable<any>): this; // Additional
     public override once(event: string, listener: (...args: any[]) => Awaitable<any>): this {
-        return super.once(event, listener);
+        // Need to proxy these so we can catch and emit errors without crashing
+        return super.once(event, async (...args: any[]) => {
+            try { await listener(...args); }
+            catch (error) { this.emit(Events.Error, error); }
+        });
     }
 }

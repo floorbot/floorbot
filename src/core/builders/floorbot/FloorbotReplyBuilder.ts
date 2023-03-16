@@ -117,12 +117,12 @@ export class FloorbotReplyBuilder extends ReplyBuilder {
 declare module '../../../core/builders/ReplyBuilder' {
     export interface ReplyBuilder {
         createEmbedBuilder({ context, prefix, suffix }?: ReplyEmbedBuilderOptions): EmbedBuilder;
-        addEmbedMessage({ content }: { content: string; }): this;
+        addEmbedMessage({ content }?: { content: string; }): this;
         addGuildOnlyEmbed({ command }?: { command?: CommandInteraction; }): this;
-        addAdminOrOwnerEmbed({ command, component }: { command?: CommandInteraction, component?: MessageComponentInteraction; }): this;
-        addUnknownComponentEmbed({ component }: { component?: MessageComponentInteraction; }): this;
-        addNotFoundEmbed({ query, message, command }: { query?: string | null, message?: string, command?: CommandInteraction; }): this;
-        addUnexpectedErrorEmbed({ error }: { error?: any; }): this;
+        addAdminOrOwnerEmbed({ command, component }?: { command?: CommandInteraction, component?: MessageComponentInteraction; }): this;
+        addUnknownComponentEmbed({ component }?: { component?: MessageComponentInteraction; }): this;
+        addNotFoundEmbed({ query, message, command }?: { query?: string | null, message?: string, command?: CommandInteraction; }): this;
+        addUnexpectedErrorEmbed({ error }?: { error?: any; }): this;
     }
 };
 
