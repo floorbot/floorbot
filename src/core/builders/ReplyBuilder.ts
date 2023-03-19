@@ -1,9 +1,9 @@
-import { ActionRowBuilder, BaseInteraction, BitField, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageFlags } from "discord.js";
+import { ActionRowBuilder, BaseInteraction, BitField, InteractionReplyOptions, InteractionUpdateOptions, Message, MessageActionRowComponentBuilder, MessageCreateOptions, MessageFlags } from "discord.js";
 import { HandlerContext } from 'discord.js-handlers';
 
-export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions;
+export type ResponseOptions = InteractionReplyOptions & InteractionUpdateOptions & MessageCreateOptions;
 
-export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateOptions {
+export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateOptions, MessageCreateOptions {
 
     public readonly context?: HandlerContext;
 
@@ -22,7 +22,7 @@ export class ReplyBuilder implements InteractionReplyOptions, InteractionUpdateO
         if (data) {
             if (data instanceof BaseInteraction) this.context = data;
             else if (data instanceof Message) this.context = data;
-            else if (data && 'user' in data) this.context = data;
+            // else if (data && 'user' in data) this.context = data;
             else Object.assign(this, data);
         }
         if (!persist) {
