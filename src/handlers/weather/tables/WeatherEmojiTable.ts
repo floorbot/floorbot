@@ -1,5 +1,5 @@
-import { EmojiTable } from './EmojiTable.js';
 import { Client } from 'discord.js';
+import { EmojiTable } from './EmojiTable.js';
 
 export class WeatherEmojiTable extends EmojiTable {
 

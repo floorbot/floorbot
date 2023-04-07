@@ -6,6 +6,7 @@ export enum Rule34SlashCommandStringOptionName {
 
 export const Rule34ChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'rule34',
+    nsfw: true,
     type: ApplicationCommandType.ChatInput,
     description: 'Search for random rule34 images',
     options: [{

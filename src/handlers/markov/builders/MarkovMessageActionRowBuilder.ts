@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageActionRowComponentBuilder, SelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageActionRowComponentBuilder, StringSelectMenuBuilder } from 'discord.js';
 import { MarkovSettingsRow, MarkovSettingsRowPolicy } from '../tables/MarkovSettingsTable.js';
 
 export enum MarkovButtonId {
@@ -38,7 +38,7 @@ export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActio
     }
 
     public addSettingsSelectMenu({ settings }: { settings: MarkovSettingsRow; }): this {
-        const selectMenu = new SelectMenuBuilder()
+        const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(MarkovSelectMenuId.Settings)
             .setPlaceholder('Select settings to enable/disable')
             .setMinValues(0)
@@ -53,7 +53,7 @@ export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActio
     }
 
     public addMentionsSelectMenu({ settings }: { settings?: MarkovSettingsRow; } = {}): this {
-        const selectMenu = new SelectMenuBuilder()
+        const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(MarkovSelectMenuId.Mentions)
             .setPlaceholder('Select Mention Policy')
             .setMinValues(0)
@@ -68,7 +68,7 @@ export class MarkovMessageActionRowBuilder extends ActionRowBuilder<MessageActio
     }
 
     public addLinksSelectMenu({ settings }: { settings?: MarkovSettingsRow; } = {}): this {
-        const selectMenu = new SelectMenuBuilder()
+        const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(MarkovSelectMenuId.Links)
             .setPlaceholder('Select Link (URL) Policy')
             .setMinValues(0)

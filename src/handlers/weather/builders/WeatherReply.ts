@@ -1,17 +1,17 @@
 import { GuildMember, User } from 'discord.js';
-import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { LocationQuery } from '../../../api/apis/open_weather/OpenWeatherAPI.js';
+import { AirPollutionData } from '../../../api/apis/open_weather/interfaces/AirPollutionData.js';
+import { GeocodeData } from '../../../api/apis/open_weather/interfaces/GeocodeData.js';
+import { OneCallData } from '../../../api/apis/open_weather/interfaces/OneCallData.js';
+import { WeatherAPIError } from '../../../api/apis/open_weather/interfaces/WeatherAPIError.js';
 import { Pageable } from '../../../core/Pageable.js';
-import { AirPollutionData } from '../open_weather/interfaces/AirPollutionData.js';
-import { GeocodeData } from '../open_weather/interfaces/GeocodeData.js';
-import { OneCallData } from '../open_weather/interfaces/OneCallData.js';
-import { WeatherAPIError } from '../open_weather/interfaces/WeatherAPIError.js';
-import { LocationQuery } from '../open_weather/OpenWeatherAPI.js';
-import { WeatherEmojiTable } from '../tables/emoji/WeatherEmojiTable.js';
+import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { WeatherEmojiTable } from '../tables/WeatherEmojiTable.js';
 import WeatherLinkRow from '../tables/WeatherLinkTable.js';
+import { WeatherEmbed } from './WeatherEmbed.js';
 import { WeatherActionRow } from './components/WeatherActionRow.js';
 import { WeatherButtonId } from './components/WeatherButton.js';
 import { WeatherSelectMenuOptionValue } from './components/WeatherSelectMenuOption.js';
-import { WeatherEmbed } from './WeatherEmbed.js';
 
 export class WeatherReply extends ReplyBuilder {
 

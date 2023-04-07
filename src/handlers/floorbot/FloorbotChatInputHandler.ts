@@ -1,17 +1,17 @@
 import { APIMessage, ChatInputCommandInteraction, CollectedInteraction, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
 import { ChatInputCommandHandler } from "discord.js-handlers";
 import { Util } from '../../core/Util.js';
-import { FloorbotComponentID } from './builders/FloorbotActionRow.js';
-import { FloorbotCommand } from './builders/FloorbotCommand.js';
-import { FloorbotModal } from './builders/FloorbotModal.js';
-import { FloorbotReply } from './builders/FloorbotReply.js';
+import { FloorbotChatInputCommandData } from './FloorbotChatInputCommandData.js';
+import { FloorbotMessageActionRowId } from './builders/FloorbotMessageActionRowBuilder.js';
+import { FloorbotModalBuilder } from './builders/FloorbotModalBuilder.js';
+import { FloorbotReplyBuilder } from './builders/FloorbotReplyBuilder.js';
 
 export class FloorbotChatInputHandler extends ChatInputCommandHandler {
 
     private readonly feedbackChannelID: string;
 
     constructor(feedbackChannelID: string) {
-        super(FloorbotCommand.slashCommand());
+        super(FloorbotChatInputCommandData);
         this.feedbackChannelID = feedbackChannelID;
     }
 
@@ -19,12 +19,13 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
         const message = await this.runPingComponent(command);
         const collector = Util.createComponentCollector(command.client, message);
         collector.on('collect', (component: CollectedInteraction) => {
-            if (component.isModalSubmit()) this.runFeedbackModalSubmit(component);
+            if (component.isModalSubmit()) return this.runFeedbackModalSubmit(component);
             else {
                 switch (component.customId) {
-                    case FloorbotComponentID.Ping: { this.runPingComponent(command, component); break; }
-                    case FloorbotComponentID.GuildStats: { this.runGuildComponent(command, component); break; }
-                    case FloorbotComponentID.Feedback: { this.runFeedbackComponent(component); break; }
+                    case FloorbotMessageActionRowId.Ping: return this.runPingComponent(command, component);
+                    case FloorbotMessageActionRowId.GuildStats: return this.runGuildComponent(command, component);
+                    case FloorbotMessageActionRowId.Feedback: return this.runFeedbackComponent(component);
+                    default: return;
                 }
             }
         });
@@ -35,7 +36,7 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
         const inviteURL = client.generateInvite();
 
         // Send a reply to interaction
-        let replyOptions = new FloorbotReply(command)
+        let replyOptions = new FloorbotReplyBuilder(command)
             .addPingEmbed({ inviteURL, interaction: component || command })
             .addFloorbotActionRow(command, inviteURL);
         let message = component ?
@@ -43,7 +44,7 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
             await command.reply({ ...replyOptions, fetchReply: true });
 
         // Send a reply with time between the interaction received and message sent
-        replyOptions = new FloorbotReply(command)
+        replyOptions = new FloorbotReplyBuilder(command)
             .addPingEmbed({ inviteURL, interaction: component || command, message })
             .addFloorbotActionRow(command, inviteURL);
         return component ?
@@ -54,21 +55,21 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
     public async runGuildComponent(command: ChatInputCommandInteraction, component: MessageComponentInteraction): Promise<APIMessage | Message> {
         const { client, guild } = component;
         if (!guild) {
-            const replyOptions = new FloorbotReply(command)
+            const replyOptions = new FloorbotReplyBuilder(command)
                 .addGuildOnlyEmbed();
             return component.reply({ ...replyOptions, fetchReply: true });
         }
         const inviteURL = client.generateInvite();
         await component.deferUpdate();
         const bans = await guild.bans.fetch({ cache: false }).catch(_error => undefined);
-        const replyOptions = new FloorbotReply(command)
+        const replyOptions = new FloorbotReplyBuilder(command)
             .addGuildEmbed({ guild, bans })
             .addFloorbotActionRow(command, inviteURL);
         return component.editReply(replyOptions);
     }
 
     public async runFeedbackComponent(component: MessageComponentInteraction): Promise<void> {
-        const modal = FloorbotModal.feedbackModal();
+        const modal = FloorbotModalBuilder.feedbackModal();
         return component.showModal(modal);
     }
 
@@ -76,12 +77,12 @@ export class FloorbotChatInputHandler extends ChatInputCommandHandler {
         await modal.deferReply({ ephemeral: true });
         const channel = await modal.client.channels.fetch(this.feedbackChannelID);
         if (channel && channel.isTextBased()) {
-            const replyOptions = new FloorbotReply(modal)
+            const replyOptions = new FloorbotReplyBuilder(modal)
                 .addFeedbackEmbed({ modal });
             await channel.send(replyOptions);
         }
         else console.log('[support] Feedback received and channel does not exist');
-        const replyOptions = new FloorbotReply(modal)
+        const replyOptions = new FloorbotReplyBuilder(modal)
             .addFeedbackReceivedEmbed()
             .setEphemeral(true);
         return modal.followUp(replyOptions);

@@ -1,19 +1,19 @@
-import { FloorbotModalActionRow } from './FloorbotActionRow.js';
 import { ModalBuilder } from 'discord.js';
+import { FloorbotModalActionRowBuilder } from './FloorbotModalActionRowBuilder.js';
 
 export enum FloorbotModalID {
     Feedback = 'feedback'
 }
 
-export class FloorbotModal {
+export class FloorbotModalBuilder {
 
     public static feedbackModal(): ModalBuilder {
         return new ModalBuilder()
             .setCustomId(FloorbotModalID.Feedback)
             .setTitle('Submit Feedback')
             .addComponents(
-                new FloorbotModalActionRow().addFeedbackTitleTextInput(),
-                new FloorbotModalActionRow().addFeedbackMessageTextInput()
+                new FloorbotModalActionRowBuilder().addFeedbackTitleTextInput(),
+                new FloorbotModalActionRowBuilder().addFeedbackMessageTextInput()
             );
     }
 }

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
 import { Util } from '../../Util.js';
 
 export enum BooruMessageComponentId {
@@ -36,7 +36,7 @@ export class BooruActionRowBuilder extends ActionRowBuilder {
 
     public override addSuggestionsSelectMenu(suggestions: { name: string; count: number; }[]): this {
         suggestions = suggestions.slice(0, 25);
-        const selectMenu = new SelectMenuBuilder()
+        const selectMenu = new StringSelectMenuBuilder()
             .setMinValues(1)
             .setMaxValues(suggestions.length)
             .setPlaceholder('See Suggested Tags')

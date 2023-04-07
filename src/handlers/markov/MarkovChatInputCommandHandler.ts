@@ -3,10 +3,10 @@ import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Pool } from 'mariadb';
 import { owoify } from 'owoifyx';
 import { Util } from '../../core/Util.js';
+import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
 import { MarkovButtonId, MarkovSelectMenuId, MarkovSettingsSelectMenuOptionValue } from './builders/MarkovMessageActionRowBuilder.js';
 import { MarkovTextInputId } from './builders/MarkovModalActionRowBuilder.js';
 import { MarkovModalId, MarkovReplyBuilder } from './builders/MarkovReplyBuilder.js';
-import { MarkovChatInputCommandData } from './MarkovChatInputCommandData.js';
 import { MarkovSettingsRowPolicy, MarkovSettingsTable } from './tables/MarkovSettingsTable.js';
 import { MarkovStateTable } from './tables/MarkovStateTable.js';
 
@@ -72,7 +72,7 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     break;
                 }
                 case MarkovSelectMenuId.Settings: {
-                    if (!interaction.isSelectMenu()) return;
+                    if (!interaction.isStringSelectMenu()) return;
                     await interaction.deferUpdate();
                     const posting = interaction.values.includes(MarkovSettingsSelectMenuOptionValue.Posting);
                     const tracking = interaction.values.includes(MarkovSettingsSelectMenuOptionValue.Tracking);
@@ -82,14 +82,14 @@ export class MarkovChatInputCommandHandler extends ChatInputCommandHandler {
                     break;
                 }
                 case MarkovSelectMenuId.Mentions: {
-                    if (!interaction.isSelectMenu()) return;
+                    if (!interaction.isStringSelectMenu()) return;
                     await interaction.deferUpdate();
                     const mentionsPolicy = (interaction.values[0] as MarkovSettingsRowPolicy) ?? settings.mentions;
                     settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, mentions: mentionsPolicy });
                     break;
                 }
                 case MarkovSelectMenuId.Links: {
-                    if (!interaction.isSelectMenu()) return;
+                    if (!interaction.isStringSelectMenu()) return;
                     await interaction.deferUpdate();
                     const linksPolicy = (interaction.values[0] as MarkovSettingsRowPolicy) ?? settings.links;
                     settings = await this.settingsTable.insertChannel({ guild_id: settings.guild_id, channel_id: settings.channel_id, links: linksPolicy });

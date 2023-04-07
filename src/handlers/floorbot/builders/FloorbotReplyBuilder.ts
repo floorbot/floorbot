@@ -1,14 +1,15 @@
 import { APIMessage, BaseInteraction, Collection, Guild, GuildBan, GuildNSFWLevel, GuildPremiumTier, Message, ModalSubmitInteraction } from 'discord.js';
 import { HandlerContext } from 'discord.js-handlers';
 import humanizeDuration from 'humanize-duration';
-import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
 import { Util } from '../../../core/Util.js';
-import { FloorbotComponentID, FloorbotMessageActionRow } from './FloorbotActionRow.js';
+import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { FloorbotMessageActionRowBuilder } from './FloorbotMessageActionRowBuilder.js';
+import { FloorbotModalActionRowId } from './FloorbotModalActionRowBuilder.js';
 
-export class FloorbotReply extends ReplyBuilder {
+export class FloorbotReplyBuilder extends ReplyBuilder {
 
     public addFloorbotActionRow(context: HandlerContext, inviteURL: string): this {
-        const actionRow = new FloorbotMessageActionRow()
+        const actionRow = new FloorbotMessageActionRowBuilder()
             .addInviteButton(inviteURL)
             .addPingButton()
             .addGuildStatsButton(context)
@@ -65,8 +66,8 @@ export class FloorbotReply extends ReplyBuilder {
     }
 
     public addFeedbackEmbed({ modal }: { modal: ModalSubmitInteraction; }): this {
-        const feedbackTitle = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackTitle);
-        const feedbackMessage = modal.fields.getTextInputValue(FloorbotComponentID.FeedbackMessage);
+        const feedbackTitle = modal.fields.getTextInputValue(FloorbotModalActionRowId.FeedbackTitle);
+        const feedbackMessage = modal.fields.getTextInputValue(FloorbotModalActionRowId.FeedbackMessage);
         const embed = this.createEmbedBuilder()
             .setThumbnail(modal.user.displayAvatarURL())
             .setTitle('Feedback')

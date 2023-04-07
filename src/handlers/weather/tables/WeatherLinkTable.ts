@@ -3,8 +3,8 @@ import { Guild, GuildMember, User } from "discord.js";
 import fs from 'fs';
 import { Pool } from "mariadb";
 import path from 'path';
+import { GeocodeData } from '../../../api/apis/open_weather/OpenWeatherAPI.js';
 import { MariaDBTable } from '../../../core/MariaDBTable.js';
-import { GeocodeData } from '../open_weather/OpenWeatherAPI.js';
 
 export default interface WeatherLinkRow {
     readonly user_id: string,

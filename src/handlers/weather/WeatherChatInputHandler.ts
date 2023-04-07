@@ -2,25 +2,22 @@ import { ChatInputCommandInteraction, GuildMember, MessageComponentInteraction }
 import { ChatInputCommandHandler } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
 import { Pool } from 'mariadb';
+import { LocationQuery, OpenWeatherAPI } from '../../api/apis/open_weather/OpenWeatherAPI.js';
+import { OpenWeatherAPILimiter } from '../../api/apis/open_weather/OpenWeatherAPILimiter.js';
+import { AirPollutionData } from '../../api/apis/open_weather/interfaces/AirPollutionData.js';
+import { GeocodeData } from '../../api/apis/open_weather/interfaces/GeocodeData.js';
+import { OneCallData } from '../../api/apis/open_weather/interfaces/OneCallData.js';
+import { WeatherAPIError } from '../../api/apis/open_weather/interfaces/WeatherAPIError.js';
 import { Pageable } from '../../core/Pageable.js';
 import { Util } from '../../core/Util.js';
 import { PageableButtonId } from '../../core/builders/pageable/PageableActionRowBuilder.js';
+import { WeatherChatInputCommandData, WeatherSlashCommandStringOptionName, WeatherSlashCommandUserOptionName, WeatherSubcommandName } from './WeatherChatInputCommandData.js';
 import { WeatherReply } from './builders/WeatherReply.js';
-import { WeatherSlashCommand } from './builders/commands/WeatherSlashCommand.js';
-import { WeatherSubcommandName } from './builders/commands/WeatherSlashCommandSubcommand.js';
-import { WeatherSlashCommandStringOptionName } from './builders/commands/options/WeatherSlashCommandStringOption.js';
-import { WeatherSlashCommandUserOptionName } from './builders/commands/options/WeatherSlashCommandUserOption.js';
 import { WeatherButtonId } from './builders/components/WeatherButton.js';
-import { WeatherSelectMenuId } from './builders/components/WeatherSelectMenu.js';
 import { WeatherSelectMenuOptionValue } from './builders/components/WeatherSelectMenuOption.js';
-import { LocationQuery, OpenWeatherAPI } from './open_weather/OpenWeatherAPI.js';
-import { OpenWeatherAPILimiter } from './open_weather/OpenWeatherAPILimiter.js';
-import { AirPollutionData } from './open_weather/interfaces/AirPollutionData.js';
-import { GeocodeData } from './open_weather/interfaces/GeocodeData.js';
-import { OneCallData } from './open_weather/interfaces/OneCallData.js';
-import { WeatherAPIError } from './open_weather/interfaces/WeatherAPIError.js';
+import { WeatherStringSelectMenuId } from './builders/components/WeatherStringSelectMenu.js';
+import { WeatherEmojiTable } from './tables/WeatherEmojiTable.js';
 import WeatherLinkRow, { WeatherLinkTable } from './tables/WeatherLinkTable.js';
-import { WeatherEmojiTable } from './tables/emoji/WeatherEmojiTable.js';
 
 export class WeatherChatInputHandler extends ChatInputCommandHandler {
 
@@ -29,7 +26,7 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
     private readonly openweather: OpenWeatherAPI;
 
     constructor({ pool, apiKey, redis }: { pool: Pool, apiKey: string, redis: Redis; }) {
-        super(WeatherSlashCommand.global());
+        super(WeatherChatInputCommandData);
         const limiter = new OpenWeatherAPILimiter(apiKey, {}, redis);
         this.openweather = new OpenWeatherAPI({ apiKey: apiKey, limiter: limiter });
         this.emojiTable = new WeatherEmojiTable(pool);
@@ -122,7 +119,7 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                     await component.deferUpdate();
                     if (component.isButton() && component.customId === PageableButtonId.NextPage) { pageable.page++; }
                     if (component.isButton() && component.customId === PageableButtonId.PreviousPage) { pageable.page--; }
-                    if (component.isSelectMenu() && component.customId === WeatherSelectMenuId.Order) { order = component.values[0] as WeatherSelectMenuOptionValue; }
+                    if (component.isSelectMenu() && component.customId === WeatherStringSelectMenuId.Order) { order = component.values[0] as WeatherSelectMenuOptionValue; }
                     const replyOptions = WeatherReply.allTemps(pageable, this.emojiTable, order);
                     await component.editReply(replyOptions);
                 });

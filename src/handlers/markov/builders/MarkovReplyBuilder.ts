@@ -19,8 +19,7 @@ export class MarkovReplyBuilder extends ReplyBuilder {
         enable: '🟢',
         disable: '🔴',
         suppress: '🔵',
-        substitute: '🟣',
-        ['true']: ''
+        substitute: '🟣'
     };
 
     public static getFrequenciesModal({ settings }: { settings: MarkovSettingsRow; }): ModalBuilder {

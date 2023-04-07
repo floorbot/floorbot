@@ -6,6 +6,7 @@ export enum E621SlashCommandStringOptionName {
 
 export const E621ChatInputCommandData: ChatInputApplicationCommandData = {
     name: 'e621',
+    nsfw: true,
     type: ApplicationCommandType.ChatInput,
     description: 'Search for random e621 images',
     options: [{

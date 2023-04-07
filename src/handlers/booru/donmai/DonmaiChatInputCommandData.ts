@@ -9,6 +9,7 @@ export const DonmaiChatInputCommandData = {
     create: (subDomain: DonmaiAPISubDomain): ChatInputApplicationCommandData => {
         return {
             name: subDomain,
+            nsfw: subDomain !== 'safebooru',
             type: ApplicationCommandType.ChatInput,
             description: `Search for random ${subDomain} images`,
             options: [{
