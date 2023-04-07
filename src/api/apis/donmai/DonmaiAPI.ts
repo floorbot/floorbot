@@ -1,5 +1,5 @@
 import { Headers } from 'node-fetch';
-import { API, APIOptions, RequestOptions } from '../../../../core/api/API.js';
+import { API, APIOptions, RequestOptions } from '../../API.js';
 import { DonmaiAPIAutocomplete } from './interfaces/DonmaiAPIAutocomplete.js';
 import { DonmaiAPICount } from './interfaces/DonmaiAPICount.js';
 import { DonmaiAPIError } from './interfaces/DonmaiAPIError.js';

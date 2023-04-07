@@ -1,4 +1,4 @@
-import { API, APIOptions, RequestOptions } from '../../../core/api/API.js';
+import { API, APIOptions, RequestOptions } from '../../../api/API.js';
 import { UrbanDictionaryAPIAutocomplete } from './interfaces/UrbanDictionaryAPIAutocomplete.js';
 import { UrbanDictionaryAPIDefinition } from './interfaces/UrbanDictionaryAPIDefinition.js';
 import { UrbanDictionaryAPIResult } from './interfaces/UrbanDictionaryAPIResult.js';

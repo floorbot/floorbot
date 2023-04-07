@@ -1,10 +1,10 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
 import { ChatInputCommandHandler, IAutocomplete } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
-import { IORedisAPICache } from '../../../core/api/caches/IORedisAPICache.js';
-import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
+import { DonmaiAPI, DonmaiAPICount, DonmaiAPIError, DonmaiAPIPost, DonmaiAPISubDomain } from '../../../api/apis/donmai/DonmaiAPI.js';
+import { IORedisAPICache } from '../../../api/caches/IORedisAPICache.js';
 import { Util } from '../../../core/Util.js';
-import { DonmaiAPI, DonmaiAPICount, DonmaiAPIError, DonmaiAPIPost, DonmaiAPISubDomain } from './api/DonmaiAPI.js';
+import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
 import { DonmaiChatInputCommandData, DonmaiSlashCommandStringOptionName } from './DonmaiChatInputCommandData.js';
 import { DonmaiReplyBuilder } from './DonmaiReplyBuilder.js';
 

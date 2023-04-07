@@ -1,10 +1,10 @@
 import { ActionRowBuilder, EmbedBuilder, MessageActionRowComponentBuilder } from 'discord.js';
-import { AvatarExpression, FloorbotAttachmentBuilder } from '../../core/builders/floorbot/FloorbotAttachmentBuilder.js';
-import { ReplyEmbedBuilderOptions } from '../../core/builders/floorbot/FloorbotReplyBuilder.js';
-import { ReplyBuilder } from '../../core/builders/ReplyBuilder.js';
+import { UrbanDictionaryAPIDefinition } from '../../api/apis/urban_dictionary/UrbanDictionaryAPI.js';
 import { Pageable } from '../../core/Pageable.js';
 import { Util } from '../../core/Util.js';
-import { UrbanDictionaryAPIDefinition } from './urban_dictionary/UrbanDictionaryAPI.js';
+import { ReplyBuilder } from '../../core/builders/ReplyBuilder.js';
+import { AvatarExpression, FloorbotAttachmentBuilder } from '../../core/builders/floorbot/FloorbotAttachmentBuilder.js';
+import { ReplyEmbedBuilderOptions } from '../../core/builders/floorbot/FloorbotReplyBuilder.js';
 
 export class DefineReplyBuilder extends ReplyBuilder {
 

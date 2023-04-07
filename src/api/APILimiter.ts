@@ -1,5 +1,5 @@
-import { RequestOptions } from './API.js';
 import { Response } from 'node-fetch';
+import { RequestOptions } from './API.js';
 
 export interface APILimiterOptions<T extends RequestOptions, L = {}> {
     readonly defaultLimit?: APILimiter<T, L>['defaultLimit'];

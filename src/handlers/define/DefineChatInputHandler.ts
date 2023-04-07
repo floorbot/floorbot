@@ -1,13 +1,13 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 import { ChatInputCommandHandler, IAutocomplete } from "discord.js-handlers";
 import { Redis } from 'ioredis';
-import { IORedisAPICache } from '../../core/api/caches/IORedisAPICache.js';
-import { PageableButtonId } from '../../core/builders/pageable/PageableActionRowBuilder.js';
+import { UrbanDictionaryAPI } from '../../api/apis/urban_dictionary/UrbanDictionaryAPI.js';
+import { IORedisAPICache } from '../../api/caches/IORedisAPICache.js';
 import { Pageable } from '../../core/Pageable.js';
 import { Util } from '../../core/Util.js';
+import { PageableButtonId } from '../../core/builders/pageable/PageableActionRowBuilder.js';
 import { DefineChatInputCommandData, DefineChatInputCommandOption } from './DefineChatInputCommandData.js';
 import { DefineReplyBuilder } from './DefineReplyBuilder.js';
-import { UrbanDictionaryAPI } from './urban_dictionary/UrbanDictionaryAPI.js';
 
 export class DefineChatInputHandler extends ChatInputCommandHandler implements IAutocomplete {
 

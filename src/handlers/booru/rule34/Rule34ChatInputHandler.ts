@@ -1,10 +1,10 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
 import { ChatInputCommandHandler, IAutocomplete } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
-import { IORedisAPICache } from '../../../core/api/caches/IORedisAPICache.js';
-import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
+import { Rule34API, Rule34APIPost } from '../../../api/apis/rule34/Rule34API.js';
+import { IORedisAPICache } from '../../../api/caches/IORedisAPICache.js';
 import { Util } from '../../../core/Util.js';
-import { Rule34API, Rule34APIPost } from './api/Rule34API.js';
+import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
 import { Rule34ChatInputCommandData, Rule34SlashCommandStringOptionName } from './Rule34ChatInputCommandData.js';
 import { Rule34ReplyBuilder } from './Rule34ReplyBuilder.js';
 

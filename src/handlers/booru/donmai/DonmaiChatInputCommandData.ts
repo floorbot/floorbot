@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputApplicationCommandData } from 'discord.js';
-import { DonmaiAPISubDomain } from './api/DonmaiAPI.js';
+import { DonmaiAPISubDomain } from '../../../api/apis/donmai/DonmaiAPI.js';
 
 export enum DonmaiSlashCommandStringOptionName {
     Tags = 'tags'

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
+import { Rule34APIAutocomplete, Rule34APIPost } from '../../../api/apis/rule34/Rule34API.js';
 import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
-import { Rule34APIAutocomplete, Rule34APIPost } from './api/Rule34API.js';
+import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
 
 export class Rule34ReplyBuilder extends ReplyBuilder {
 

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
+import { E621APIAutocomplete, E621APIPost } from '../../../api/apis/e621/E621API.js';
 import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
-import { E621APIAutocomplete, E621APIPost } from './api/E621API.js';
+import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
 
 export class E621ReplyBuilder extends ReplyBuilder {
 

@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import { HandlerContext } from 'discord.js-handlers';
-import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
-import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { DonmaiAPI, DonmaiAPIAutocomplete, DonmaiAPICount, DonmaiAPIPost, DonmaiAPISubDomain } from '../../../api/apis/donmai/DonmaiAPI.js';
 import { Util } from '../../../core/Util.js';
-import { DonmaiAPI, DonmaiAPIAutocomplete, DonmaiAPICount, DonmaiAPIPost, DonmaiAPISubDomain } from './api/DonmaiAPI.js';
+import { ReplyBuilder } from '../../../core/builders/ReplyBuilder.js';
+import { BooruPostData } from '../../../core/builders/booru/BooruReplyBuilder.js';
 
 export class DonmaiReplyBuilder extends ReplyBuilder {
 

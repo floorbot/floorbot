@@ -1,10 +1,10 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
 import { ChatInputCommandHandler, IAutocomplete } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
-import { IORedisAPICache } from '../../../core/api/caches/IORedisAPICache.js';
-import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
+import { E621API, E621APIError, E621APIPost } from '../../../api/apis/e621/E621API.js';
+import { IORedisAPICache } from '../../../api/caches/IORedisAPICache.js';
 import { Util } from '../../../core/Util.js';
-import { E621API, E621APIError, E621APIPost } from './api/E621API.js';
+import { BooruMessageComponentId } from '../../../core/builders/booru/BooruActionRowBuilder.js';
 import { E621ChatInputCommandData, E621SlashCommandStringOptionName } from './E621ChatInputCommandData.js';
 import { E621ReplyBuilder } from './E621ReplyBuilder.js';
 

@@ -1,6 +1,6 @@
 import Bottleneck from 'bottleneck';
 import { Redis } from 'ioredis';
-import { APIBottleneckLimiter } from '../../../core/api/limiters/BottleneckAPILimiter.js';
+import { APIBottleneckLimiter } from '../../../api/limiters/BottleneckAPILimiter.js';
 import { OpenWeatherRequestOptions } from './OpenWeatherAPI.js';
 
 export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherRequestOptions> {
