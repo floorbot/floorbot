@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, GuildMember, MessageComponentInteraction } from 'discord.js';
-import { ChatInputCommandHandler } from 'discord.js-handlers';
+import { ChatInputCommandHandler, HandlerClient } from 'discord.js-handlers';
 import { Redis } from 'ioredis';
 import { Pool } from 'mariadb';
 import { LocationQuery, OpenWeatherAPI } from '../../api/apis/open_weather/OpenWeatherAPI.js';
@@ -93,22 +93,27 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                 if (!command.inGuild() || !command.guild) return command.reply(new WeatherReply().addGuildOnlyEmbed({ command }));
                 await command.deferReply();
                 const { guild } = command;
-                const links: [OneCallData, GuildMember, WeatherLinkRow][] = new Array();
                 const allLinks = await this.linkTable.selectLinks(guild);
                 const loadingReply = WeatherReply.loading(allLinks.length, 0);
+
+                let resolved = 0;
                 let lastUpdate = (await command.followUp(loadingReply)).createdTimestamp;
-                for (const [i, link] of allLinks.entries()) {
-                    const member = await guild.members.fetch(link.user_id);
-                    if (member) {
-                        const onecall = await this.openweather.oneCall(link);
-                        if (this.openweather.isError(onecall)) continue;
-                        links.push([onecall, member, link]);
-                    }
+                const postUpdate = async () => {
                     if (Date.now() - lastUpdate >= 1000) {
-                        const loadingReply = WeatherReply.loading(allLinks.length, i + 1);
+                        const loadingReply = WeatherReply.loading(allLinks.length, ++resolved);
                         lastUpdate = (await command.editReply(loadingReply)).createdTimestamp;
                     }
-                }
+                };
+
+                const links: [OneCallData, GuildMember, WeatherLinkRow][] = await Promise.all(allLinks.map(async link => {
+                    const member = await guild.members.fetch(link.user_id);
+                    if (!member) return Promise.reject();
+                    const onecall = await this.openweather.oneCall(link);
+                    if (this.openweather.isError(onecall)) return Promise.reject(onecall);
+                    await postUpdate();
+                    return [onecall, member, link];
+                }));
+
                 if (!Pageable.isNonEmptyArray(links)) return command.editReply(WeatherReply.missingLinkedMembers());
                 const pageable = new Pageable(links, { perPage: 40 });
                 let order = WeatherSelectMenuOptionValue.Hottest;
@@ -165,5 +170,12 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                 default: throw component;
             }
         };
+    }
+
+    public override async setup({ client, forcePost = false }: { client: HandlerClient, forcePost?: boolean; }): Promise<any> {
+        const setup = await super.setup({ client, forcePost });
+        await this.linkTable.createTable();
+        await this.emojiTable.createTable();
+        return setup;
     }
 }
