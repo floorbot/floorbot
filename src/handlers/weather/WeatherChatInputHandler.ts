@@ -90,32 +90,43 @@ export class WeatherChatInputHandler extends ChatInputCommandHandler {
                 return command.followUp(replyOptions);
             }
             case WeatherSubcommandName.All: {
+                console.log('weather all needs cleaning');
                 if (!command.inGuild() || !command.guild) return command.reply(new WeatherReply().addGuildOnlyEmbed({ command }));
                 await command.deferReply();
                 const { guild } = command;
                 const allLinks = await this.linkTable.selectLinks(guild);
                 const loadingReply = WeatherReply.loading(allLinks.length, 0);
-
-                let resolved = 0;
                 let lastUpdate = (await command.followUp(loadingReply)).createdTimestamp;
-                const postUpdate = async () => {
-                    if (Date.now() - lastUpdate >= 1000) {
-                        const loadingReply = WeatherReply.loading(allLinks.length, ++resolved);
+
+                const links: ([OneCallData, GuildMember, WeatherLinkRow] | null)[] = [];
+                for (const [_i, link] of allLinks.entries()) {
+                    guild.members.fetch(link.user_id).then(member => {
+                        return this.openweather.oneCall(link).then(onecall => {
+                            if (this.openweather.isError(onecall)) throw onecall;
+                            links.push([onecall, member, link]);
+                        });
+                    }).catch(error => {
+                        console.log('[Weather Error] There was an error in the </weather all> command', lastUpdate, error);
+                        links.push(null);
+                    });
+                }
+
+                let lastLength = 0;
+                while (links.length !== allLinks.length) {
+                    await new Promise((resolve, _reject) => setTimeout(resolve, 1000));
+                    if (lastLength != links.length) {
+                        lastLength = links.length;
+                        const loadingReply = WeatherReply.loading(allLinks.length, links.length);
                         lastUpdate = (await command.editReply(loadingReply)).createdTimestamp;
                     }
-                };
+                }
 
-                const links: [OneCallData, GuildMember, WeatherLinkRow][] = await Promise.all(allLinks.map(async link => {
-                    const member = await guild.members.fetch(link.user_id);
-                    if (!member) return Promise.reject();
-                    const onecall = await this.openweather.oneCall(link);
-                    if (this.openweather.isError(onecall)) return Promise.reject(onecall);
-                    await postUpdate();
-                    return [onecall, member, link];
-                }));
-
-                if (!Pageable.isNonEmptyArray(links)) return command.editReply(WeatherReply.missingLinkedMembers());
-                const pageable = new Pageable(links, { perPage: 40 });
+                const safeLinks: [OneCallData, GuildMember, WeatherLinkRow][] = links.reduce((array: [OneCallData, GuildMember, WeatherLinkRow][], next) => {
+                    if (next) array.push(next);
+                    return array;
+                }, []);
+                if (!Pageable.isNonEmptyArray(safeLinks)) return command.editReply(WeatherReply.missingLinkedMembers());
+                const pageable = new Pageable(safeLinks, { perPage: 40 });
                 let order = WeatherSelectMenuOptionValue.Hottest;
                 const replyOptions = WeatherReply.allTemps(pageable, this.emojiTable, order);
                 const message = await command.editReply(replyOptions);
