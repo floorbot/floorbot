@@ -7,9 +7,12 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
 
     constructor(apiKey: string, { perMonth = 1000000, perMinute = 60, dailyOneCall = 1000 }, redis?: Redis) {
 
+        console.log('openweather limiter maxConcurrent and comments');
+        console.log('tbh  idk if the cache is even being deleted? which means idk if it is even working...');
+
         // Creates a monthly (31 day) limit of specified requests (api limits)
         const monthlyLimit = new Bottleneck({
-            id: `openweather-month-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-month-${apiKey}`, maxConcurrent: 5, minTime: 0,
             reservoir: Math.floor(perMonth / 31),
             reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31 / 31,
             reservoirRefreshAmount: Math.floor(perMonth / 31),
@@ -27,7 +30,7 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
 
         // Creates a minutely (60 second) limit of specified requests (api limits)
         const minutelyLimit = new Bottleneck({
-            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-minute-${apiKey}`, maxConcurrent: 5, minTime: 0,
             reservoir: perMinute,
             reservoirRefreshInterval: 1000 * 60,
             reservoirRefreshAmount: perMinute,
@@ -45,7 +48,7 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
 
         // Creates a daily (24 hour) limit of specified one call requests (api limits)
         const onecallLimit = new Bottleneck({
-            id: `openweather-minute-${apiKey}`, maxConcurrent: 1, minTime: 0,
+            id: `openweather-daily-${apiKey}`, maxConcurrent: 5, minTime: 0,
             reservoir: dailyOneCall,
             reservoirRefreshInterval: 1000 * 60 * 60 * 24,
             reservoirRefreshAmount: dailyOneCall,
