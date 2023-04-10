@@ -13,8 +13,8 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
             reservoir: Math.floor(perMonth / 31),
             reservoirRefreshInterval: 1000 * 60 * 60 * 24 * 31 / 31,
             reservoirRefreshAmount: Math.floor(perMonth / 31),
-            highWater: 10, // Same as maxConcurrent
-            strategy: Bottleneck.strategy.OVERFLOW,
+            // highWater: 10, // Same as maxConcurrent
+            // strategy: Bottleneck.strategy.OVERFLOW,
             ...(redis && redis.options && {
                 datastore: 'ioredis',
                 clearDatastore: false,
@@ -31,8 +31,8 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
             reservoir: perMinute,
             reservoirRefreshInterval: 1000 * 60,
             reservoirRefreshAmount: perMinute,
-            highWater: 10, // Same as maxConcurrent
-            strategy: Bottleneck.strategy.OVERFLOW,
+            // highWater: 10, // Same as maxConcurrent
+            // strategy: Bottleneck.strategy.OVERFLOW,
             ...(redis && redis.options && {
                 datastore: 'ioredis',
                 clearDatastore: false,
@@ -49,8 +49,8 @@ export class OpenWeatherAPILimiter extends APIBottleneckLimiter<OpenWeatherReque
             reservoir: dailyOneCall,
             reservoirRefreshInterval: 1000 * 60 * 60 * 24,
             reservoirRefreshAmount: dailyOneCall,
-            highWater: 10, // Same as maxConcurrent
-            strategy: Bottleneck.strategy.OVERFLOW,
+            // highWater: 10, // Same as maxConcurrent
+            // strategy: Bottleneck.strategy.OVERFLOW,
             ...(redis && redis.options && {
                 datastore: 'ioredis',
                 clearDatastore: false,
